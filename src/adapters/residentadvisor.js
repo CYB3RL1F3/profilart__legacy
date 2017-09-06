@@ -42,7 +42,7 @@ export class ResidentAdvisorAdapter {
                 })
             })
         })
-        return adaptedResponse;
+        return adaptedResponse.charts;
     }
 
     adaptEvents (response) {
@@ -75,9 +75,7 @@ export class ResidentAdvisorAdapter {
                 });
             });
         }
-        return {
-            events: events
-        };
+        return events;
     }
 
     adaptInfos (response) {

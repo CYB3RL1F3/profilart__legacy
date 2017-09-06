@@ -6,6 +6,7 @@ import Sender from './lib/sender';
 import Validator from './lib/validator';
 import Database from './lib/database';
 import Profiles from './services/profiles';
+import All from './services/all';
 
 export class Application {
 
@@ -24,6 +25,7 @@ export class Application {
         const residentAdvisor = new ResidentAdvisor(database);
         const discogs = new Discogs(database);
         const contact = new Contact();
+        const all = new All(database, residentAdvisor, discogs);
         this.validator = new Validator();
         this.profiles = new Profiles(database);
 
@@ -33,7 +35,8 @@ export class Application {
             events: residentAdvisor.getEvents,
             infos:  residentAdvisor.getInfos,
             contact: contact.mail,
-            releases: discogs.getReleases
+            releases: discogs.getReleases,
+            all: all.get
         }
     }
 
