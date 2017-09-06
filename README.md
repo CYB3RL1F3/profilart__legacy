@@ -37,7 +37,7 @@ This project is available on *github* in order to stay evolutive. Anyone could f
 
 4. run `> yarn install` to install dependencies.
 
-5. Create a database in your mongodb database. (exemple : `artists`). [see tutorial](https://www.tutorialspoint.com/mongodb/mongodb_create_database.htm)
+5. Create a database in your mongodb database. (exemple : `cyberlife`). [see tutorial](https://www.tutorialspoint.com/mongodb/mongodb_create_database.htm)
 
 6. in **config.js** set the link of your mongodb (example : `mongodb://localhost:27017/cyberlife`)
 
@@ -129,10 +129,10 @@ s.emit({
 })
 ```
 
-Arguments :
+Query detail :
 
 * **uid** : the profile ID associate to the artist
-* **query** : the name of the expected data. Actually available :
+* **query** : the name of the query. Actually available :
     * *events*
     * *releases*
     * *infos*

@@ -1,5 +1,5 @@
 Arguments: 
-  /Users/Deikean/.nvm/versions/node/v6.9.4/bin/node /usr/local/bin/yarn add nodemailer-smtp-transport
+  /Users/Deikean/.nvm/versions/node/v6.9.4/bin/node /usr/local/bin/yarn remove babel-loader
 
 PATH: 
   /Users/Deikean/.nvm/versions/node/v6.9.4/bin:/Applications/MAMP/bin/php/php5.6.27/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Users/Deikean/Library/Android/sdk/tools:/Users/Deikean/Library/Android/sdk/platform-tools
@@ -20,7 +20,7 @@ npm manifest:
     "description": "cyberlife's socket API",
     "main": "src/index.js",
     "scripts": {
-      "start": "babel-node src/index.js --presets es2015,stage-2",
+      "start": "yarn install && babel-node src/index.js --presets es2015,stage-2",
       "test": "test"
     },
     "author": "David Pierre <pierred69@gmail.com>",
@@ -29,10 +29,12 @@ npm manifest:
       "babel-node": "^6.5.3",
       "babel-preset-stage-2": "^6.24.1",
       "express": "^4.15.4",
+      "fs": "^0.0.1-security",
+      "html": "^1.0.0",
       "http": "^0.0.0",
       "mongodb": "^2.2.31",
       "nodemailer": "^4.1.0",
-      "soap": "^0.20.0",
+      "nodemailer-smtp-transport": "^2.7.4",
       "winston": "^2.3.1",
       "ws": "^3.1.0",
       "xml2js": "^0.4.19"
@@ -40,7 +42,6 @@ npm manifest:
     "devDependencies": {
       "babel-cli": "^6.26.0",
       "babel-core": "^6.26.0",
-      "babel-loader": "^7.1.2",
       "babel-preset-env": "^1.6.0",
       "babel-preset-es2015": "^6.24.1"
     }
@@ -796,10 +797,6 @@ Lockfile:
     dependencies:
       inherits "~2.0.0"
   
-  bluebird@^3.5.0:
-    version "3.5.0"
-    resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
-  
   boom@2.x.x:
     version "2.10.1"
     resolved "https://registry.yarnpkg.com/boom/-/boom-2.10.1.tgz#39c8918ceff5799f83f9492a848f625add0c766f"
@@ -895,15 +892,11 @@ Lockfile:
     version "1.0.1"
     resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
   
-  compress@^0.99.0:
-    version "0.99.0"
-    resolved "https://registry.yarnpkg.com/compress/-/compress-0.99.0.tgz#97e301c25c4d01f097d85103f65eccb2e7796502"
-  
   concat-map@0.0.1:
     version "0.0.1"
     resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   
-  concat-stream@^1.5.1:
+  concat-stream@^1.4.7:
     version "1.6.0"
     resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-1.6.0.tgz#0aac662fd52be78964d5532f694784e70110acf7"
     dependencies:
@@ -973,10 +966,6 @@ Lockfile:
     dependencies:
       ms "2.0.0"
   
-  debug@~0.7.4:
-    version "0.7.4"
-    resolved "https://registry.yarnpkg.com/debug/-/debug-0.7.4.tgz#06e1ea8082c2cb14e39806e22e2f6f757f92af39"
-  
   deep-extend@~0.4.0:
     version "0.4.2"
     resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.4.2.tgz#48b699c27e334bf89f10892be432f6e4c7d34a7f"
@@ -1021,10 +1010,6 @@ Lockfile:
   ee-first@1.1.1:
     version "1.1.1"
     resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
-  
-  ejs@~2.5.5:
-    version "2.5.7"
-    resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.7.tgz#cc872c168880ae3c7189762fd5ffc00896c9518a"
   
   electron-to-chromium@^1.3.18:
     version "1.3.18"
@@ -1141,7 +1126,7 @@ Lockfile:
       repeat-element "^1.1.2"
       repeat-string "^1.5.2"
   
-  finalhandler@^1.0.3, finalhandler@~1.0.4:
+  finalhandler@~1.0.4:
     version "1.0.4"
     resolved "https://registry.yarnpkg.com/finalhandler/-/finalhandler-1.0.4.tgz#18574f2e7c4b98b8ae3b230c21f201f31bdb3fb7"
     dependencies:
@@ -1166,10 +1151,6 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/find-up/-/find-up-2.1.0.tgz#45d1b7e506c717ddd482775a2b77920a3c0c57a7"
     dependencies:
       locate-path "^2.0.0"
-  
-  first-chunk-stream@^0.1.0:
-    version "0.1.0"
-    resolved "https://registry.yarnpkg.com/first-chunk-stream/-/first-chunk-stream-0.1.0.tgz#755d3ec14d49a86e3d2fcc08beead5c0ca2b9c0a"
   
   for-in@^1.0.1:
     version "1.0.2"
@@ -1208,6 +1189,10 @@ Lockfile:
   fs.realpath@^1.0.0:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
+  
+  fs@^0.0.1-security:
+    version "0.0.1-security"
+    resolved "https://registry.yarnpkg.com/fs/-/fs-0.0.1-security.tgz#8a7bd37186b6dddf3813f23858b57ecaaf5e41d4"
   
   fsevents@^1.0.0:
     version "1.1.2"
@@ -1376,6 +1361,12 @@ Lockfile:
       os-homedir "^1.0.0"
       os-tmpdir "^1.0.1"
   
+  html@^1.0.0:
+    version "1.0.0"
+    resolved "https://registry.yarnpkg.com/html/-/html-1.0.0.tgz#a544fa9ea5492bfb3a2cca8210a10be7b5af1f61"
+    dependencies:
+      concat-stream "^1.4.7"
+  
   http-errors@~1.6.2:
     version "1.6.2"
     resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.6.2.tgz#0a002cc85707192a7e7946ceedc11155f60ec736"
@@ -1396,6 +1387,17 @@ Lockfile:
   http@^0.0.0:
     version "0.0.0"
     resolved "https://registry.yarnpkg.com/http/-/http-0.0.0.tgz#86e6326d29c5d039de9fac584a45689f929f4f72"
+  
+  httpntlm@1.6.1:
+    version "1.6.1"
+    resolved "https://registry.yarnpkg.com/httpntlm/-/httpntlm-1.6.1.tgz#ad01527143a2e8773cfae6a96f58656bb52a34b2"
+    dependencies:
+      httpreq ">=0.4.22"
+      underscore "~1.7.0"
+  
+  httpreq@>=0.4.22:
+    version "0.4.24"
+    resolved "https://registry.yarnpkg.com/httpreq/-/httpreq-0.4.24.tgz#4335ffd82cd969668a39465c929ac61d6393627f"
   
   infinity-agent@^2.0.0:
     version "2.0.3"
@@ -1500,10 +1502,6 @@ Lockfile:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/is-typedarray/-/is-typedarray-1.0.0.tgz#e479c80858df0c1b11ddda6940f96011fcda4a9a"
   
-  is-utf8@^0.2.0:
-    version "0.2.1"
-    resolved "https://registry.yarnpkg.com/is-utf8/-/is-utf8-0.2.1.tgz#4b0da1442104d1b336340e80797e865cf39f7d72"
-  
   isarray@1.0.0, isarray@~1.0.0:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
@@ -1591,10 +1589,6 @@ Lockfile:
     dependencies:
       p-locate "^2.0.0"
       path-exists "^3.0.0"
-  
-  lodash@^3.10.1:
-    version "3.10.1"
-    resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
   
   lodash@^4.17.4:
     version "4.17.4"
@@ -1726,6 +1720,28 @@ Lockfile:
       semver "^5.3.0"
       tar "^2.2.1"
       tar-pack "^3.4.0"
+  
+  nodemailer-fetch@1.6.0:
+    version "1.6.0"
+    resolved "https://registry.yarnpkg.com/nodemailer-fetch/-/nodemailer-fetch-1.6.0.tgz#79c4908a1c0f5f375b73fe888da9828f6dc963a4"
+  
+  nodemailer-shared@1.1.0:
+    version "1.1.0"
+    resolved "https://registry.yarnpkg.com/nodemailer-shared/-/nodemailer-shared-1.1.0.tgz#cf5994e2fd268d00f5cf0fa767a08169edb07ec0"
+    dependencies:
+      nodemailer-fetch "1.6.0"
+  
+  nodemailer-smtp-transport@^2.7.4:
+    version "2.7.4"
+    resolved "https://registry.yarnpkg.com/nodemailer-smtp-transport/-/nodemailer-smtp-transport-2.7.4.tgz#0d89af019a144a480fd8ecc99997d9f838f13685"
+    dependencies:
+      nodemailer-shared "1.1.0"
+      nodemailer-wellknown "0.1.10"
+      smtp-connection "2.12.0"
+  
+  nodemailer-wellknown@0.1.10:
+    version "0.1.10"
+    resolved "https://registry.yarnpkg.com/nodemailer-wellknown/-/nodemailer-wellknown-0.1.10.tgz#586db8101db30cb4438eb546737a41aad0cf13d5"
   
   nodemailer@^4.1.0:
     version "4.1.0"
@@ -2015,7 +2031,7 @@ Lockfile:
     dependencies:
       is-finite "^1.0.0"
   
-  request@>=2.9.0, request@^2.39.0, request@^2.55.0, request@^2.81.0:
+  request@^2.39.0, request@^2.55.0, request@^2.81.0:
     version "2.81.0"
     resolved "https://registry.yarnpkg.com/request/-/request-2.81.0.tgz#c6928946a0e06c5f8d6f8a9333469ffda46298a0"
     dependencies:
@@ -2063,13 +2079,9 @@ Lockfile:
     version "5.1.1"
     resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.1.tgz#893312af69b2123def71f57889001671eeb2c853"
   
-  sax@>=0.6, sax@>=0.6.0:
+  sax@>=0.6.0:
     version "1.2.4"
     resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
-  
-  selectn@^0.9.6:
-    version "0.9.6"
-    resolved "https://registry.yarnpkg.com/selectn/-/selectn-0.9.6.tgz#bd873a556d18f96d8515fc91503ec6ff398ff9a2"
   
   semver@^5.1.0, semver@^5.3.0:
     version "5.4.1"
@@ -2093,7 +2105,7 @@ Lockfile:
       range-parser "~1.2.0"
       statuses "~1.3.1"
   
-  serve-static@1.12.4, serve-static@^1.11.1:
+  serve-static@1.12.4:
     version "1.12.4"
     resolved "https://registry.yarnpkg.com/serve-static/-/serve-static-1.12.4.tgz#9b6aa98eeb7253c4eedc4c1f6fdbca609901a961"
     dependencies:
@@ -2122,30 +2134,18 @@ Lockfile:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/slash/-/slash-1.0.0.tgz#c41f2f6c39fc16d1cd17ad4b5d896114ae470d55"
   
+  smtp-connection@2.12.0:
+    version "2.12.0"
+    resolved "https://registry.yarnpkg.com/smtp-connection/-/smtp-connection-2.12.0.tgz#d76ef9127cb23c2259edb1e8349c2e8d5e2d74c1"
+    dependencies:
+      httpntlm "1.6.1"
+      nodemailer-shared "1.1.0"
+  
   sntp@1.x.x:
     version "1.0.9"
     resolved "https://registry.yarnpkg.com/sntp/-/sntp-1.0.9.tgz#6541184cc90aeea6c6e7b35e2659082443c66198"
     dependencies:
       hoek "2.x.x"
-  
-  soap@^0.20.0:
-    version "0.20.0"
-    resolved "https://registry.yarnpkg.com/soap/-/soap-0.20.0.tgz#5fde43ed6aaf074d93a8e9ef7501cae98456c5c0"
-    dependencies:
-      bluebird "^3.5.0"
-      compress "^0.99.0"
-      concat-stream "^1.5.1"
-      debug "~0.7.4"
-      ejs "~2.5.5"
-      finalhandler "^1.0.3"
-      lodash "^3.10.1"
-      request ">=2.9.0"
-      sax ">=0.6"
-      selectn "^0.9.6"
-      serve-static "^1.11.1"
-      strip-bom "~0.3.1"
-      uuid "^3.0.1"
-      xml-crypto "~0.8.0"
   
   source-map-support@^0.4.15:
     version "0.4.16"
@@ -2220,13 +2220,6 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-3.0.1.tgz#6a385fb8853d952d5ff05d0e8aaf94278dc63dcf"
     dependencies:
       ansi-regex "^2.0.0"
-  
-  strip-bom@~0.3.1:
-    version "0.3.1"
-    resolved "https://registry.yarnpkg.com/strip-bom/-/strip-bom-0.3.1.tgz#9e8a39eff456ff9abc2f059f5f2225bb0f3f7ca5"
-    dependencies:
-      first-chunk-stream "^0.1.0"
-      is-utf8 "^0.2.0"
   
   strip-json-comments@~2.0.1:
     version "2.0.1"
@@ -2308,6 +2301,10 @@ Lockfile:
     version "1.1.0"
     resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.1.0.tgz#b07a2e6a541a815fc6a34ccd4533baec307ca864"
   
+  underscore@~1.7.0:
+    version "1.7.0"
+    resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.7.0.tgz#6bbaf0877500d36be34ecaa584e0db9fef035209"
+  
   unpipe@~1.0.0:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
@@ -2324,7 +2321,7 @@ Lockfile:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.0.tgz#0294fb922bb9375153541c4f7096231f287c8af8"
   
-  uuid@^3.0.0, uuid@^3.0.1:
+  uuid@^3.0.0:
     version "3.1.0"
     resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
   
@@ -2374,13 +2371,6 @@ Lockfile:
       safe-buffer "~5.1.0"
       ultron "~1.1.0"
   
-  xml-crypto@~0.8.0:
-    version "0.8.5"
-    resolved "https://registry.yarnpkg.com/xml-crypto/-/xml-crypto-0.8.5.tgz#2bbcfb3eb33f3a82a218b822bf672b6b1c20e538"
-    dependencies:
-      xmldom "=0.1.19"
-      xpath.js ">=0.0.3"
-  
   xml2js@^0.4.19:
     version "0.4.19"
     resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.19.tgz#686c20f213209e94abf0d1bcf1efaa291c7827a7"
@@ -2391,15 +2381,7 @@ Lockfile:
   xmlbuilder@~9.0.1:
     version "9.0.4"
     resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-9.0.4.tgz#519cb4ca686d005a8420d3496f3f0caeecca580f"
-  
-  xmldom@=0.1.19:
-    version "0.1.19"
-    resolved "https://registry.yarnpkg.com/xmldom/-/xmldom-0.1.19.tgz#631fc07776efd84118bf25171b37ed4d075a0abc"
-  
-  xpath.js@>=0.0.3:
-    version "1.0.7"
-    resolved "https://registry.yarnpkg.com/xpath.js/-/xpath.js-1.0.7.tgz#7e94627f541276cbc6a6b02b5d35e9418565b3e4"
 
 Trace: 
-  Error: EACCES: permission denied, unlink '/server/cyberlife/api/node_modules/.bin/babel'
+  Error: EACCES: permission denied, unlink '/server/cyberlife/api/node_modules/.bin/babel-doctor'
       at Error (native)

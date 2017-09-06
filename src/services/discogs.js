@@ -36,17 +36,14 @@ export class Discogs extends Service {
         })
     })
 
-    query (url) {
-        const options = {
-            url: url,
-            method: 'GET',
-            headers: {
-                'User-Agent':       'RAPI/0.0.1',
-                'Content-Type':     'application/x-www-form-urlencoded'
-            }
-        };
-        return this.api.requestAndParseJSON(options);
-    }
+    query = (url) => this.api.requestAndParseJSON({
+        url: url,
+        method: 'GET',
+        headers: {
+            'User-Agent':       'RAPI/0.0.1',
+            'Content-Type':     'application/x-www-form-urlencoded'
+        }
+    })
 
 }
 

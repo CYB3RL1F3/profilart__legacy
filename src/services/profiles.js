@@ -16,10 +16,10 @@ export class Profiles extends Service {
                     this.profiles[uid] = profile.content;
                     resolve(profile.content);
                 } else {
-                    reject(err(401, "profile not found"));
+                    reject(err(401, 'profile not found'));
                 }
             }).catch((e) => {
-                reject(err(401, "profile not found"));
+                reject(err(401, 'profile not found'));
             })
         }
     });

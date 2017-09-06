@@ -50,7 +50,7 @@ export class ResidentAdvisorAdapter {
         if (response.events instanceof Array) {
             response.events.forEach((evt) => {
                 const event = evt.event[0];
-                const time = `${event.time}`.split(" - ");
+                const time = `${event.time}`.split(' - ');
                 events.push({
                     id: `${event.id}`,
                     venueId: `${event.venueid}`,
@@ -60,7 +60,7 @@ export class ResidentAdvisorAdapter {
                     areaId: `${event.areaId}`,
                     title: `${event.venue}`,
                     address: `${event.address}`,
-                    lineup: `${event.lineup}`.split(", "),
+                    lineup: `${event.lineup}`.split(', '),
                     time: {
                         begin: time[0],
                         end: time[1]

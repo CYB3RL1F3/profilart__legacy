@@ -19,7 +19,7 @@ export class Sender {
             status: 0,
             error: {
                 code,
-                message: message || "an error occured..."
+                message: message || 'an error occured...'
             }
         }))
     }

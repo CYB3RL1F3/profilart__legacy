@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 import smtpTransport from 'nodemailer-smtp-transport';
+import fs from 'fs';
+import ejs from 'ejs';
 
 export class Mailer {
 
@@ -8,11 +10,11 @@ export class Mailer {
         this.profile = profile;
     }
 
-    getParams = (name, email, subject, content) => ({
-        from: email, // `${name} <${email}>`, // sender address
+    getParams = (name, email, subject, content, html) => ({
+        from: email, // sender address
         to: this.profile.mailer.recipient, // list of receivers
         subject: `${this.profile.mailer.prefix} ${subject}`, // Subject line
-        html: this.template(name, email, content) // html body
+        html // html body
     })
 
     getTransporter = () => nodemailer.createTransport(smtpTransport({
@@ -21,29 +23,33 @@ export class Mailer {
         auth: this.profile.mailer.auth
     }))
 
-    template = (name, email, content) => (
-        `<h3 style='font-size: 15px; color: #DE1212;'><b>${name} (${email})</b> vous a envoyé un <u>nouveau message</u> : </h3><p style='margin: 10px 0; padding: 10px; background: #DEDEDE; color: #121212; font-size: 13px;'>${this.adapt(content)}</p><p style='margin-top: 40px; font-size: 10px; color: #DE1236;'><i><b>NOTE</b> : Ce mail a été envoyé via cyberlife-music.com. Répondez à ${email} en copiant l'adresse email, <b>non</b> en utilisant la fonction "répondre" de votre boite mail.</i></b></p>`
-    )
+    getTemplate = (name, email, subject, content) => new Promise((resolve, reject) => {
+        fs.readFile(`${__dirname}/../templates/mail.html`, 'utf8', (err, template) => {
+            if (err) {
+                reject(err);
+            } else {
+                content = this.adapt(content);
+                const html = ejs.compile(template)({name, email, subject, content});
+                const regexp = /\&lt;br \/&gt;/g;
+                resolve(html.replace(regexp, '<br />'));
+            }
+        });
+    })
 
     adapt = (content) => content.replace(/\n/g, '<br />')
 
-    send (name, email, subject, content) {
-        const params = this.getParams(name, email, subject, content);
-        // send mail with defined transport object
-        return new Promise((resolve, reject) => {
+    send = (name, email, subject, content) => new Promise((resolve, reject) => {
+        this.getTemplate(name, email, subject, content).then((html) => {
+            const params = this.getParams(name, email, subject, content, html);
             this.getTransporter().sendMail(params, (error, info) => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve();
                 }
-
-                // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@blurdybloop.com>
-                // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
             });
-        });
-
-    }
+        })
+    });
 }
 
 export default Mailer;

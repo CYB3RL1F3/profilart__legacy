@@ -7,7 +7,7 @@ export const config = {
         discogs: 'https://api.discogs.com/'
     },
     db: {
-        address: "mongodb://localhost:27017/cyberlife"
+        address: 'mongodb://localhost:27017/cyberlife'
     }
 }
 

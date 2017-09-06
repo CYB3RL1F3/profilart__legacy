@@ -1,25 +1,20 @@
 import err from '../err';
 
 export class Validator {
-    error = (code, message) => ({
-        code: code,
-        message: message,
-        stack: (new Error()).stack
-    })
 
     checkData (data, app) {
         if (!data || !data instanceof Object) {
-            throw err("400", "invalid data object");
+            throw err('400', 'invalid data object');
         }
         if (!data.query) {
-            throw err("400", "invalid data adapt : query must be present");
+            throw err('400', 'invalid data adapt : query must be present');
         }
         if (!data.uid) {
-            throw err("400", "no UID provided.");
+            throw err('400', 'no UID provided.');
         }
 
         if (!app.serviceExists(data.query)) {
-            throw err("404", "this service doesn't exists");
+            throw err('404', 'this service doesn\'t exists');
         }
         return true;
     }

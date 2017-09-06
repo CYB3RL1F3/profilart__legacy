@@ -28,7 +28,6 @@ export class ResidentAdvisor extends Service {
             };
             this.api.requestAndParseXML(options)
                 .then((response) => {
-                    console.log(response.RA);
                     resolve(response.RA);
                 }).catch(reject)
         })
@@ -61,7 +60,7 @@ export class ResidentAdvisor extends Service {
 
     getEvents = (profile, args) => new Promise((resolve, reject) => {
         if (!args.type) {
-            reject("an arg TYPE must be provided.");
+            reject('an arg TYPE must be provided.');
             return;
         }
 

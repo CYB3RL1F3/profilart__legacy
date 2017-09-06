@@ -39,9 +39,10 @@ export class Application {
 
     run (data, socket) {
         if (!socket) {
-            console.log("Invalid socket connection. Can't process properly.");
+            console.log('Invalid socket connection. Can\'t process properly.');
             return;
         }
+
         const sender = new Sender(socket);
 
         try {
@@ -62,14 +63,14 @@ export class Application {
                 sender.error(e.code || 500, e.message);
             });
         }).catch((e) => {
-            sender.error(401, "profile not registred");
+            sender.error(401, 'profile not registred');
         });
     }
 
     execute (method, profile, args) {
         const fn = this.services[method];
         if (!fn) {
-            throw err(404, "service not found");
+            throw err(404, 'service not found');
         }
         return fn(profile, args);
     }
