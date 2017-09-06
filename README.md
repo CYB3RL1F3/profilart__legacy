@@ -138,6 +138,7 @@ Query detail :
     * *infos*
     * *charts*
     * *contact*
+    * *all* : a mixture of all previous queries
 * **args** : args of the queries :
     * events :
         * type :
