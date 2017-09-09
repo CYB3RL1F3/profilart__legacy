@@ -50,7 +50,7 @@ export class Validator {
         if (query === 'releases' && !profile.discogs && !profile.discogs.artistId) {
             throw err('400', 'Discogs informations must be provided in database');
         }
-        if (!query === 'mailer') {
+        if (!query === 'contact') {
             if (!profile.mailer) {
                 throw err('400', 'mailer informations must be provided');
             }

@@ -67,13 +67,21 @@ export class Profiles extends Service {
 
     update = (profile, args) => new Promise((resolve, reject) => {
         if (this.isValid(args)) {
+            console.log(args.password);
             this.encrypter.check(args.password, profile.password).then((res) => {
                 if (res) {
                     args.uid = profile.uid;
+                    // add new password
+                    if (args.newPassword) {
+                        args.password = args.newPassword;
+                        delete args.newPassword;
+                    }
                     this.encrypter.encrypt(args.password).then((encryption) => {
                         args.password = encryption.hash;
                         args.encryption = encryption.encryption;
                         this.persist(profile, 'profiles', args).then((data) => {
+                            this.profiles[profile.uid] = args;
+                            this.profiles[profile.uid].uid = profile.uid;
                             resolve(args);
                         }).catch(reject);
                     }).catch(reject);
