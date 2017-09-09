@@ -1,13 +1,13 @@
 {
-  "name": "cyberlife",
+  "name": "profilart",
   "version": "1.0.0",
-  "description": "cyberlife's socket API",
+  "description": "Profilart's a nodejs websocket service that provides aggregated data of electronic music artists from popular APIs / websites (RA, Discogs...), to feed apps, etc...",
   "main": "src/index.js",
   "scripts": {
     "start": "yarn install && babel-node src/index.js --presets es2015,stage-2",
     "test": "test"
   },
-  "author": "David Pierre <pierred69@gmail.com>",
+  "author": "Cyberlife <cyberlife.music@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "babel-node": "^6.5.3",
@@ -18,8 +18,10 @@
     "html": "^1.0.0",
     "http": "^0.0.0",
     "mongodb": "^2.2.31",
+    "node-scrypt": "^0.0.1",
     "nodemailer": "^4.1.0",
     "nodemailer-smtp-transport": "^2.7.4",
+    "scrypt": "^6.0.3",
     "winston": "^2.3.1",
     "ws": "^3.1.0",
     "xml2js": "^0.4.19"

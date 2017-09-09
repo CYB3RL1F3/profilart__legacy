@@ -16,7 +16,7 @@ export class Database {
         this.connect().then((db) => {
             const updated = db.collection(coll, (err, collection) => {
                 const selector = {_id: uid};
-                collection.findAndModify(selector, [], {$set: {'content': content}}, {upsert:true, w:1}, (err, updated) => {
+                collection.findAndModify(selector, [], {$set: {'content': content}}, {new: true, upsert:true, w:1}, (err, updated) => {
                     db.close();
                     if (updated) {
                         resolve(updated);
@@ -25,9 +25,22 @@ export class Database {
                     }
                 });
             });
-        }).catch((error) => {
-            reject(error);
-        });
+        }).catch(reject);
+    });
+
+    insert = (coll, content) => new Promise((resolve, reject) => {
+        this.connect().then((db) => {
+            const updated = db.collection(coll, (err, collection) => {
+                collection.insertOne({'content': content}, (err, inserted) => {
+                    db.close();
+                    if (inserted) {
+                        resolve(inserted);
+                    } else {
+                        reject(err);
+                    }
+                });
+            });
+        }).catch(reject);
     });
 
     select = (uid, coll) => new Promise((resolve, reject) => {
@@ -44,9 +57,7 @@ export class Database {
                     }
                 });
             });
-        }).catch((error) => {
-            reject(error);
-        });
+        }).catch(reject);
     });
 }
 

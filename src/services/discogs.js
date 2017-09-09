@@ -25,7 +25,7 @@ export class Discogs extends Service {
             });
 
             Promise.all(promises).then(() => {
-                this.persist(profile, 'releases', releases).then(() => {
+                this.persist(profile, 'releases', releases).then((data) => {
                     resolve(releases);
                 }).catch(reject);
             }).catch(reject)

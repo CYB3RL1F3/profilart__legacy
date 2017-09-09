@@ -36,7 +36,10 @@ export class Application {
             infos:  residentAdvisor.getInfos,
             contact: contact.mail,
             releases: discogs.getReleases,
-            all: all.get
+            all: all.get,
+            profile: this.profiles.read,
+            create: this.profiles.create,
+            update: this.profiles.update
         }
     }
 
@@ -57,8 +60,13 @@ export class Application {
         }
     }
 
+    getProfile = (data) =>
+        data.query !== 'create'
+        ? this.profiles.get(data.uid)
+        : new Promise((resolve) => resolve({}))
+
     serve (data, sender) {
-        this.profiles.get(data.uid).then((profile) => {
+        this.getProfile(data).then((profile) => {
             this.validator.checkProfile(profile, data.query);
             this.execute(data.query, profile, data.args).then((response) => {
                 sender.send(data.query, response);

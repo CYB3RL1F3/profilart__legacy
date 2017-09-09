@@ -64,32 +64,80 @@ This project is available on *github* in order to stay evolutive. Anyone could f
 
 Feed the database with credentials in a collection called "profile". Credentials must contain RA API credentials, Discogs artist id, mailer informations (to send & receive mails to artist or booker)... All informations are not mendatory, but without RA API credentials for example, it will be impossible to get bio & events...
 
-    profile: {
-           ID: {
-               content: {
-                   artistName,
-                   RA: {
-                       accessKey,
-                       userId,
-                       DJID
-                   },
-                   discogs: {
-                       artistId
-                   },
-                   mailer: {
-                       recipient,
-                       prefix,
-                       host,
-                       service,
-                       auth: {
-                           user,
-                           pass
-                       }
-                   }
-               }
-           }
-       }
+To do so, you can call the endpoint 'create'. This is the lone that doesn't require
+UID to be executed.
 
+To create a profile, call the service with a payload respecting this architecture :
+
+```
+{
+	"query": "create",
+	"args": {
+		"password": "MyPassword",
+		"RA": {
+			"accessKey": "myAccessKeyRA",
+			"DJID": "1234",
+			"userId": "1234"
+		},
+		"artistName": "Cyberlife",
+		"discogs": {
+			"artistId": "5220846"
+		},
+		"mailer": {
+			"recipient": "yolo@gmail.com",
+			"prefix": "Cyberlife :: ",
+			"service": "gmail",
+			"host": "smtp.gmail.com",
+			"auth": {
+				"user": "noreply@gmail.com",
+				"pass": "password"
+			}
+		}
+	}
+}
+```
+
+Note : you can also send other arguments, if you need to store some other informations for your client application.
+
+#### Update profile :
+
+Same payload as create, but *uid* must be mentionned.
+
+The *password* key must contain the current password. To create another one, add a key *newPassword* with the new one as value.
+
+```
+{
+	"uid": "4d5c933a",
+	"query": "update",
+	"args": {
+		"password": "mypassword",
+        "newPassword": "myNewPassword",
+		"RA": {
+			"accessKey": "05021f56-8819-46c3-b1d7-f4fa15a8cc4d",
+			"DJID": "66232",
+			"userId": "145842"
+		},
+		"artistName": "Cyberlife",
+		"discogs": {
+			"artistId": "5220846"
+		},
+		"mailer": {
+			"recipient": "deikean@gmail.com",
+			"prefix": "Cyberlife :: ",
+			"service": "gmail",
+			"host": "smtp.gmail.com",
+			"auth": {
+				"user": "cyberlife.music@gmail.com",
+				"pass": "Rvx_hacker471"
+			}
+		}
+	}
+}
+```
+
+Note : the password is stored in the database as an hash, using [scrypt](https://github.com/barrysteyn/node-scrypt).
+
+To read your profile, call *profile*. The profile's password is not displayed on the response.
 
 #### Where to find data ?
 
@@ -138,6 +186,9 @@ Query detail :
     * *infos*
     * *charts*
     * *contact*
+    * *profile*
+    * *create* : creates the profile
+    * *update* : updates the profile
     * *all* : a mixture of all previous queries
 * **args** : args of the queries :
     * events :
@@ -227,17 +278,19 @@ yarn run test
 
 ## Built With
 
-* [WS](http://www.dropwizard.io/1.0.2/docs/) - The websocket framework used
+* [WS](http://www.dropwizard.io/1.0.2/docs/) - Websocket tool
 * [ExpressJS](https://maven.apache.org/) - App builder
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [MongoDB](https://www.mongodb.com/) - Database
+* [Scrypt](https://github.com/barrysteyn/node-scrypt) - Solution for data encryption
+* [Nodemailer](https://nodemailer.com/about/) - NodeJS library for mail expedition
+* [EJS](http://www.embeddedjs.com/) - Template renderer
+* [Babel](https://babeljs.io/) - ES6/ES7 Transpiler.
+* [Xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) - XML parser.
+
 
 ## Contributing
 
 Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Authors
 

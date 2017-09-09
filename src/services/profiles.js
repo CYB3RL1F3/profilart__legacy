@@ -1,31 +1,95 @@
 import config from '../config';
 import Service from '../service';
 import err from '../err';
+import { v4 as uuid } from 'uuid';
+import Encrypter from '../lib/encrypter';
 
 export class Profiles extends Service {
 
     profiles = {};
+    encrypter = {};
 
     get = (uid) => new Promise((resolve, reject) => {
         if (this.profiles[uid]) {
             resolve(this.profiles[uid]);
         } else {
             this.database.select(uid, 'profiles').then((profile) => {
-                if (profile) {
-                    profile.content.uid = uid;
-                    this.profiles[uid] = profile.content;
-                    resolve(profile.content);
-                } else {
-                    reject(err(401, 'profile not found'));
-                }
+                profile.content.uid = uid;
+                this.profiles[uid] = profile.content;
+                resolve(profile.content);
             }).catch((e) => {
                 reject(err(401, 'profile not found'));
             })
         }
     });
 
+    read = (profile) => new Promise((resolve, reject) => {
+        const prfl = Object.assign({}, profile);
+        delete prfl.password;
+        delete prfl.encryption;
+        resolve(prfl);
+    })
+
+    isValid = (profile) => profile
+        && profile.password
+        && (!profile.RA || (
+            profile.RA &&
+            profile.RA.userId &&
+            profile.RA.accessKey &&
+            profile.RA.DJID &&
+            profile.artistName
+        ))
+        && (!profile.mailer || (
+            profile.mailer &&
+            profile.mailer.recipient &&
+            profile.mailer.service &&
+            profile.mailer.host &&
+            profile.mailer.auth &&
+            profile.mailer.auth.user &&
+            profile.mailer.auth.pass
+        ));
+
+    create = (args, profile) => new Promise((resolve, reject) => {
+        if (this.isValid(profile)) {
+            const uid = uuid().substring(0, 8);
+            profile.uid = uid;
+            this.encrypter.encrypt(profile.password).then((encryption) => {
+                profile.password = encryption.hash;
+                profile.encryption = encryption.encryption;
+                this.persist({uid}, 'profiles', profile).then((data) => {
+                    resolve(uid);
+                }).catch(reject);
+            }).catch(reject);
+        } else {
+            reject(err(400, 'invalid payload for profile creation'));
+        }
+    })
+
+    update = (profile, args) => new Promise((resolve, reject) => {
+        if (this.isValid(args)) {
+            this.encrypter.check(args.password, profile.password).then((res) => {
+                if (res) {
+                    args.uid = profile.uid;
+                    this.encrypter.encrypt(args.password).then((encryption) => {
+                        args.password = encryption.hash;
+                        args.encryption = encryption.encryption;
+                        this.persist(profile, 'profiles', args).then((data) => {
+                            resolve(args);
+                        }).catch(reject);
+                    }).catch(reject);
+
+                } else {
+                    reject(err(400, 'invalid password. Couldn\'t complete changes'));
+                }
+            }).catch(err(400, 'invalid password. Couldn\t complete changes'));
+        } else {
+            reject(err(400, 'invalid payload for profile update'));
+        }
+    })
+
     constructor (database) {
         super(database);
+        this.encrypter = new Encrypter();
     }
 }
 

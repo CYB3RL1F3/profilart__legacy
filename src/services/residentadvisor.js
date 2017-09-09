@@ -1,6 +1,7 @@
 import config from '../config';
 import ResidentAdvisorAdapter from '../adapters/residentadvisor';
 import Service from '../service';
+import err from '../err';
 
 export class ResidentAdvisor extends Service {
 
@@ -59,8 +60,8 @@ export class ResidentAdvisor extends Service {
     })
 
     getEvents = (profile, args) => new Promise((resolve, reject) => {
-        if (!args.type) {
-            reject('an arg TYPE must be provided.');
+        if (!(args && args.type)) {
+            reject(err(400, 'an arg TYPE must be provided.'));
             return;
         }
 

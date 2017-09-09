@@ -1589,7 +1589,7 @@ ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
 
-nan@^2.3.0:
+nan@^2.0.8, nan@^2.3.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.7.0.tgz#d95bf721ec877e08db276ed3fc6eb78f9083ad46"
 
@@ -1616,6 +1616,10 @@ node-pre-gyp@^0.6.36:
     semver "^5.3.0"
     tar "^2.2.1"
     tar-pack "^3.4.0"
+
+node-scrypt@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/node-scrypt/-/node-scrypt-0.0.1.tgz#60299a931a93971c8b617195cc54a578cfd96d11"
 
 nodemailer-fetch@1.6.0:
   version "1.6.0"
@@ -1954,6 +1958,12 @@ safe-buffer@^5.0.1, safe-buffer@~5.1.0:
 sax@>=0.6.0:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
+
+scrypt@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/scrypt/-/scrypt-6.0.3.tgz#04e014a5682b53fa50c2d5cce167d719c06d870d"
+  dependencies:
+    nan "^2.0.8"
 
 semver@^5.1.0, semver@^5.3.0:
   version "5.4.1"
