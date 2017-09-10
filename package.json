@@ -4,13 +4,17 @@
   "description": "Profilart's a nodejs websocket service that provides aggregated data of electronic music artists from popular APIs / websites (RA, Discogs...), to feed apps, etc...",
   "main": "src/index.js",
   "scripts": {
-    "start": "yarn install && babel-node src/index.js --presets es2015,stage-2",
-    "test": "test"
+    "start": "./node_modules/.bin/babel-node ./src/index.js --presets es2015,stage-2",
+    "build": "yarn install && ./node_modules/.bin/babel src --presets es2015,stage-2 --out-dir dist",
+    "production": "yarn run build && node ./dist/index.js"
   },
   "author": "Cyberlife <cyberlife.music@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "babel-node": "^6.5.3",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "ejs": "^2.5.7",
     "express": "^4.15.4",
@@ -21,15 +25,13 @@
     "node-scrypt": "^0.0.1",
     "nodemailer": "^4.1.0",
     "nodemailer-smtp-transport": "^2.7.4",
+    "request": "^2.81.0",
     "scrypt": "^6.0.3",
     "winston": "^2.3.1",
     "ws": "^3.1.0",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-es2015": "^6.24.1"
+    "babel-node": "^6.5.3"
   }
 }

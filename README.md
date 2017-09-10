@@ -39,11 +39,11 @@ This project is available on *github* in order to stay evolutive. Anyone could f
 
 5. Create a database in your mongodb database. (exemple : `cyberlife`). [see tutorial](https://www.tutorialspoint.com/mongodb/mongodb_create_database.htm)
 
-6. define the variable environment DB with your database address (example : `DB=mongodb://localhost:27017/cyberlife`)
+6. define the variable environment MONGODB_URI with your database address (example : `MONGODB_URI=mongodb://localhost:27017/cyberlife`)
 
 6. define the port to be used (default is 3000)
 
-7. run `> DB='mongodb://localhost:27017/cyberlife' PORT=3000 yarn start` to launch the service
+7. run `> MONGODB_URI='mongodb://localhost:27017/cyberlife' PORT=3000 yarn start` to launch the service
 
 ## Using the app
 

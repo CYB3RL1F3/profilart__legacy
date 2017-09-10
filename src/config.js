@@ -7,7 +7,7 @@ export const config = {
         discogs: 'https://api.discogs.com/'
     },
     db: {
-        address: process.env.DB // || 'mongodb://localhost:27017/profilart'
+        address: process.env.MONGODB_URI // || 'mongodb://localhost:27017/profilart'
     }
 };
 
