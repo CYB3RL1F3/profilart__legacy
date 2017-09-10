@@ -2,14 +2,16 @@ import err from '../err';
 
 export class Validator {
 
-    checkData (data, app) {
+    checkData (data, app, query) {
         if (!data || !data instanceof Object) {
             throw err("400", "invalid data object");
         }
+        
         if (!data.query) {
             throw err("400", "invalid data adapt : query must be present");
         }
-        if (!data.uid) {
+
+        if (!data.uid && data.query !== 'create') {
             throw err("400", "no UID provided.");
         }
 

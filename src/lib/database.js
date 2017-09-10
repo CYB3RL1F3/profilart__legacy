@@ -1,11 +1,15 @@
 import { MongoClient } from 'mongodb';
 import config from '../config';
+import err from '../err';
 
 export class Database {
     connect = () => new Promise((resolve, reject) => {
+        if (!config.db.address) {
+            reject(err(500, 'can\'t connect to DB : no MONGODB_URI env variable provided.'));
+        }
         MongoClient.connect(config.db.address, function(error, db) {
             if (error || !db) {
-                reject('can\'t connect to DB');
+                reject(err(500, 'can\'t connect to DB'));
             } else {
                 resolve(db);
             }

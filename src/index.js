@@ -9,7 +9,6 @@ import Application from './application';
 // initialization
 const app = express();
 app.set('port', process.env.PORT || 3000);
-console.log(process.env.PORT);
 
 app.use(express.static('public'));
 
