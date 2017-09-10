@@ -7,8 +7,8 @@ export const config = {
         discogs: 'https://api.discogs.com/'
     },
     db: {
-        address: 'mongodb://localhost:27017/cyberlife'
+        address: process.env.DB // || 'mongodb://localhost:27017/profilart'
     }
-}
+};
 
 export default config;
