@@ -42,11 +42,20 @@ export class Profiles extends Service {
         && (!profile.mailer || (
             profile.mailer &&
             profile.mailer.recipient &&
-            profile.mailer.service &&
-            profile.mailer.host &&
-            profile.mailer.auth &&
-            profile.mailer.auth.user &&
-            profile.mailer.auth.pass
+            profile.mailer.use &&
+            (!profile.mailer.nodemail || (
+                profile.mailer.nodemail &&
+                profile.mailer.nodemail.service &&
+                profile.mailer.nodemail.host &&
+                profile.mailer.nodemail.auth &&
+                profile.mailer.nodemail.auth.user &&
+                profile.mailer.nodemail.auth.pass
+            )) &&
+            (!profile.mailer.mailgun || (
+                profile.mailer.mailgun &&
+                profile.mailer.mailgun.endpoint &&
+                profile.mailer.mailgun.email
+            ))
         ));
 
     create = (args, profile) => new Promise((resolve, reject) => {
@@ -82,6 +91,8 @@ export class Profiles extends Service {
                         this.persist(profile, 'profiles', args).then((data) => {
                             this.profiles[profile.uid] = args;
                             this.profiles[profile.uid].uid = profile.uid;
+                            delete args.password;
+                            delete args.encryption;
                             resolve(args);
                         }).catch(reject);
                     }).catch(reject);

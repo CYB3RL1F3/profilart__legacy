@@ -6,7 +6,7 @@ export class Validator {
         if (!data || !data instanceof Object) {
             throw err("400", "invalid data object");
         }
-        
+
         if (!data.query) {
             throw err("400", "invalid data adapt : query must be present");
         }
@@ -57,24 +57,33 @@ export class Validator {
                 throw err('400', 'mailer informations must be provided');
             }
 
-            if (!profile.mailer.service) {
-                throw err('400', 'mailer service must be defined (exemple : gmail)');
-            }
+            if (profile.use === 'nodemailer') {
+                if (!profile.mailer.nodemailer.service) {
+                    throw err('400', 'mailer service must be defined (exemple : gmail)');
+                }
 
-            if (!profile.mailer.recipient) {
-                throw err('400', 'mailer informations must be provided in database');
-            }
+                if (!profile.mailer.nodemailer.recipient) {
+                    throw err('400', 'mailer email recipient must be defined in database');
+                }
 
-            if (profile.mailer.service !== 'gmail' && !profile.mailer.host) {
-                throw err('400', 'mailer host must be provided in database')
+                if (profile.mailer.nodemailer.service !== 'gmail' && !profile.mailer.host) {
+                    throw err('400', 'mailer host must be provided in database')
+                }
+
+                if (!profile.mailer.nodemailer.auth || !profile.mailer.nodemailer.auth.user || !profile.mailer.nodemailer.auth.pass) {
+                    throw err('400', 'mailer auth informations user & pass must be provided in database');
+                }
+            } else if (profile.use === 'mailgun') {
+                if (!profile.mailer.mailgun.endpoint) {
+                    throw err('400', 'mailer mailgun endpoint must be defined in database');
+                }
+                if (!profile.mailer.mailgun.email) {
+                    throw err('400', 'mailer mailgun email must be defined in database');
+                }
             }
 
             if (!profile.mailer.prefix) {
                 profile.mailer.prefix = '';
-            }
-
-            if (!profile.mailer.auth || !profile.mailer.auth.user || !profile.mailer.auth.pass) {
-                throw err('400', 'mailer auth informations user & pass must be provided in database');
             }
         }
     }

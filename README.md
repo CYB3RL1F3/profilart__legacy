@@ -31,19 +31,19 @@ This project is available on *github* in order to stay evolutive. Anyone could f
 
     run `> npm install yarn -g`
 
-2. run `> git clone `
+2. Clone repository : run `> git clone https://github.com/CYB3RL1F3/profilart.git`
 
 3. In **package.json**, define env specific variables (see [Environments](#Environments))
 
 4. run `> yarn install` to install dependencies.
 
-5. Create a database in your mongodb database. (exemple : `cyberlife`). [see tutorial](https://www.tutorialspoint.com/mongodb/mongodb_create_database.htm)
+5. Create a database in your mongodb setup. (exemple : `cyberlife`). [see tutorial](https://www.tutorialspoint.com/mongodb/mongodb_create_database.htm)
 
-6. define the variable environment MONGODB_URI with your database address (example : `MONGODB_URI=mongodb://localhost:27017/cyberlife`)
+6. define the environment variable *MONGODB_URI* with your database address (example : `MONGODB_URI=mongodb://localhost:27017/cyberlife`)
 
-6. define the port to be used (default is 3000)
+6. define the environment variable *PORT* to be used (default is *3000*)
 
-7. run `> MONGODB_URI='mongodb://localhost:27017/cyberlife' PORT=3000 yarn start` to launch the service
+7. run start `> MONGODB_URI='mongodb://localhost:27017/cyberlife' PORT=8080 yarn start` to launch the service (on the port 8080 with a local mongodb instance for this example).
 
 ## Using the app
 
@@ -66,10 +66,10 @@ This project is available on *github* in order to stay evolutive. Anyone could f
 
 Feed the database with credentials in a collection called "profile". Credentials must contain RA API credentials, Discogs artist id, mailer informations (to send & receive mails to artist or booker)... All informations are not mendatory, but without RA API credentials for example, it will be impossible to get bio & events...
 
-To do so, you can call the endpoint 'create'. This is the lone that doesn't require
+To do that, you can call the endpoint 'create'. This is the lone that doesn't require
 UID to be executed.
 
-To create a profile, call the service with a payload respecting this architecture :
+To create a profile, call the service with a payload respecting this structure :
 
 ```
 {
@@ -88,12 +88,19 @@ To create a profile, call the service with a payload respecting this architectur
 		"mailer": {
 			"recipient": "yolo@gmail.com",
 			"prefix": "Cyberlife :: ",
-			"service": "gmail",
-			"host": "smtp.gmail.com",
-			"auth": {
-				"user": "noreply@gmail.com",
-				"pass": "password"
-			}
+            "use": "nodemailer OR mailgun",
+			"nodemailer": { // if you use nodemailer & your gmail account for example
+                "service": "gmail",
+    			"host": "smtp.gmail.com",
+    			"auth": {
+    				"user": "noreply@gmail.com",
+    				"pass": "password"
+    			}
+            },
+            "mailgun": { // if you use mailgun
+                endpoint: "your mailgun endpoint",
+                email: "your mailgun email"
+            }
 		}
 	}
 }
@@ -105,7 +112,7 @@ Note : you can also send other arguments, if you need to store some other inform
 
 Same payload as create, but *uid* must be mentionned.
 
-The *password* key must contain the current password. To create another one, add a key *newPassword* with the new one as value.
+The *password* key must contain the current password. To change this one, add a key *newPassword* with the new value.
 
 ```
 {
@@ -115,23 +122,30 @@ The *password* key must contain the current password. To create another one, add
 		"password": "mypassword",
         "newPassword": "myNewPassword",
 		"RA": {
-			"accessKey": "05021f56-8819-46c3-b1d7-f4fa15a8cc4d",
-			"DJID": "66232",
-			"userId": "145842"
+			"accessKey": "my access key",
+			"DJID": "12345",
+			"userId": "1234556"
 		},
 		"artistName": "Cyberlife",
 		"discogs": {
 			"artistId": "5220846"
 		},
-		"mailer": {
-			"recipient": "deikean@gmail.com",
+        "mailer": {
+			"recipient": "yolo@gmail.com",
 			"prefix": "Cyberlife :: ",
-			"service": "gmail",
-			"host": "smtp.gmail.com",
-			"auth": {
-				"user": "cyberlife.music@gmail.com",
-				"pass": "Rvx_hacker471"
-			}
+            "use": "nodemailer OR mailgun",
+			"nodemailer": { // if you use nodemailer & your gmail account for example
+                "service": "gmail",
+    			"host": "smtp.gmail.com",
+    			"auth": {
+    				"user": "noreply@gmail.com",
+    				"pass": "password"
+    			}
+            },
+            "mailgun": {
+                endpoint: "your mailgun endpoint",
+                email: "your mailgun email"
+            }
 		}
 	}
 }
@@ -153,15 +167,36 @@ Discogs needs (at the moment) only to know the artist ID you can find on the URL
 
 /!\ Forthcoming evolutions of discogs might need oAuth informations !!
 
-#### Configure mailer with your Gmail account :
+#### Configure mailer :
+
+Profilart offers two possibilities to send email : using [nodemailer](https://github.com/nodemailer/nodemailer) with your smtp server settings, or using [mailgun](https://www.mailgun.com/).
+
+* payload of mailer using *nodemailer*
 
 ```
-{
-    host: 'smtp.gmail.com',
-    service: gmail,
-    auth: {
-        user: 'xxx@gmail.com',
-        pass: 'yourpassword'
+mailer: {
+    use: "nodemailer",
+    prefix: "from profilart : ",
+    nodemailer: {
+        host: 'smtp.gmail.com',
+        service: gmail,
+        auth: {
+            user: 'xxx@gmail.com',
+            pass: 'yourpassword'
+        }
+    }
+}
+```
+
+* payload of mailer using *mailgun* :
+
+```
+mailer: {
+    use: "mailgun",
+    prefix: "from profilart : ",
+    nodemailer: {
+        endpoint: 'mailgun endpoint',
+        email: 'mailgun noreply email'
     }
 }
 ```
@@ -191,7 +226,7 @@ Query detail :
     * *profile*
     * *create* : creates the profile
     * *update* : updates the profile
-    * *all* : a mixture of all previous queries
+    * *all* : a mixture of all previous queries (excepted profile, create & update)
 * **args** : args of the queries :
     * events :
         * type :
