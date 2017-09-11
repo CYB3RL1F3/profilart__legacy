@@ -67,12 +67,16 @@ export class Application {
 
     serve (data, sender) {
         this.getProfile(data).then((profile) => {
-            this.validator.checkProfile(profile, data.query);
-            this.execute(data.query, profile, data.args).then((response) => {
-                sender.send(data.query, response);
-            }).catch((e) => {
+            try {
+                this.validator.checkProfile(profile, data.query);
+                this.execute(data.query, profile, data.args).then((response) => {
+                    sender.send(data.query, response);
+                }).catch((e) => {
+                    sender.error(e.code || 500, e.message);
+                });
+            } catch (e) {
                 sender.error(e.code || 500, e.message);
-            });
+            }
         }).catch((e) => {
             sender.error(401, 'profile not registred');
         });

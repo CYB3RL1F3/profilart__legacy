@@ -21,7 +21,6 @@ export class Encrypter {
         scrypt.verifyKdf(kdf, str).then((result) => {
             resolve(result);
         }, (e) => {
-            console.log(e);
             reject(false);
         });
     })

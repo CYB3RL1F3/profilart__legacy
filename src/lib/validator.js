@@ -49,7 +49,7 @@ export class Validator {
                 throw err('400', 'RA ArtistName must be provided in database');
             }
         }
-        if (query === 'releases' && !profile.discogs && !profile.discogs.artistId) {
+        if (query === 'releases' && (!profile.discogs || (profile.discogs && !profile.discogs.artistId))) {
             throw err('400', 'Discogs informations must be provided in database');
         }
         if (query === 'contact') {

@@ -26,7 +26,6 @@ export class Api {
             if (!error && response.statusCode == 200) {
                 resolve(response);
             } else {
-                console.log(response.data, response.statusCode);
                 reject(error);
             }
         })
