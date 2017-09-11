@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 import smtpTransport from 'nodemailer-smtp-transport';
-import fs from 'fs';
-import ejs from 'ejs';
+import Template from './template';
 import Api from './api';
 import err from '../err';
 
@@ -12,7 +11,7 @@ export class Mailer {
         this.profile = profile;
     }
 
-    getParams = (name, email, subject, content, html) => ({
+    getParams = (name, email, subject, html) => ({
         from: email, // sender address
         to: this.profile.mailer.recipient, // list of receivers
         subject: `${this.profile.mailer.prefix} ${subject}`, // Subject line
@@ -25,17 +24,10 @@ export class Mailer {
         auth: this.profile.mailer.nodemail.auth
     }))
 
-    getTemplate = (name, email, subject, content) => new Promise((resolve, reject) => {
-        fs.readFile(`${__dirname}/../templates/mail.html`, 'utf8', (err, template) => {
-            if (err) {
-                reject(err);
-            } else {
-                content = this.adapt(content);
-                const html = ejs.compile(template)({name, email, subject, content});
-                const regexp = /\&lt;br \/&gt;/g;
-                resolve(html.replace(regexp, '<br />'));
-            }
-        });
+    getTemplate = (tpl, args) => new Promise((resolve, reject) => {
+        // to be exported to template lib
+        const template = new Template();
+        template.render(tpl, args, true).then(resolve).catch(reject);
     })
 
     adapt = (content) => content.replace(/\n/g, '<br />')
@@ -66,23 +58,27 @@ export class Mailer {
         return api.request(options);
     }
 
-    send = (name, email, subject, content) => new Promise((resolve, reject) => {
-        this.getTemplate(name, email, subject, content).then((html) => {
-            const params = this.getParams(name, email, subject, content, html);
-            let promise;
-            if (this.profile.mailer.use === 'mailgun') {
-                promise = this.sendViaMailgun;
-            } else if (this.profile.mailer.use === 'nodemail') {
-                promise = this.sendViaNodemail;
-            } else {
-                reject(err(500, 'this mail service is not managed'));
-                return;
-            }
-            promise(params).then(resolve).catch(reject);
+    send = (template, args) => new Promise((resolve, reject) => {
+        this.getTemplate(template, args).then((html) => {
+            this.process(args.name, args.email, args.subject, html).then(resolve).catch(reject);
         }).catch((e) => {
-            reject(err(500, 'unable to send mail because of content issue'));
+            reject(err(500, 'unable to send mail.'));
         })
     });
+
+    process = (name, email, subject, content) => {
+        const params = this.getParams(name, email, subject, content);
+        let promise;
+        if (this.profile.mailer.use === 'mailgun') {
+            promise = this.sendViaMailgun;
+        } else if (this.profile.mailer.use === 'nodemail') {
+            promise = this.sendViaNodemail;
+        } else {
+            reject(err(500, 'this mail service is not managed'));
+            return;
+        }
+        return promise(params);
+    }
 }
 
 export default Mailer;

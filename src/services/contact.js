@@ -6,7 +6,8 @@ export class Contact {
             reject('invalid arguments to send mail');
         }
         const mailer = new Mailer(profile);
-        mailer.send(args.name, args.email, args.subject, args.message).then(resolve).catch(reject);
+        args.message = mailer.adapt(args.message);
+        mailer.send('mail.html', args).then(resolve).catch(reject);
     })
 
     validate = (args) => args instanceof Object

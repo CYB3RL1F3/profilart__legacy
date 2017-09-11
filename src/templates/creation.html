@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Welcome on Profilart <%= profile.artistName %></title>
+        <style type="text/css">
+        body {margin: 0; padding: 0; min-width: 100%!important;}
+        </style>
+    </head>
+    <body>
+        <h3 style='font-size: 14px; color: #DE2412;'>
+            <b>Hello <%= profile.artistName %></u> :
+        </h3>
+        <p style='color: #121212; font-size: 13px;'>
+            Thanks for creating a profile on the PROFILART service.
+            Here are your credentials <b>you do not have to lose !!!!</b>.
+        </p>
+        <p style='background: #efeeef; margin: 10px 0; padding: 15px 10px; color: #121212; font-size: 13px;'>
+            UID : <%= profile.uid %><br/>
+            EMAIL : <%= profile.email %><br/>
+            PASSWORD : XXXXXXX<br/>
+        </p>
+        <p style='color: #121212; font-size: 13px;'>
+            Use your <b>UID</b> as profile identifier to consume the webservice.
+        </p>
+        <hr/>
+        <p style='color: #121212; font-size: 13px;'>
+            Data provided and configured :
+        </p>
+        <p style='margin: 10px; color: #121212; font-size: 13px;'>
+            <span style='padding-bottom: 10px; width: 100%;'>
+                <%if (profile.RA) { %>
+                    <span style='color:#12DE12'>&#10003;</span>
+                <% } else { %>
+                    <span style='color:#DE1212'>&#10008;</span>
+                <% } %>
+                Resident Advisor API
+            </span>
+            <br/>
+            <span style='padding-bottom: 10px; width: 100%;'>
+                <% if (profile.discogs) { %>
+                    <span style='color:#12DE12'>&#10003;</span>
+                <% } else { %>
+                    <span style='color:#DE1212'>&#10008;</span>
+                <% } %>
+                Discogs API
+            </span>
+            <br/>
+            <span style='padding-bottom: 10px; width: 100%;'>
+                <%if (profile.mailer) { %>
+                    <span style='color:#12DE12'>&#10003;</span>
+                <% } else { %>
+                    <span style='color:#DE1212'>&#10008;</span>
+                <% } %>
+                Configuration mail (<%= profile.mailer.use %>)
+            </span>
+        </p>
+        <hr />
+    </body>
+</html>

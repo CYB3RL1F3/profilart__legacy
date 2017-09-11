@@ -3,6 +3,7 @@ import Service from '../service';
 import err from '../err';
 import { v4 as uuid } from 'uuid';
 import Encrypter from '../lib/encrypter';
+import Mailer from '../lib/mailer';
 
 export class Profiles extends Service {
 
@@ -31,13 +32,14 @@ export class Profiles extends Service {
     })
 
     isValid = (profile) => profile
+        && profile.email
         && profile.password
+        && profile.artistName
         && (!profile.RA || (
             profile.RA &&
             profile.RA.userId &&
             profile.RA.accessKey &&
-            profile.RA.DJID &&
-            profile.artistName
+            profile.RA.DJID
         ))
         && (!profile.mailer || (
             profile.mailer &&
@@ -66,7 +68,8 @@ export class Profiles extends Service {
                 profile.password = encryption.hash;
                 profile.encryption = encryption.encryption;
                 this.persist({uid}, 'profiles', profile).then((data) => {
-                    resolve(uid);
+                    this.sendConfirmationByMail(profile);
+                    resolve(this.cleanResults(profile));
                 }).catch(reject);
             }).catch(reject);
         } else {
@@ -75,36 +78,53 @@ export class Profiles extends Service {
     })
 
     update = (profile, args) => new Promise((resolve, reject) => {
-        if (this.isValid(args)) {
-            console.log(args.password);
-            this.encrypter.check(args.password, profile.password).then((res) => {
-                if (res) {
-                    args.uid = profile.uid;
-                    // add new password
-                    if (args.newPassword) {
-                        args.password = args.newPassword;
-                        delete args.newPassword;
-                    }
-                    this.encrypter.encrypt(args.password).then((encryption) => {
-                        args.password = encryption.hash;
-                        args.encryption = encryption.encryption;
-                        this.persist(profile, 'profiles', args).then((data) => {
-                            this.profiles[profile.uid] = args;
-                            this.profiles[profile.uid].uid = profile.uid;
-                            delete args.password;
-                            delete args.encryption;
-                            resolve(args);
-                        }).catch(reject);
+        this.encrypter.check(args.password, profile.password).then((res) => {
+            if (res) {
+                const update = Object.assign({}, profile, this.replaceFields(args));
+                this.encrypter.encrypt(update.password).then((encryption) => {
+                    update.password = encryption.hash;
+                    update.encryption = encryption.encryption;
+                    this.persist(profile, 'profiles', update).then((data) => {
+                        this.profiles[profile.uid] = update;
+                        resolve(this.cleanResults(update));
                     }).catch(reject);
-
-                } else {
-                    reject(err(400, 'invalid password. Couldn\'t complete changes'));
-                }
-            }).catch(err(400, 'invalid password. Couldn\t complete changes'));
-        } else {
-            reject(err(400, 'invalid payload for profile update'));
-        }
+                }).catch(reject);
+            } else {
+                reject(err(400, 'invalid password. Couldn\'t complete changes'));
+            }
+        }).catch(err(400, 'invalid password. Couldn\t complete changes'));
     })
+
+    cleanResults = (profile) => {
+        const result = Object.assign({}, profile);
+        delete result.password;
+        delete result.encryption;
+        return result;
+    }
+
+    replaceFields = (profile) => {
+        // add new password
+        const keys = new Array('Email', 'Password');
+        keys.forEach((key) => {
+            const newKey = `new${key}`;
+            if (profile[newKey]) {
+                profile[key.toLowerCase()] = profile[newKey];
+                delete profile[newKey];
+            }
+        });
+        return profile;
+    }
+
+    sendConfirmationByMail (profile) {
+        if (!profile.mailer) return; // only works if a mailer's configured
+        const mailer = new Mailer(profile);
+        mailer.send('creation.html', {
+            subject: `welcome on Profilart, ${profile.artistName}`,
+            name: profile.artistName,
+            email: profile.email,
+            profile
+        })
+    }
 
     constructor (database) {
         super(database);
