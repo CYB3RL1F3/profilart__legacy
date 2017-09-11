@@ -1570,6 +1570,10 @@ minimist@^1.2.0:
   dependencies:
     minimist "0.0.8"
 
+mongo-sanitize@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/mongo-sanitize/-/mongo-sanitize-1.0.0.tgz#15e3113048afbf3e74464c4e8156821b8ffac1dc"
+
 mongodb-core@2.1.15:
   version "2.1.15"
   resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-2.1.15.tgz#841f53b87ffff4c7458189c35c8ae827e1169764"

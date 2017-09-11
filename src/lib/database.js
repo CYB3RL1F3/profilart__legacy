@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import sanitize from 'mongo-sanitize';
 import config from '../config';
 import err from '../err';
 
@@ -17,10 +18,11 @@ export class Database {
     });
 
     persist = (uid, coll, content) => new Promise((resolve, reject) => {
+        uid = sanitize(uid);
         this.connect().then((db) => {
             const updated = db.collection(coll, (err, collection) => {
                 const selector = {_id: uid};
-                collection.findAndModify(selector, [], {$set: {'content': content}}, {new: true, upsert:true, w:1}, (err, updated) => {
+                collection.findAndModify(selector, [], {$set: {'content': sanitize(content)}}, {new: true, upsert:true, w:1}, (err, updated) => {
                     db.close();
                     if (updated) {
                         resolve(updated);
@@ -62,7 +64,7 @@ export class Database {
         }).catch(reject);
     });
 
-    select = (uid, coll) => this.find({_id: uid}, coll)
+    select = (uid, coll) => this.find({_id: sanitize(uid)}, coll)
 }
 
 export default Database;

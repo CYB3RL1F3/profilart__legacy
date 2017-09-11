@@ -21,6 +21,7 @@
     "fs": "^0.0.1-security",
     "html": "^1.0.0",
     "http": "^0.0.0",
+    "mongo-sanitize": "^1.0.0",
     "mongodb": "^2.2.31",
     "node-scrypt": "^0.0.1",
     "nodemailer": "^4.1.0",

@@ -4,6 +4,7 @@ import err from '../err';
 import { v4 as uuid } from 'uuid';
 import Encrypter from '../lib/encrypter';
 import Mailer from '../lib/mailer';
+import sanitize from 'mongo-sanitize';
 
 export class Profiles extends Service {
 
@@ -29,7 +30,7 @@ export class Profiles extends Service {
     })
 
     login = (args, credentials) => new Promise((resolve, reject) => {
-        this.database.find({'content.email': {$eq: credentials.email}}, 'profiles').then((data) => {
+        this.database.find({'content.email': {$eq: sanitize(credentials.email)}}, 'profiles').then((data) => {
             const profile = data.content;
             this.encrypter.check(credentials.password, profile.password).then((res) => {
                 resolve(this.cleanResults(profile));
@@ -67,6 +68,7 @@ export class Profiles extends Service {
         ));
 
     create = (args, profile) => new Promise((resolve, reject) => {
+        args = sanitize(args);
         if (this.isValid(profile)) {
             const uid = uuid().substring(0, 8);
             profile.uid = uid;
@@ -84,6 +86,7 @@ export class Profiles extends Service {
     })
 
     update = (profile, args) => new Promise((resolve, reject) => {
+        args = sanitize(args);
         this.encrypter.check(args.password, profile.password).then((res) => {
             if (res) {
                 const update = Object.assign({}, profile, this.replaceFields(args));
