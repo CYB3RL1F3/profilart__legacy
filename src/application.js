@@ -37,6 +37,8 @@ export class Application {
             contact: contact.mail,
             releases: discogs.getReleases,
             all: all.get,
+            // profile
+            login: this.profiles.login,
             profile: this.profiles.read,
             create: this.profiles.create,
             update: this.profiles.update
@@ -61,7 +63,7 @@ export class Application {
     }
 
     getProfile = (data) =>
-        data.query !== 'create'
+        data.query !== 'create' && data.query !== 'login'
         ? this.profiles.get(data.uid)
         : new Promise((resolve) => resolve({}))
 

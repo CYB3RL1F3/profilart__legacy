@@ -12,7 +12,6 @@ export class Encrypter {
                     resolve({encryption, hash});
                 }
             });
-
         })
     })
 

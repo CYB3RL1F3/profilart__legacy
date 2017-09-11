@@ -25,10 +25,16 @@ export class Profiles extends Service {
     });
 
     read = (profile) => new Promise((resolve, reject) => {
-        const prfl = Object.assign({}, profile);
-        delete prfl.password;
-        delete prfl.encryption;
-        resolve(prfl);
+        resolve(this.cleanResults(profile));
+    })
+
+    login = (args, credentials) => new Promise((resolve, reject) => {
+        this.database.find({'content.email': {$eq: credentials.email}}, 'profiles').then((data) => {
+            const profile = data.content;
+            this.encrypter.check(credentials.password, profile.password).then((res) => {
+                resolve(this.cleanResults(profile));
+            }).catch((e) => reject(err(400, 'invalid password')))
+        }).catch((e) => reject(err(400), 'inexisting account'));
     })
 
     isValid = (profile) => profile

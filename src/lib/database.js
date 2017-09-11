@@ -47,11 +47,9 @@ export class Database {
         }).catch(reject);
     });
 
-    select = (uid, coll) => new Promise((resolve, reject) => {
-        console.log(`db request from ${uid} to collection ${coll}`);
+    find = (selector, coll) => new Promise((resolve, reject) => {
         this.connect().then((db) => {
             const updated = db.collection(coll, (err, collection) => {
-                const selector = {_id: uid};
                 collection.findOne(selector, (err, data) => {
                     db.close();
                     if (data) {
@@ -63,6 +61,8 @@ export class Database {
             });
         }).catch(reject);
     });
+
+    select = (uid, coll) => this.find({_id: uid}, coll)
 }
 
 export default Database;

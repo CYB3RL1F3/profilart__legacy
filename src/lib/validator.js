@@ -4,19 +4,19 @@ export class Validator {
 
     checkData (data, app, query) {
         if (!data || !data instanceof Object) {
-            throw err("400", "invalid data object");
+            throw err('400', 'invalid data object');
         }
 
         if (!data.query) {
-            throw err("400", "invalid data adapt : query must be present");
+            throw err('400', 'invalid data adapt : query must be present');
         }
 
-        if (!data.uid && data.query !== 'create') {
-            throw err("400", "no UID provided.");
+        if (!data.uid && data.query !== 'create' && data.query !== 'login') {
+            throw err('400', 'no UID provided.');
         }
 
         if (!app.serviceExists(data.query)) {
-            throw err("404", "this service doesn't exists");
+            throw err('404', 'this service doesn\'t exists');
         }
         return true;
     }
@@ -24,7 +24,7 @@ export class Validator {
     checkProfile (profile, query) {
         if (!profile) {
             // bypass on account creation
-            if (query === 'create') {
+            if (query === 'create' || query === 'login') {
                 return true;
             } else {
                 throw err('404', 'profile not found');

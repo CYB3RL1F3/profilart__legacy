@@ -224,6 +224,7 @@ Query detail :
     * *charts*
     * *contact*
     * *profile*
+    * *login*
     * *create* : creates the profile
     * *update* : updates the profile
     * *all* : a mixture of all previous queries (excepted profile, create & update)
@@ -300,6 +301,18 @@ In case of error, you get something like this :
        "code": "404",
        "message": "this service doesn't exists"
    }
+}
+```
+
+You can get the *UID* of a profile querying *login* with email & password :
+
+```
+{
+    "query": "login",
+    "args": {
+        "email": "email@email.fr",
+        "password": "password!"
+    }
 }
 ```
 
