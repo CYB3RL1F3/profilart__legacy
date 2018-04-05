@@ -26,11 +26,16 @@ export class Soundcloud extends Service {
               resolve(tracks);
             });
           } else {
-            if (err) reject(err);
-            else {
-              console.log(res);
-              reject(err(400, 'request to soundcloud not completed...'));
-            }
+            this.fromDb(profile, 'tracks').then((data) => {
+                resolve(data.content);
+            }).catch((e) => {
+              if (err) reject(err);
+              else {
+                console.log(res);
+                reject(err(400, 'request to soundcloud not completed...'));
+              }
+            });
+
           }
         });
       })
