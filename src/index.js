@@ -8,7 +8,9 @@ import Application from './application';
 
 // initialization
 const app = express();
-app.set('port', process.env.PORT || 3000);
+let port = process.env.PORT || 3000;
+let tries = 0;
+app.set('port', port);
 
 app.use(express.static('public'));
 
@@ -26,6 +28,18 @@ ws.on('connection', (socket) => {
    });
 });
 
-server.listen(process.env.PORT || 3000, () => {
-  console.log('Listening on %d', server.address().port);
+const listen = () => {
+  server.listen(port, () => {
+    console.log('Listening on %d', server.address().port);
+  });
+}
+
+ws.on('error', () => {
+  port++;
+  tries++;
+  if (tries > 3) return;
+  listen();
 });
+
+
+listen();

@@ -4,7 +4,7 @@
   "description": "Profilart's a nodejs websocket service that provides aggregated data of electronic music artists from popular APIs / websites (RA, Discogs...), to feed apps, etc...",
   "main": "src/index.js",
   "scripts": {
-    "start": "./node_modules/.bin/babel-node ./src/index.js --presets es2015,stage-2",
+    "start": "babel-node ./src/index.js --presets es2015,stage-2",
     "build": "yarn install && ./node_modules/.bin/babel src --presets es2015,stage-2 --out-dir dist",
     "production": "yarn run build && node ./dist/index.js"
   },
