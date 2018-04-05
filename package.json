@@ -25,6 +25,7 @@
     "mongo-sanitize": "^1.0.0",
     "mongodb": "^2.2.31",
     "node-scrypt": "^0.0.1",
+    "node-soundcloud": "^0.0.6",
     "nodemailer": "^4.1.0",
     "nodemailer-smtp-transport": "^2.7.4",
     "request": "^2.81.0",
@@ -32,8 +33,5 @@
     "winston": "^2.3.1",
     "ws": "^3.1.0",
     "xml2js": "^0.4.19"
-  },
-  "devDependencies": {
-    "babel-node": "^6.5.3"
   }
 }
