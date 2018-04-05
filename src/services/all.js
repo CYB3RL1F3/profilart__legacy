@@ -6,10 +6,11 @@ export class All extends Service {
     discogs = {};
     adapter = {};
 
-    constructor (database, residentAdvisor, discogs) {
+    constructor (database, residentAdvisor, discogs, soundcloud) {
         super(database);
         this.residentAdvisor = residentAdvisor;
         this.discogs = discogs;
+        this.soundcloud = soundcloud;
         this.adapter = new AllAdapters();
     }
 
@@ -19,7 +20,8 @@ export class All extends Service {
             this.residentAdvisor.getCharts(profile),
             this.residentAdvisor.getEvents(profile, {type: 1}),
             this.residentAdvisor.getEvents(profile, {type: 2}),
-            this.discogs.getReleases(profile)
+            this.discogs.getReleases(profile),
+            this.soundcloud.getTracks(profile),
         ];
         Promise.all(services).then((responses) => {
             resolve(this.adapter.adapt(responses));

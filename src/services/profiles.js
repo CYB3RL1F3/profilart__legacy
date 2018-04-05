@@ -48,6 +48,13 @@ export class Profiles extends Service {
             profile.RA.accessKey &&
             profile.RA.DJID
         ))
+        && (!profile.soundcloud || (
+          profile.soundcloud && (
+            profile.soundcloud.id &&
+            profile.soundcloud.clientId &&
+            profile.soundcloud.clientSecret
+          )
+        ))
         && (!profile.mailer || (
             profile.mailer &&
             profile.mailer.recipient &&

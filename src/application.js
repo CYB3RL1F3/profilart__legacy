@@ -1,6 +1,7 @@
 import ResidentAdvisor from './services/residentadvisor';
 import Discogs from './services/discogs';
 import Contact from './services/contact';
+import Soundcloud from './services/soundcloud';
 import err from './err';
 import Sender from './lib/sender';
 import Validator from './lib/validator';
@@ -24,8 +25,9 @@ export class Application {
         const database = new Database();
         const residentAdvisor = new ResidentAdvisor(database);
         const discogs = new Discogs(database);
+        const soundcloud = new Soundcloud(database);
         const contact = new Contact();
-        const all = new All(database, residentAdvisor, discogs);
+        const all = new All(database, residentAdvisor, discogs, soundcloud);
         this.validator = new Validator();
         this.profiles = new Profiles(database);
 
@@ -34,6 +36,7 @@ export class Application {
             charts: residentAdvisor.getCharts,
             events: residentAdvisor.getEvents,
             infos:  residentAdvisor.getInfos,
+            tracks: soundcloud.getTracks,
             contact: contact.mail,
             releases: discogs.getReleases,
             all: all.get,

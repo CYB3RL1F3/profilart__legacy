@@ -6,7 +6,8 @@ export class AllAdapters {
             forthcoming: data[2],
             previous: data[3]
         },
-        releases: data[4]
+        releases: data[4],
+        tracks: data[5],
     })
 }
 
