@@ -7,8 +7,8 @@ export class AllAdapters {
             previous: data[3]
         },
         releases: data[4],
-        tracks: data[5],
-    })
+        tracks: data[5]
+    });
 }
 
 export default AllAdapters;

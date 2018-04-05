@@ -1,7 +1,7 @@
 export class DiscogsAdapter {
     adaptRelease (release, infos) {
         release.releaseDate = infos.released;
-        release.cat = infos.labels[0].cat;
+        release.cat = infos.labels && infos.labels[0] && infos.labels[0].cat;
         release.tracklist = [];
         infos.tracklist.forEach((track) => {
             release.tracklist.push({

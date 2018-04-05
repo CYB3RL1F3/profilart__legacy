@@ -18,8 +18,15 @@ export class Discogs extends Service {
             releases.forEach((release) => {
                 promises.push(new Promise((done, fail) => {
                     this.query(release.resource_url).then((infos) => {
-                        this.adapter.adaptRelease(release, infos);
-                        done();
+                        if (infos.main_release_url) {
+                          this.query(infos.main_release_url).then((inf) => {
+                            this.adapter.adaptRelease(release, inf);
+                            done();
+                          })
+                        } else {
+                          this.adapter.adaptRelease(release, infos);
+                          done();
+                        }
                     }).catch(fail);
                 }));
             });
