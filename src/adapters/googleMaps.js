@@ -4,7 +4,7 @@ export class GoogleMaps {
     return {
       id: rawLocation.place_id,
       address: rawLocation.formatted_address,
-      geometry: rawLocation.geometry
+      position: rawLocation.geometry.location
     }
   }
 
