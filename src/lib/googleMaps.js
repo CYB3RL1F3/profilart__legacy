@@ -1,5 +1,5 @@
 import GMap from '@google/maps';
-import GoogleMapsAdapter from '../adapters/GoogleMaps';
+import GoogleMapsAdapter from '../adapters/googleMaps';
 import config from '../config';
 
 export class GoogleMaps {
