@@ -8,6 +8,9 @@ export const config = {
     },
     db: {
         address: process.env.MONGODB_URI // || 'mongodb://localhost:27017/profilart'
+    },
+    google: {
+        api_key: process.env.GOOGLE_API_KEY
     }
 };
 

@@ -82,11 +82,13 @@ export class ResidentAdvisor extends Service {
             }
         ).then(
             (response) => {
-                const events = this.adapter.adapt(response, 'events');
-                this.persist(profile, persistKey, events).then(() => {
-                    resolve(events);
+                this.adapter.adaptEvents(response).then(events => {
+                  this.persist(profile, persistKey, events).then(() => {
+                      resolve(events);
+                  });
                 });
-            }).catch((e) => {
+            }
+        ).catch((e) => {
                 this.fromDb(profile, persistKey).then((data) => {
                         resolve(data.content);
                     }).catch(reject);

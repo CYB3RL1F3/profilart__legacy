@@ -1,4 +1,11 @@
+import GoogleMaps from '../lib/googleMaps';
+
 export class ResidentAdvisorAdapter {
+
+    constructor () {
+      this.googleMaps = new GoogleMaps();
+    }
+
     adapt (response, adapt) {
         const adaptedResponse = {};
         switch (adapt) {
@@ -45,37 +52,62 @@ export class ResidentAdvisorAdapter {
         return adaptedResponse.charts;
     }
 
+    adaptEvent (event) {
+      return {
+          id: `${event.id}`,
+          venueId: `${event.venueid}`,
+          date: `${event.eventdate}`,
+          country: `${event.countryname}`,
+          area: `${event.areaname}`,
+          areaId: `${event.areaId}`,
+          title: `${event.venue}`,
+          address: `${event.address[0] || event.address}`,
+          lineup: `${event.lineup}`.split(', '),
+          time: {
+              begin: time[0],
+              end: time[1]
+          },
+          cost: `${event.cost}`,
+          promoter: `${event.promoter}`,
+          links: {
+              event: `${event.eventlink}`,
+              venue: `${event.venuelink}`,
+          },
+          flyer: `${event.imagelisting}`
+      }
+    }
+
     adaptEvents (response) {
-        const events = [];
-        if (response.events instanceof Array) {
-            response.events.forEach((evt) => {
-                const event = evt.event[0];
-                const time = `${event.time}`.split(' - ');
-                events.push({
-                    id: `${event.id}`,
-                    venueId: `${event.venueid}`,
-                    date: `${event.eventdate}`,
-                    country: `${event.countryname}`,
-                    area: `${event.areaname}`,
-                    areaId: `${event.areaId}`,
-                    title: `${event.venue}`,
-                    address: `${event.address}`,
-                    lineup: `${event.lineup}`.split(', '),
-                    time: {
-                        begin: time[0],
-                        end: time[1]
-                    },
-                    cost: `${event.cost}`,
-                    promoter: `${event.promoter}`,
-                    links: {
-                        event: `${event.eventlink}`,
-                        venue: `${event.venuelink}`,
-                    },
-                    flyer: `${event.imagelisting}`
-                });
-            });
-        }
-        return events;
+        return new Promise((resolve, reject) => {
+          const events = [];
+          const promises = [];
+          if (response.events instanceof Array) {
+              response.events.forEach((evt) => {
+                  const event = evt.event[0];
+                  const time = `${event.time}`.split(' - ');
+                  const address = event.address[0] || event.address;
+                  if (event.address && address) {
+                    promises.push(
+                      new Promise((resolve, reject) => {
+                        this.googleMaps.getLocation(address).then(location => {
+                          event.location = location;
+                          events.push(event);
+                          resolve();
+                        }).catch((e) => {
+                          events.push(event);
+                          resolve();
+                        });
+                      })
+                    )
+                  }
+              });
+          }
+          if (promises.length) Promise.all(promises).then(() => {
+            resolve(events);
+          });
+          else resolve(events);
+        })
+
     }
 
     adaptInfos (response) {
