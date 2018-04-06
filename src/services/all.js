@@ -24,8 +24,6 @@ export class All extends Service {
             this.soundcloud.getTracks(profile),
         ];
         Promise.all(services).then((responses) => {
-            console.log("PASSSSSSSXXXX");
-            console.log("ZZZZHZHZHZH");
             resolve(this.adapter.adapt(responses));
         }).catch(reject);
     })
