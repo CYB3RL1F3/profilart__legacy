@@ -8,6 +8,7 @@ import Application from './application';
 
 // initialization
 const app = express();
+
 let port = process.env.PORT || 3000;
 let tries = 0;
 app.set('port', port);
@@ -20,10 +21,12 @@ const application = new Application();
 
 ws.on('connection', (socket) => {
    console.info('websocket connection open');
+   const socketId = socket._socket._handle.fd;
    socket.on('message', (data) => {
-      application.run(data, socket);
+      application.run(data, socket, socketId);
    });
    socket.on('close', (reason) => {
+       application.sessions.removeSession(socketId);
        console.log('socket disconnected');
    });
 });
@@ -34,7 +37,7 @@ const listen = () => {
   });
 }
 
-ws.on('error', () => {
+ws.on('error', (err) => {
   port++;
   tries++;
   if (tries > 3) return;

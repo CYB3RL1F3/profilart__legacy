@@ -6,6 +6,7 @@ import err from './err';
 import Sender from './lib/sender';
 import Validator from './lib/validator';
 import Database from './lib/database';
+import Sessions from './lib/session';
 import Profiles from './services/profiles';
 import All from './services/all';
 
@@ -14,6 +15,7 @@ export class Application {
     services = {};
     validator = {};
     profiles = {}
+    sessions = {}
 
     serviceExists = (method) => typeof this.services[method] === 'function';
 
@@ -29,7 +31,8 @@ export class Application {
         const contact = new Contact();
         const all = new All(database, residentAdvisor, discogs, soundcloud);
         this.validator = new Validator();
-        this.profiles = new Profiles(database);
+        this.sessions = new Sessions();
+        this.profiles = new Profiles(database, this.sessions);
 
         // fill services dictionnary with different ones
         this.services = {
@@ -48,13 +51,13 @@ export class Application {
         }
     }
 
-    run (data, socket) {
+    run (data, socket, id) {
         if (!socket) {
             console.log('Invalid socket connection. Can\'t process properly.');
             return;
         }
 
-        const sender = new Sender(socket);
+        const sender = new Sender(socket, id);
 
         try {
             data = JSON.parse(data);
@@ -74,7 +77,7 @@ export class Application {
         this.getProfile(data).then((profile) => {
             try {
                 this.validator.checkProfile(profile, data.query);
-                this.execute(data.query, profile, data.args).then((response) => {
+                this.execute(data.query, profile, data.args, sender).then((response) => {
                     sender.send(data.query, response);
                 }).catch((e) => {
                     sender.error(e.code || 500, e.message);
@@ -87,12 +90,12 @@ export class Application {
         });
     }
 
-    execute (method, profile, args) {
+    execute (method, profile, args, sender) {
         const fn = this.services[method];
         if (!fn) {
             throw err(404, 'service not found');
         }
-        return fn(profile, args);
+        return fn(profile, args, sender);
     }
 }
 

@@ -9,6 +9,7 @@ import sanitize from 'mongo-sanitize';
 export class Profiles extends Service {
 
     profiles = {};
+    sessions = {};
     encrypter = {};
 
     get = (uid) => new Promise((resolve, reject) => {
@@ -29,11 +30,13 @@ export class Profiles extends Service {
         resolve(this.cleanResults(profile));
     })
 
-    login = (args, credentials) => new Promise((resolve, reject) => {
+    getSessionToken = () => uuid();
+
+    login = (args, credentials, sender) => new Promise((resolve, reject) => {
         this.database.find({'content.email': {$eq: sanitize(credentials.email)}}, 'profiles').then((data) => {
             const profile = data.content;
             this.encrypter.check(credentials.password, profile.password).then((res) => {
-                resolve(this.cleanResults(profile));
+                resolve(this.cleanResults(profile, sender));
             }).catch((e) => reject(err(400, 'invalid password')))
         }).catch((e) => reject(err(400), 'inexisting account'));
     })
@@ -74,7 +77,7 @@ export class Profiles extends Service {
             ))
         ));
 
-    create = (args, profile) => new Promise((resolve, reject) => {
+    create = (args, profile, sender) => new Promise((resolve, reject) => {
         args = sanitize(args);
         if (this.isValid(profile)) {
             const uid = uuid().substring(0, 8);
@@ -84,7 +87,7 @@ export class Profiles extends Service {
                 profile.encryption = encryption.encryption;
                 this.persist({uid}, 'profiles', profile).then((data) => {
                     this.sendConfirmationByMail(profile);
-                    resolve(this.cleanResults(profile));
+                    resolve(this.cleanResults(profile, sender));
                 }).catch(reject);
             }).catch(reject);
         } else {
@@ -92,8 +95,11 @@ export class Profiles extends Service {
         }
     })
 
-    update = (profile, args) => new Promise((resolve, reject) => {
+    update = (profile, args, sender) => new Promise((resolve, reject) => {
         args = sanitize(args);
+        const token = this.sessions.getTokenBySessionId(sender.getId());
+        console.log(token, args.token, !token || !args.token || token !== args.token, 'yolo');
+        if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
         this.encrypter.check(args.password, profile.password).then((res) => {
             if (res) {
                 const update = Object.assign({}, profile, this.replaceFields(args));
@@ -102,7 +108,7 @@ export class Profiles extends Service {
                     update.encryption = encryption.encryption;
                     this.persist(profile, 'profiles', update).then((data) => {
                         this.profiles[profile.uid] = update;
-                        resolve(this.cleanResults(update));
+                        resolve(this.cleanResults(update, sender));
                     }).catch(reject);
                 }).catch(reject);
             } else {
@@ -111,8 +117,12 @@ export class Profiles extends Service {
         }).catch(err(400, 'invalid password. Couldn\t complete changes'));
     })
 
-    cleanResults = (profile) => {
+    cleanResults = (profile, sender) => {
         const result = Object.assign({}, profile);
+        if (sender) {
+            result.token = this.getSessionToken();
+            this.sessions.addSession(sender.getId(), result.token);
+        }
         delete result.password;
         delete result.encryption;
         return result;
@@ -120,6 +130,7 @@ export class Profiles extends Service {
 
     replaceFields = (profile) => {
         // add new password
+        delete profile.token;
         const keys = new Array('Email', 'Password');
         keys.forEach((key) => {
             const newKey = `new${key}`;
@@ -142,8 +153,9 @@ export class Profiles extends Service {
         })
     }
 
-    constructor (database) {
+    constructor (database, sessions) {
         super(database);
+        this.sessions = sessions;
         this.encrypter = new Encrypter();
     }
 }

@@ -853,6 +853,10 @@ cookie@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.3.1.tgz#e7e0a1f9ef43b4c8ba925c5c5a96e806d16873bb"
 
+cookieparser@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/cookieparser/-/cookieparser-0.1.0.tgz#ea12cb1085c174f3167faeaf7985f79abe671d0e"
+
 core-js@^2.4.0, core-js@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.0.tgz#569c050918be6486b3837552028ae0466b717086"
@@ -908,6 +912,10 @@ detect-indent@^4.0.0:
   resolved "https://registry.yarnpkg.com/detect-indent/-/detect-indent-4.0.0.tgz#f76d064352cdf43a1cb6ce619c4ee3a9475de208"
   dependencies:
     repeating "^2.0.0"
+
+diff@~1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-1.0.8.tgz#343276308ec991b7bc82267ed55bc1411f971666"
 
 ecc-jsbn@~0.1.1:
   version "0.1.1"
@@ -1010,7 +1018,7 @@ extsprintf@1.3.0, extsprintf@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.3.0.tgz#96918440e3041a7a414f8c52e3c574eb3c3e1e05"
 
-eyes@0.1.x:
+eyes@0.1.x, eyes@~0.1.6:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/eyes/-/eyes-0.1.8.tgz#62cf120234c683785d902348a800ef3e0cc20bc0"
 
@@ -1156,9 +1164,24 @@ glob@^7.0.5, glob@^7.1.2:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
+glob@~4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/glob/-/glob-4.0.6.tgz#695c50bdd4e2fb5c5d370b091f388d3707e291a7"
+  dependencies:
+    graceful-fs "^3.0.2"
+    inherits "2"
+    minimatch "^1.0.0"
+    once "^1.3.0"
+
 globals@^9.18.0:
   version "9.18.0"
   resolved "https://registry.yarnpkg.com/globals/-/globals-9.18.0.tgz#aa3896b3e69b487f17e31ed2143d69a8e30c2d8a"
+
+graceful-fs@^3.0.2:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-3.0.11.tgz#7613c778a1afea62f25c630a086d7f3acbbdd818"
+  dependencies:
+    natives "^1.1.0"
 
 graceful-fs@^4.1.2, graceful-fs@^4.1.4:
   version "4.1.11"
@@ -1421,6 +1444,10 @@ loose-envify@^1.0.0:
   dependencies:
     js-tokens "^3.0.0"
 
+lru-cache@2:
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-2.7.3.tgz#6d4524e8b955f95d4f5b58851ce21dd72fb4e952"
+
 media-typer@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
@@ -1464,6 +1491,13 @@ mime-types@^2.1.12, mime-types@~2.1.15, mime-types@~2.1.16, mime-types@~2.1.7:
 mime@1.3.4:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.3.4.tgz#115f9e3b6b3daf2959983cb38f149a2d40eb5d53"
+
+minimatch@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-1.0.0.tgz#e0dd2120b49e1b724ce8d714c520822a9438576d"
+  dependencies:
+    lru-cache "2"
+    sigmund "~1.0.0"
 
 minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.4:
   version "3.0.4"
@@ -1511,6 +1545,10 @@ ms@2.0.0:
 nan@^2.0.8, nan@^2.3.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.7.0.tgz#d95bf721ec877e08db276ed3fc6eb78f9083ad46"
+
+natives@^1.1.0:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/natives/-/natives-1.1.3.tgz#44a579be64507ea2d6ed1ca04a9415915cf75558"
 
 negotiator@0.6.1:
   version "0.6.1"
@@ -1891,6 +1929,12 @@ serve-static@1.12.4:
     parseurl "~1.3.1"
     send "0.15.4"
 
+session@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/session/-/session-0.1.0.tgz#6ae9aa6f26093be31ed2005bcd426ae80aa3a085"
+  dependencies:
+    vows "*"
+
 set-blocking@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
@@ -1902,6 +1946,10 @@ set-immediate-shim@^1.0.1:
 setprototypeof@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.0.3.tgz#66567e37043eeb4f04d91bd658c0cbefb55b8e04"
+
+sigmund@~1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/sigmund/-/sigmund-1.0.1.tgz#3ff21f198cad2175f9f3b781853fd94d0d19b590"
 
 signal-exit@^3.0.0:
   version "3.0.2"
@@ -2097,6 +2145,14 @@ verror@1.10.0:
     assert-plus "^1.0.0"
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
+
+vows@*:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/vows/-/vows-0.8.1.tgz#e09e988ce594ca05a08d72abcca34e88db559131"
+  dependencies:
+    diff "~1.0.8"
+    eyes "~0.1.6"
+    glob "~4.0.6"
 
 wide-align@^1.1.0:
   version "1.1.2"

@@ -2,9 +2,13 @@ export class Sender {
 
     socket = {}
 
-    constructor (socket) {
+    constructor (socket, id) {
         this.socket = socket;
+        this.socketId = id;
     }
+
+    getSocket = () => this.socket;
+    getId = () => this.socketId;
 
     send (query, data) {
         this.socket.send(JSON.stringify({
