@@ -98,7 +98,6 @@ export class Profiles extends Service {
     update = (profile, args, sender) => new Promise((resolve, reject) => {
         args = sanitize(args);
         const token = this.sessions.getTokenBySessionId(sender.getId());
-        console.log(token, args.token, !token || !args.token || token !== args.token, 'yolo');
         if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
         this.encrypter.check(args.password, profile.password).then((res) => {
             if (res) {
