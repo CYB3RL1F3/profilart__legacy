@@ -97,29 +97,34 @@ export class Profiles extends Service {
 
     update = (profile, args, sender) => new Promise((resolve, reject) => {
         args = sanitize(args);
-        const token = this.sessions.getTokenBySessionId(sender.getId());
-        if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
-        this.encrypter.check(args.password, profile.password).then((res) => {
-            if (res) {
-                let update;
-                if (args.totalReplace) {
-                    const { uid, password, encryption } = profile;
-                    update = Object.assign({}, { uid, password, encryption }, this.replaceFields(args));
-                } else {
-                    update = Object.assign({}, profile, this.replaceFields(args));
-                }
-                this.encrypter.encrypt(update.password).then((encryption) => {
-                    update.password = encryption.hash;
-                    update.encryption = encryption.encryption;
-                    this.persist(profile, 'profiles', update).then((data) => {
-                        this.profiles[profile.uid] = update;
-                        resolve(this.cleanResults(update, sender));
-                    }).catch(reject);
-                }).catch(reject);
-            } else {
-                reject(err(400, 'invalid password. Couldn\'t complete changes'));
-            }
-        }).catch(err(400, 'invalid password. Couldn\t complete changes'));
+        if (this.isValid(args)) {
+          const token = this.sessions.getTokenBySessionId(sender.getId());
+          if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
+          this.encrypter.check(args.password, profile.password).then((res) => {
+              if (res) {
+                  let update;
+                  if (args.totalReplace) {
+                      const { uid, password, encryption } = profile;
+                      update = Object.assign({}, { uid, password, encryption }, this.replaceFields(args));
+                  } else {
+                      update = Object.assign({}, profile, this.replaceFields(args));
+                  }
+                  delete args.totalReplace;
+                  this.encrypter.encrypt(update.password).then((encryption) => {
+                      update.password = encryption.hash;
+                      update.encryption = encryption.encryption;
+                      this.persist(profile, 'profiles', update).then((data) => {
+                          this.profiles[profile.uid] = update;
+                          resolve(this.cleanResults(update, sender));
+                      }).catch(reject);
+                  }).catch(reject);
+              } else {
+                  reject(err(400, 'invalid password. Couldn\'t complete changes'));
+              }
+          }).catch(err(400, 'invalid password. Couldn\t complete changes'));
+        } else {
+            reject(err(400, 'invalid payload for update'));
+        }
     })
 
     cleanResults = (profile, sender) => {

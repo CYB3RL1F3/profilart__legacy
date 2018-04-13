@@ -80,7 +80,11 @@ export class Application {
                 this.execute(data.query, profile, data.args, sender).then((response) => {
                     sender.send(data.query, response);
                 }).catch((e) => {
-                    sender.error(e.code || 500, e.message);
+                    if (e) {
+                      sender.error(e.code || 500, e.message);
+                    } else {
+                      sender.error(500, 'fatal unknown error');
+                    }
                 });
             } catch (e) {
                 sender.error(e.code || 500, e.message);
