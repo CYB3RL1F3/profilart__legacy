@@ -13,12 +13,10 @@ export class Soundcloud extends Service {
 
     getTracks = (profile, args) => (
       new Promise((resolve, reject) => {
-        console.log(profile.soundcloud);
         SC.init({
           id: profile.soundcloud.clientId,
           secret: profile.soundcloud.clientSecret
         });
-        console.log(SC);
         SC.get(`/users/${profile.soundcloud.id}/tracks`, (err, res) => {
           if (res) {
             let tracks = this.adapter.adapt(res, profile);
@@ -31,7 +29,6 @@ export class Soundcloud extends Service {
             }).catch((e) => {
               if (err) reject(err);
               else {
-                console.log(res);
                 reject(err(400, 'request to soundcloud not completed...'));
               }
             });

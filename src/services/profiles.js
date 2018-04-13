@@ -101,7 +101,13 @@ export class Profiles extends Service {
         if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
         this.encrypter.check(args.password, profile.password).then((res) => {
             if (res) {
-                const update = Object.assign({}, profile, this.replaceFields(args));
+                let update;
+                if (args.totalReplace) {
+                    const { uid, password, encryption } = profile;
+                    update = Object.assign({}, { uid, password, encryption }, this.replaceFields(args));
+                } else {
+                    update = Object.assign({}, profile, this.replaceFields(args));
+                }
                 this.encrypter.encrypt(update.password).then((encryption) => {
                     update.password = encryption.hash;
                     update.encryption = encryption.encryption;

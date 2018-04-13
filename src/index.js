@@ -21,7 +21,8 @@ const application = new Application();
 
 ws.on('connection', (socket) => {
    console.info('websocket connection open');
-   const socketId = socket._socket._handle.fd;
+   const socketId = `${socket._socket.remoteAddress.replace('.', 'x').replace('::', 'x')}`;
+   console.log(`with socket ID ${socketId}`);
    socket.on('message', (data) => {
       application.run(data, socket, socketId);
    });
