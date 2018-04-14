@@ -7,7 +7,12 @@ export class Contact {
         }
         const mailer = new Mailer(profile);
         args.message = mailer.adapt(args.message);
-        mailer.send('mail.html', args).then(resolve).catch(reject);
+        mailer.send('mail.html', args).then(({statusCode}) => {
+          resolve({
+              statusCode,
+              message: 'mail successfully sent'
+          });
+        }).catch(reject);
     })
 
     validate = (args) => args instanceof Object
