@@ -64,6 +64,23 @@ export class Database {
         }).catch(reject);
     });
 
+    remove = (uid, coll) => new Promise((resolve, reject) => {
+        uid = sanitize(uid);
+        this.connect().then((db) => {
+            const updated = db.collection(coll, (err, collection) => {
+                const selector = {_id: uid};
+                collection.remove(selector, (err, deleted) => {
+                    db.close();
+                    if (deleted) {
+                        resolve(deleted);
+                    } else {
+                        reject(err);
+                    }
+                });
+            });
+        }).catch(reject);
+    });
+
     select = (uid, coll) => this.find({_id: sanitize(uid)}, coll)
 }
 

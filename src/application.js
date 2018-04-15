@@ -47,7 +47,8 @@ export class Application {
             login: this.profiles.login,
             profile: this.profiles.read,
             create: this.profiles.create,
-            update: this.profiles.update
+            update: this.profiles.update,
+            remove: this.profiles.remove
         }
     }
 
@@ -64,7 +65,7 @@ export class Application {
             this.validator.checkData(data, this);
             this.serve(data, sender);
         } catch (e) {
-            sender.error(e.code || 500, e.message);
+            sender.error(e.code || 500, e.message, data.query || null);
         }
     }
 
@@ -81,16 +82,18 @@ export class Application {
                     sender.send(data.query, response);
                 }).catch((e) => {
                     if (e) {
-                      sender.error(e.code || 500, e.message);
+                      sender.error(e.code || 500, e.message, data.query || null);
                     } else {
-                      sender.error(500, 'fatal unknown error');
+                      sender.error(500, 'fatal unknown error', data.query || null);
                     }
                 });
             } catch (e) {
-                sender.error(e.code || 500, e.message);
+                console.log('query ==> ', data.query);
+                sender.error(e.code || 500, e.message, data.query || null);
             }
         }).catch((e) => {
-            sender.error(401, 'profile not registred');
+            console.log('query (2) ==> ', data.query);
+            sender.error(401, 'profile not registred', data.query || null);
         });
     }
 

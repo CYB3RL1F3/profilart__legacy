@@ -18,7 +18,11 @@ export class Encrypter {
     check = (str, hash) => new Promise((resolve, reject) => {
         const kdf = new Buffer(hash, 'hex');
         scrypt.verifyKdf(kdf, str).then((result) => {
-            resolve(result);
+            if (!result) {
+              reject(false);
+            } else {
+              resolve(true);
+            }
         }, (e) => {
             reject(false);
         });

@@ -38,7 +38,7 @@ export class Profiles extends Service {
             this.encrypter.check(credentials.password, profile.password).then((res) => {
                 resolve(this.cleanResults(profile, sender));
             }).catch((e) => reject(err(400, 'invalid password')))
-        }).catch((e) => reject(err(400), 'inexisting account'));
+        }).catch((e) => reject(err(400, 'inexisting account')));
     })
 
     isValid = (profile) => profile
@@ -93,6 +93,28 @@ export class Profiles extends Service {
         } else {
             reject(err(400, 'invalid payload for profile creation'));
         }
+    })
+
+    remove = (profile, args, sender) => new Promise((resolve, reject) => {
+        args = sanitize(args);
+        console.log(args);
+        const token = this.sessions.getTokenBySessionId(sender.getId());
+        if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
+        this.encrypter.check(args.password, profile.password).then((res) => {
+            if (res) {
+                console.log(args.uid);
+                this.database.remove(profile.uid, 'profiles').then((deleted) => {
+                  if (deleted) {
+                    this.sessions.removeSession(sender.getId());
+                    resolve({uid: profile.uid});
+                  } else {
+                    reject({uid: profile.uid});
+                  }
+                }).catch(reject);
+            } else {
+                reject(err(400, 'invalid password. Couldn\'t complete changes'));
+            }
+        }).catch(err(400, 'invalid password. Couldn\t complete changes'));
     })
 
     update = (profile, args, sender) => new Promise((resolve, reject) => {

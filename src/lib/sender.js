@@ -18,9 +18,10 @@ export class Sender {
         }))
     }
 
-    error (code, message) {
+    error (code, message, query) {
         this.socket.send(JSON.stringify({
             status: 0,
+            query,
             error: {
                 code,
                 message: message || 'an error occured...'

@@ -20,15 +20,15 @@ export class Discogs extends Service {
                   promises.push(new Promise((done, fail) => {
                       this.query(release.resource_url).then((infos) => {
                           if (infos.main_release_url) {
-                            this.query(infos.main_release_url).then((inf) => {
-                              this.adapter.adaptRelease(release, inf);
-                              done();
-                            }).catch(fail);
+                              this.query(infos.main_release_url).then((inf) => {
+                                  this.adapter.adaptRelease(release, inf);
+                                  done();
+                              }).catch(done);
                           } else {
-                            this.adapter.adaptRelease(release, infos);
-                            done();
+                              this.adapter.adaptRelease(release, infos);
+                              done();
                           }
-                      }).catch(fail);
+                      }).catch(done);
                   }));
               });
             }
