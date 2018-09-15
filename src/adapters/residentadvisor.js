@@ -1,139 +1,100 @@
-import GoogleMaps from '../lib/googleMaps';
+import Mapbox from '../lib/mapbox';
 
 export class ResidentAdvisorAdapter {
-
-    constructor () {
-      this.googleMaps = new GoogleMaps();
+    constructor() {
+        this.mapbox = new Mapbox();
     }
 
-    adapt (response, adapt) {
-        const adaptedResponse = {};
+    adapt = async (response, adapt) => {
         switch (adapt) {
             case 'events':
-                Object.assign(adaptedResponse, this.adaptEvents(response));
-                break;
+                return await this.adaptEvents(response);
             case 'charts':
-                Object.assign(adaptedResponse, this.adaptChart(response));
-                break;
+                return this.adaptChart(response);
             case 'infos':
-                Object.assign(adaptedResponse, this.adaptInfos(response));
-                break;
+                return this.adaptInfos(response);
             default:
-                Object.assign(adaptedResponse, response);
+                return response;
         }
-        return adaptedResponse;
-    }
+    };
 
-    adaptChart (response) {
-        const adaptedResponse = {
-            charts: {}
-        };
-        response.charts.forEach((chart) => {
-            if (!adaptedResponse.charts[chart.track[0].chartid]) {
-                adaptedResponse.charts[chart.track[0].chartid] = {
-                    id: `${chart.track[0].chartid}`,
-                    date: `${chart.track[0].chartdate}`,
-                    rank: `${chart.track[0].rank}`,
-                    tracks: []
-                };
-            }
-            chart.track.forEach((track) => {
-                adaptedResponse.charts[chart.track[0].chartid].tracks.push({
-                    id: `${track.trackid}`,
-                    artist: `${track.artist}`,
-                    title: `${track.title}`,
-                    label: `${track.label}`,
-                    remix: `${track.mix}`,
-                    RA_link: `${track.tracklink}`,
-                    cover: `${track.cover}`
+    adaptChart = ({ charts }) => {
+        const adaptedCharts = {};
+        charts.forEach(
+            ({ track }) =>
+                !adaptedCharts[track[0].chartid] &&
+                (adaptedCharts[track[0].chartid] = {
+                    id: `${track[0].chartid}`,
+                    date: `${track[0].chartdate}`,
+                    rank: `${track[0].rank}`,
+                    tracks: track.map((t) => ({
+                        id: `${t.trackid}`,
+                        artist: `${t.artist}`,
+                        title: `${t.title}`,
+                        label: `${t.label}`,
+                        remix: `${t.mix}`,
+                        cover: `${t.cover}`,
+                        RA_link: `${t.tracklink}`
+                    }))
                 })
-            })
-        })
-        return adaptedResponse.charts;
-    }
+        );
+        return adaptedCharts;
+    };
 
-    adaptEvent (event) {
-      return {
-          id: `${event.id}`,
-          venueId: `${event.venueid}`,
-          date: `${event.eventdate}`,
-          country: `${event.countryname}`,
-          area: `${event.areaname}`,
-          areaId: `${event.areaId}`,
-          title: `${event.venue}`,
-          address: `${event.address[0] || event.address}`,
-          lineup: `${event.lineup}`.split(', '),
-          time: {
-              begin: time[0],
-              end: time[1]
-          },
-          cost: `${event.cost}`,
-          promoter: `${event.promoter}`,
-          links: {
-              event: `${event.eventlink}`,
-              venue: `${event.venuelink}`,
-          },
-          flyer: `${event.imagelisting}`
-      }
-    }
+    adaptEvent = async (event) => {
+        const addr = event.address[0] || event.address;
+        const location = await this.mapbox.getLocation(addr);
+        const time = `${event.time}`.split(' - ');
+        return {
+            id: `${event.id}`,
+            venueId: `${event.venueid}`,
+            date: `${event.eventdate}`,
+            country: `${event.countryname}`,
+            area: `${event.areaname}`,
+            areaId: `${event.areaId}`,
+            title: `${event.venue}`,
+            address: `${addr}`,
+            location,
+            lineup: `${event.lineup}`.split(', '),
+            time: {
+                begin: `${time[0]}`,
+                end: `${time[1]}`
+            },
+            cost: `${event.cost}`,
+            promoter: `${event.promoter}`,
+            links: {
+                event: `${event.eventlink}`,
+                venue: `${event.venuelink}`
+            },
+            flyer: `${event.imagelisting}`
+        };
+    };
 
-    adaptEvents (response) {
-        return new Promise((resolve, reject) => {
-          const events = [];
-          const promises = [];
-          if (response.events instanceof Array) {
-              response.events.forEach((evt) => {
-                  const event = evt.event[0];
-                  const time = `${event.time}`.split(' - ');
-                  const address = event.address[0] || event.address;
-                  if (event.address && address) {
-                    promises.push(
-                      new Promise((resolve, reject) => {
-                        this.googleMaps.getLocation(address).then(location => {
-                          event.location = location;
-                          events.push(event);
-                          resolve();
-                        }).catch((e) => {
-                          events.push(event);
-                          resolve();
-                        });
-                      })
-                    )
-                  }
-              });
-          }
-          if (promises.length) Promise.all(promises).then(() => {
-            resolve(events);
-          });
-          else resolve(events);
-        })
+    adaptEvents = async (response) =>
+        response.events instanceof Array
+            ? await Promise.all(response.events[0].event.map(async (event) => await this.adaptEvent(event)))
+            : [];
 
-    }
-
-    adaptInfos (response) {
+    adaptInfos = (response) => {
         const data = response.artist[0];
-        const labels = [];
-        data.labels.forEach((label) => {
-            labels.push(`${label}`);
-        });
         return {
             name: `${data.artistname}`,
             realname: `${data.realname}`,
             country: `${data.countryname}`,
-            labels: labels,
+            labels: `${data.labels}`.split(', '),
             website: `${data.website}`,
             RA: `${data.raprofile}`,
-            facebook: `${data.facebook}`,
-            twitter: `${data.twitter}`,
+            facebook: `https://facebook.com/${data.facebook}`,
+            twitter: `https://twitter.com/${data.twitter}`,
             discogs: `${data.discogs}`,
-            soundcloud: `${data.soundcloud}`,
+            soundcloud: `https://soundcloud.com/${data.soundcloud}`,
             picture: `${data.profileimage}`,
             bio: {
                 intro: `${data.biointro}`,
                 content: `${data.bio}`
             }
         };
-    }
-};
+    };
+}
 
 export default ResidentAdvisorAdapter;

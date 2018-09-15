@@ -4,122 +4,96 @@ import Service from '../service';
 import err from '../err';
 
 export class ResidentAdvisor extends Service {
-
     static EVENTS_TYPE = {
         1: 'upcoming',
         2: 'past'
-    }
+    };
 
-    constructor (database) {
+    constructor(database) {
         super(database);
         this.adapter = new ResidentAdvisorAdapter();
     }
 
-    query = (endpoint, method, payload) => (
-        new Promise((resolve, reject) => {
-            const url = `${endpoint}/${method}`;
-            const options = {
-                url: url,
-                method: 'POST',
-                headers: {
-                    'User-Agent':       'RAPI/0.0.1',
-                    'Content-Type':     'application/x-www-form-urlencoded'
-                },
-                form: payload
-            };
-            this.api.requestAndParseXML(options)
-                .then((response) => {
-                    resolve(response.RA);
-                }).catch(reject)
-        })
-    )
+    query = async (endpoint, method, payload) => {
+        console.log('là');
+        const url = `${endpoint}/${method}`;
+        const options = {
+            url: url,
+            method: 'POST',
+            headers: {
+                'User-Agent': 'RAPI/0.0.1',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            form: payload
+        };
+        const { RA } = await this.api.requestAndParseXML(options);
+        return RA;
+    };
 
-    getCharts = (profile, args) => new Promise((resolve, reject) => {
-        this.query(
-            config.api.residentAdvisor.dj,
-            'getcharts',
-            {
+    getCharts = async (profile, args) => {
+        try {
+            const response = await this.query(config.api.residentAdvisor.dj, 'getcharts', {
                 DJID: profile.RA.DJID,
-                Option: args && args.option || '1',
+                Option: (args && args.option) || '1',
                 UserID: profile.RA.userId,
                 AccessKey: profile.RA.accessKey,
                 ChartID: ''
-            }
-        ).then(
-            (response) => {
-                const charts = this.adapter.adapt(response, 'charts');
-                this.persist(profile, 'charts', charts).then(() => {
-                    resolve(charts);
-                })
-            }).catch((e) => {
-                // get from database
-                this.fromDb(profile, 'charts').then((data) => {
-                        resolve(data.content);
-                    }).catch(reject);
-            })
-    })
-
-    getEvents = (profile, args) => new Promise((resolve, reject) => {
-        if (!(args && args.type)) {
-            reject(err(400, 'an arg TYPE must be provided.'));
-            return;
+            });
+            const charts = this.adapter.adapt(response, 'charts');
+            await this.persist(profile, 'charts', charts);
+            return charts;
+        } catch (e) {
+            console.log(e);
+            const { content } = await this.fromDb(profile, 'charts');
+            return content;
         }
+    };
 
+    getEvents = async (profile, args) => {
+        if (!(args && args.type)) {
+            throw err(400, 'an arg TYPE must be provided.');
+        }
         const persistKey = `events_${this.constructor.EVENTS_TYPE[args.type]}`;
-        this.query(
-            config.api.residentAdvisor.events,
-            'GetEvents',
-            {
+        try {
+            const response = await this.query(config.api.residentAdvisor.events, 'GetEvents', {
                 UserID: profile.RA.userId,
                 AccessKey: profile.RA.accessKey,
                 CountryID: args.countryId || '',
                 AreaID: args.areaId || '',
                 PromoterID: args.promoterId || '',
-                VenueID: args.venueId || '',
+                VenueID: args.venueId || '',
                 DJID: profile.RA.DJID,
                 option: args.type,
                 year: args.year || ''
-            }
-        ).then(
-            (response) => {
-                this.adapter.adaptEvents(response).then(events => {
-                  this.persist(profile, persistKey, events).then(() => {
-                      resolve(events);
-                  });
-                });
-            }
-        ).catch((e) => {
-                this.fromDb(profile, persistKey).then((data) => {
-                        resolve(data.content);
-                    }).catch(reject);
-            })
-    })
+            });
+            const events = await this.adapter.adaptEvents(response);
+            await this.persist(profile, persistKey, events);
+            return events;
+        } catch (e) {
+            const { content } = await this.fromDb(profile, persistKey);
+            return content;
+        }
+    };
 
-    getInfos = (profile) => new Promise((resolve, reject) => {
-        this.query(
-            config.api.residentAdvisor.dj,
-            'getartist',
-            {
+    getInfos = async (profile) => {
+        try {
+            console.log(config.api.residentAdvisor.dj, profile);
+            const response = await this.query(config.api.residentAdvisor.dj, 'getartist', {
                 UserID: profile.RA.userId,
                 AccessKey: profile.RA.accessKey,
                 DJID: profile.RA.DJID,
                 ArtistName: profile.artistName,
                 URL: ''
-            }
-        ).then(
-            (response) => {
-                const infos = this.adapter.adapt(response, 'infos');
-                this.persist(profile, 'infos', infos).then(() => {
-                    resolve(infos);
-                });
-            }).catch((e) => {
-                // get from database`
-                this.fromDb(profile, 'infos').then((data) => {
-                    resolve(data.content);
-                }).catch(reject);
-            })
-    })
-
-};
+            });
+            console.log('response', response);
+            const infos = this.adapter.adapt(response, 'infos');
+            await this.persist(profile, 'infos', infos);
+            return infos;
+        } catch (e) {
+            const { content } = await this.fromDb(profile, 'infos');
+            return content;
+        }
+    };
+}
 
 export default ResidentAdvisor;

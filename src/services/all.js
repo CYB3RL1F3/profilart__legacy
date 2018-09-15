@@ -6,7 +6,7 @@ export class All extends Service {
     discogs = {};
     adapter = {};
 
-    constructor (database, residentAdvisor, discogs, soundcloud) {
+    constructor(database, residentAdvisor, discogs, soundcloud) {
         super(database);
         this.residentAdvisor = residentAdvisor;
         this.discogs = discogs;
@@ -14,19 +14,17 @@ export class All extends Service {
         this.adapter = new AllAdapters();
     }
 
-    get = (profile, args) => new Promise((resolve, reject) => {
+    get = async (profile) => {
         const services = [
             this.residentAdvisor.getInfos(profile),
             this.residentAdvisor.getCharts(profile),
-            this.residentAdvisor.getEvents(profile, {type: 1}),
-            this.residentAdvisor.getEvents(profile, {type: 2}),
+            this.residentAdvisor.getEvents(profile, { type: 1 }),
+            this.residentAdvisor.getEvents(profile, { type: 2 }),
             this.discogs.getReleases(profile),
-            this.soundcloud.getTracks(profile),
+            this.soundcloud.getTracks(profile)
         ];
-        Promise.all(services).then((responses) => {
-            resolve(this.adapter.adapt(responses));
-        }).catch(reject);
-    })
+        return this.adapter.adapt(await Promise.all(services));
+    };
 }
 
 export default All;

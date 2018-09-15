@@ -1,4 +1,3 @@
-import config from '../config';
 import Service from '../service';
 import err from '../err';
 import { v4 as uuid } from 'uuid';
@@ -7,158 +6,128 @@ import Mailer from '../lib/mailer';
 import sanitize from 'mongo-sanitize';
 
 export class Profiles extends Service {
-
     profiles = {};
     sessions = {};
     encrypter = {};
 
-    get = (uid) => new Promise((resolve, reject) => {
-        if (this.profiles[uid]) {
-            resolve(this.profiles[uid]);
-        } else {
-            this.database.select(uid, 'profiles').then((profile) => {
-                profile.content.uid = uid;
-                this.profiles[uid] = profile.content;
-                resolve(profile.content);
-            }).catch((e) => {
-                reject(err(401, 'profile not found'));
-            })
-        }
-    });
+    get = async (uid) => {
+        const { content } = await this.database.select(uid, 'profiles');
+        return content;
+    };
 
-    read = (profile) => new Promise((resolve, reject) => {
-        resolve(this.cleanResults(profile));
-    })
+    read = (profile) => this.cleanResults(profile);
 
     getSessionToken = () => uuid();
 
-    login = (args, credentials, sender) => new Promise((resolve, reject) => {
-        this.database.find({'content.email': {$eq: sanitize(credentials.email)}}, 'profiles').then((data) => {
-            const profile = data.content;
-            this.encrypter.check(credentials.password, profile.password).then((res) => {
-                resolve(this.cleanResults(profile, sender));
-            }).catch((e) => reject(err(400, 'invalid password')))
-        }).catch((e) => reject(err(400, 'inexisting account')));
-    })
+    login = async (credentials) => {
+        try {
+            const { content } = await this.database.find(
+                { 'content.email': { $eq: sanitize(credentials.email) } },
+                'profiles'
+            );
+            await this.encrypter.check(credentials.password, content.password);
+            content.token = this.getSessionToken();
+            return this.cleanResults(content);
+        } catch (e) {
+            throw err(400, 'invalid password');
+        }
+    };
 
-    isValid = (profile) => profile
-        && profile.email
-        && profile.password
-        && profile.artistName
-        && (!profile.RA || (
-            profile.RA &&
-            profile.RA.userId &&
-            profile.RA.accessKey &&
-            profile.RA.DJID
-        ))
-        && (!profile.soundcloud || (
-          profile.soundcloud && (
-            profile.soundcloud.id &&
-            profile.soundcloud.clientId &&
-            profile.soundcloud.clientSecret
-          )
-        ))
-        && (!profile.mailer || (
-            profile.mailer &&
-            profile.mailer.recipient &&
-            profile.mailer.use &&
-            (!profile.mailer.nodemail || (
-                profile.mailer.nodemail &&
-                profile.mailer.nodemail.service &&
-                profile.mailer.nodemail.host &&
-                profile.mailer.nodemail.auth &&
-                profile.mailer.nodemail.auth.user &&
-                profile.mailer.nodemail.auth.pass
-            )) &&
-            (!profile.mailer.mailgun || (
-                profile.mailer.mailgun &&
-                profile.mailer.mailgun.endpoint &&
-                profile.mailer.mailgun.email
-            ))
-        ));
+    forgottenPassword = async (args, credentials) => {
+        const data = await this.database.find({ 'content.email': { $eq: sanitize(credentials.email) } }, 'profiles');
+        const profile = data.content;
+        const newPassword = uuid().substring(0, 8);
+        const encryption = await this.encrypter.encrypt(newPassword);
+        const update = Object.assign(profile, {
+            password: encryption.hash,
+            encryption: encryption.encryption
+        });
+        await this.persist(profile, 'profiles', update);
+        try {
+            await this.sendPasswordByMail(newPassword, profile);
+        } catch (e) {
+            throw err(500, 'impossible to send via mail. Configure your mailer...');
+        }
+        return {
+            ok: true
+        };
+    };
 
-    create = (args, profile, sender) => new Promise((resolve, reject) => {
+    isValid = (profile) =>
+        profile &&
+        profile.email &&
+        profile.password &&
+        profile.artistName &&
+        (!profile.RA || (profile.RA && profile.RA.userId && profile.RA.accessKey && profile.RA.DJID)) &&
+        (!profile.soundcloud ||
+            (profile.soundcloud &&
+                (profile.soundcloud.id && profile.soundcloud.clientId && profile.soundcloud.clientSecret))) &&
+        (!profile.mailer ||
+            (profile.mailer &&
+                profile.mailer.recipient &&
+                profile.mailer.use &&
+                (!profile.mailer.nodemail ||
+                    (profile.mailer.nodemail &&
+                        profile.mailer.nodemail.service &&
+                        profile.mailer.nodemail.host &&
+                        profile.mailer.nodemail.auth &&
+                        profile.mailer.nodemail.auth.user &&
+                        profile.mailer.nodemail.auth.pass)) &&
+                (!profile.mailer.mailgun ||
+                    (profile.mailer.mailgun && profile.mailer.mailgun.endpoint && profile.mailer.mailgun.email))));
+
+    create = async (args, profile, sender) => {
         args = sanitize(args);
         if (this.isValid(profile)) {
             const uid = uuid().substring(0, 8);
             profile.uid = uid;
-            this.encrypter.encrypt(profile.password).then((encryption) => {
-                profile.password = encryption.hash;
-                profile.encryption = encryption.encryption;
-                this.persist({uid}, 'profiles', profile).then((data) => {
-                    this.sendConfirmationByMail(profile);
-                    resolve(this.cleanResults(profile, sender));
-                }).catch(reject);
-            }).catch(reject);
+            const encryption = await this.encrypter.encrypt(profile.password);
+            profile.password = encryption.hash;
+            profile.encryption = encryption.encryption;
+            await this.persist({ uid }, 'profiles', profile);
+            this.sendConfirmationByMail(profile);
+            return this.cleanResults(profile, sender);
         } else {
-            reject(err(400, 'invalid payload for profile creation'));
+            throw err(400, 'invalid payload for profile creation');
         }
-    })
+    };
 
-    remove = (profile, args, sender) => new Promise((resolve, reject) => {
-        args = sanitize(args);
-        console.log(args);
-        const token = this.sessions.getTokenBySessionId(sender.getId());
-        if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
-        this.encrypter.check(args.password, profile.password).then((res) => {
-            if (res) {
-                console.log(args.uid);
-                this.database.remove(profile.uid, 'profiles').then((deleted) => {
-                  if (deleted) {
-                    this.sessions.removeSession(sender.getId());
-                    resolve({uid: profile.uid});
-                  } else {
-                    reject({uid: profile.uid});
-                  }
-                }).catch(reject);
-            } else {
-                reject(err(400, 'invalid password. Couldn\'t complete changes'));
-            }
-        }).catch(err(400, 'invalid password. Couldn\t complete changes'));
-    })
+    remove = async (profile) => {
+        await this.database.remove(profile.uid, 'profiles');
+        return { delete: profile.uid };
+    };
 
-    update = (profile, args, sender) => new Promise((resolve, reject) => {
+    update = async (profile, args) => {
         args = sanitize(args);
         if (this.isValid(args)) {
-          const token = this.sessions.getTokenBySessionId(sender.getId());
-          if (!token || !args.token || (token !== args.token)) reject(err(400, 'invalid security token !! Couldn\'t complete changes'));
-          this.encrypter.check(args.password, profile.password).then((res) => {
-              if (res) {
-                  let update;
-                  if (args.totalReplace) {
-                      const { uid, password, encryption } = profile;
-                      update = Object.assign({}, { uid, password, encryption }, this.replaceFields(args));
-                  } else {
-                      update = Object.assign({}, profile, this.replaceFields(args));
-                  }
-                  delete args.totalReplace;
-                  this.encrypter.encrypt(update.password).then((encryption) => {
-                      update.password = encryption.hash;
-                      update.encryption = encryption.encryption;
-                      this.persist(profile, 'profiles', update).then((data) => {
-                          this.profiles[profile.uid] = update;
-                          resolve(this.cleanResults(update, sender));
-                      }).catch(reject);
-                  }).catch(reject);
-              } else {
-                  reject(err(400, 'invalid password. Couldn\'t complete changes'));
-              }
-          }).catch(err(400, 'invalid password. Couldn\t complete changes'));
-        } else {
-            reject(err(400, 'invalid payload for update'));
-        }
-    })
+            if (args.newPassword) {
+                const isPasswordValid = await this.encrypter.check(args.password, profile.password);
+                if (!isPasswordValid) throw err(400, 'old password required to set a new one');
+                return;
+            }
+            let update;
+            if (args.totalReplace) {
+                const { uid, password, encryption } = profile;
+                update = Object.assign({}, { uid, password, encryption }, this.replaceFields(args));
+            } else {
+                update = Object.assign({}, profile, this.replaceFields(args));
+            }
+            delete args.totalReplace;
+            const encryption = await this.encrypter.encrypt(update.password);
+            update.password = encryption.hash;
+            update.encryption = encryption.encryption;
+            const data = await this.persist(profile, 'profiles', update);
+            if (data) return this.cleanResults(update);
+            throw err(400, 'failed during persisting data');
+        } else throw err(400, 'invalid payload for update');
+    };
 
-    cleanResults = (profile, sender) => {
+    cleanResults = (profile) => {
         const result = Object.assign({}, profile);
-        if (sender) {
-            result.token = this.getSessionToken();
-            this.sessions.addSession(sender.getId(), result.token);
-        }
         delete result.password;
         delete result.encryption;
         return result;
-    }
+    };
 
     replaceFields = (profile) => {
         // add new password
@@ -172,9 +141,9 @@ export class Profiles extends Service {
             }
         });
         return profile;
-    }
+    };
 
-    sendConfirmationByMail (profile) {
+    sendConfirmationByMail(profile) {
         if (!profile.mailer) return; // only works if a mailer's configured
         const mailer = new Mailer(profile);
         mailer.send('creation.html', {
@@ -182,12 +151,22 @@ export class Profiles extends Service {
             name: profile.artistName,
             email: profile.email,
             profile
-        })
+        });
     }
 
-    constructor (database, sessions) {
+    sendPasswordByMail(newPassword, profile) {
+        const mailer = new Mailer(profile);
+        return mailer.send('password.html', {
+            subject: `forgotten password, ${profile.artistName}`,
+            name: profile.artistName,
+            email: profile.email,
+            profile,
+            newPassword
+        });
+    }
+
+    constructor(database) {
         super(database);
-        this.sessions = sessions;
         this.encrypter = new Encrypter();
     }
 }

@@ -5,42 +5,44 @@ import Api from './api';
 import err from '../err';
 
 export class Mailer {
-
     profile = {};
-    constructor (profile) {
+    constructor(profile) {
         this.profile = profile;
     }
 
     getParams = (name, email, subject, html) => ({
-        from: email, // sender address
-        to: this.profile.mailer.recipient, // list of receivers
+        from: this.profile.mailer.recipient, // sender address
+        to: email, // list of receivers
         subject: `${this.profile.mailer.prefix} ${subject}`, // Subject line
         html // html body
-    })
+    });
 
-    getTransporter = () => nodemailer.createTransport(smtpTransport({
-        host: this.profile.mailer.nodemail.host,
-        service: this.profile.mailer.nodemail.service,
-        auth: this.profile.mailer.nodemail.auth
-    }))
+    getTransporter = () =>
+        nodemailer.createTransport(
+            smtpTransport({
+                host: this.profile.mailer.nodemail.host,
+                service: this.profile.mailer.nodemail.service,
+                auth: this.profile.mailer.nodemail.auth
+            })
+        );
 
-    getTemplate = (tpl, args) => new Promise((resolve, reject) => {
-        // to be exported to template lib
+    getTemplate = async (tpl, args) => {
         const template = new Template();
-        template.render(tpl, args, true).then(resolve).catch(reject);
-    })
+        return await template.render(tpl, args, true);
+    };
 
-    adapt = (content) => content.replace(/\n/g, '<br />')
+    adapt = (content) => content.replace(/\n/g, '<br />');
 
-    sendViaNodemail = (params) => new Promise((resolve, reject) => {
-        this.getTransporter().sendMail(params, (error, info) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve();
-            }
+    sendViaNodemail = (params) =>
+        new Promise((resolve, reject) => {
+            this.getTransporter().sendMail(params, (error, info) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
         });
-    })
 
     sendViaMailgun = (params) => {
         const api = new Api();
@@ -50,23 +52,24 @@ export class Mailer {
             url,
             method: 'POST',
             headers: {
-                'User-Agent':       'RAPI/0.0.1',
-                'Content-Type':     'application/x-www-form-urlencoded'
+                'User-Agent': 'RAPI/0.0.1',
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
             form: params
         };
         return api.request(options);
-    }
+    };
 
-    send = (template, args) => new Promise((resolve, reject) => {
-        this.getTemplate(template, args).then((html) => {
-            this.process(args.name, args.email, args.subject, html).then(resolve).catch(reject);
-        }).catch((e) => {
-            reject(err(500, 'unable to send mail.'));
-        })
-    });
+    send = async (template, args) => {
+        try {
+            const html = await this.getTemplate(template, args);
+            return await this.process(args.name, args.email);
+        } catch (e) {
+            throw err(500, 'unable to send mail');
+        }
+    };
 
-    process = (name, email, subject, content) => {
+    process = async (name, email, subject, content) => {
         const params = this.getParams(name, email, subject, content);
         let promise;
         if (this.profile.mailer.use === 'mailgun') {
@@ -74,11 +77,11 @@ export class Mailer {
         } else if (this.profile.mailer.use === 'nodemail') {
             promise = this.sendViaNodemail;
         } else {
-            reject(err(500, 'this mail service is not managed'));
+            throw err(500, 'this mail service is not managed');
             return;
         }
-        return promise(params);
-    }
+        return await promise(params);
+    };
 }
 
 export default Mailer;

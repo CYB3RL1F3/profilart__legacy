@@ -1,49 +1,47 @@
 /* eslint-disable no-console */
-//const WebSocket = require('ws').Server;
-
 import express from 'express';
+import bodyParser from 'body-parser';
+import Redis from 'redis';
 import http from 'http';
-import WebSocket from 'ws';
-import Application from './application';
-
+import Router from './router';
+import config from './config';
+import passport from 'passport';
+import { snoose } from './lib/snoose';
 // initialization
 const app = express();
 
+// redis init
+const { redis } = config;
+const redisStore = Redis.createClient(redis.store);
+redisStore.on('connect', function() {
+    console.log('Redis client connected');
+});
+
+redisStore.on('error', function(err) {
+    console.log('Something went wrong ' + err);
+});
+
 let port = process.env.PORT || 3000;
-let tries = 0;
 app.set('port', port);
 
-app.use(express.static('public'));
-
-const server = http.createServer(app);
-const ws = new WebSocket.Server({ server });
-const application = new Application();
-
-ws.on('connection', (socket) => {
-   console.info('websocket connection open');
-   const socketId = `${socket._socket.remoteAddress.replace('.', 'x').replace('::', 'x')}`;
-   console.log(`with socket ID ${socketId}`);
-   socket.on('message', (data) => {
-      application.run(data, socket, socketId);
-   });
-   socket.on('close', (reason) => {
-       application.sessions.removeSession(socketId);
-       console.log('socket disconnected');
-   });
+app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
+app.use((req, res, next) => {
+    req.store = redisStore;
+    return next();
 });
+
+app.use(express.static('public'));
+app.use(passport.initialize());
 
 const listen = () => {
-  server.listen(port, () => {
-    console.log('Listening on %d', server.address().port);
-  });
-}
-
-ws.on('error', (err) => {
-  port++;
-  tries++;
-  if (tries > 3) return;
-  listen();
-});
-
+    const server = http.createServer(app);
+    const router = new Router(app);
+    router.init();
+    server.listen(port, () => {
+        console.log('Listening on %d', server.address().port);
+        snoose();
+    });
+};
 
 listen();

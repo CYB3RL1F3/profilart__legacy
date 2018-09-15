@@ -1,27 +1,7 @@
 import err from '../err';
 
 export class Validator {
-
-    checkData (data, app, query) {
-        if (!data || !data instanceof Object) {
-            throw err('400', 'invalid data object');
-        }
-
-        if (!data.query) {
-            throw err('400', 'invalid data adapt : query must be present');
-        }
-
-        if (!data.uid && data.query !== 'create' && data.query !== 'login') {
-            throw err('400', 'no UID provided.');
-        }
-
-        if (!app.serviceExists(data.query)) {
-            throw err('404', 'this service doesn\'t exists');
-        }
-        return true;
-    }
-
-    checkProfile (profile, query) {
+    checkProfile(profile, query) {
         if (!profile) {
             // bypass on account creation
             if (query === 'create' || query === 'login') {
@@ -67,10 +47,14 @@ export class Validator {
                 }
 
                 if (profile.mailer.nodemailer.service !== 'gmail' && !profile.mailer.host) {
-                    throw err('400', 'mailer host must be provided in database')
+                    throw err('400', 'mailer host must be provided in database');
                 }
 
-                if (!profile.mailer.nodemailer.auth || !profile.mailer.nodemailer.auth.user || !profile.mailer.nodemailer.auth.pass) {
+                if (
+                    !profile.mailer.nodemailer.auth ||
+                    !profile.mailer.nodemailer.auth.user ||
+                    !profile.mailer.nodemailer.auth.pass
+                ) {
                     throw err('400', 'mailer auth informations user & pass must be provided in database');
                 }
             } else if (profile.use === 'mailgun') {
