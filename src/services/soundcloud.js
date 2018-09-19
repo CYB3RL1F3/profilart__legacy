@@ -19,7 +19,7 @@ export class Soundcloud extends Service {
             });
             SC.get(`/users/${profile.soundcloud.id}/tracks`, (err, res) => {
                 if (res) {
-                    let tracks = this.adapter.adapt(res, profile);
+                    let tracks = this.adapter.adapt(res);
                     this.persist(profile, 'tracks', tracks).then(() => {
                         resolve(tracks);
                     });

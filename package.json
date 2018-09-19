@@ -29,6 +29,7 @@
     "html": "^1.0.0",
     "http": "^0.0.0",
     "jsonwebtoken": "^8.3.0",
+    "mailgun-js": "^0.21.0",
     "mongo-sanitize": "^1.0.0",
     "mongodb": "2.2.33",
     "node-scrypt": "^0.0.1",

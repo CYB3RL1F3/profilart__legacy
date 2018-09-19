@@ -50,15 +50,14 @@ export class Router {
                     all: all.get
                 },
                 post: {
-                    contact: contact.mail
+                    create: this.profiles.create,
+                    contact: contact.mail,
+                    login: this.authenticate
                 }
             },
             auth: {
                 get: {
                     profile: this.profiles.read
-                },
-                post: {
-                    create: this.profiles.create
                 },
                 patch: {
                     update: this.profiles.update,
@@ -131,25 +130,43 @@ export class Router {
         this.initAuthRoutes();
     }
 
-    run = async (req, query, service) => {
+    run = async (req, query, service, dataProvider) => {
         const { uid } = req.params;
-        const profile = await this.profiles.get(uid);
-        this.validator.checkProfile(profile, service);
-        const response = await query(profile, req.query);
+        let profile = null;
+        if (service !== 'login' && service !== 'create') {
+            profile = await this.profiles.get(uid);
+            this.validator.checkProfile(profile, service);
+        }
+        console.log('req.query', dataProvider);
+        const response = await query(profile, dataProvider);
         console.log('passs  ', response);
         return response;
     };
 
     initPublicRoutes() {
-        this.app.post('/login', this.authenticate);
+        // GET requests
         Object.keys(this.services.public.get).forEach((service) => {
             this.app.get(`/:uid/${service}`, async (req, res) => {
                 try {
                     const query = this.services.public.get[service];
-                    const result = await this.run(req, query, service);
+                    const result = await this.run(req, query, service, req.query);
                     res.status(200).send(JSON.stringify(result));
                 } catch (e) {
-                    res.status(400).send(e.message);
+                    res.status(400).send(e);
+                }
+            });
+        });
+
+        // POST requests
+        Object.keys(this.services.public.post).forEach((service) => {
+            this.app.post(`/${service}`, async (req, res) => {
+                try {
+                    const query = this.services.public.post[service];
+                    const result = await this.run(req, query, service, req.body);
+                    res.status(200).send(JSON.stringify(result));
+                } catch (e) {
+                    console.log('err >>> ', e);
+                    res.status(400).send(e);
                 }
             });
         });
@@ -165,28 +182,28 @@ export class Router {
                         this.app.get(
                             uri,
                             passport.authenticate('jwt', { session: false }),
-                            this.runAuthQuery(services[service])
+                            this.runAuthQuery(services[service], service, true)
                         );
                         break;
                     case 'post':
                         this.app.post(
                             uri,
                             passport.authenticate('jwt', { session: false }),
-                            this.runAuthQuery(services[service])
+                            this.runAuthQuery(services[service], service, false)
                         );
                         break;
                     case 'patch':
                         this.app.patch(
                             uri,
                             passport.authenticate('jwt', { session: false }),
-                            this.runAuthQuery(services[service])
+                            this.runAuthQuery(services[service], service, false)
                         );
                         break;
                     case 'delete':
                         this.app.delete(
                             uri,
                             passport.authenticate('jwt', { session: false }),
-                            this.runAuthQuery(services[service])
+                            this.runAuthQuery(services[service], service, false)
                         );
                         break;
                 }
@@ -194,12 +211,14 @@ export class Router {
         });
     }
 
-    runAuthQuery = (query) => async (req, res) => {
+    runAuthQuery = (query, service, isGet) => async (req, res) => {
         try {
-            const result = await this.run(req, query);
+            const result = await this.run(req, query, service, isGet ? req.query : req.body);
+            console.log('PASS PAR ICI !!', result);
             res.status(200).send(JSON.stringify(result));
         } catch (e) {
-            res.status(code).send(e);
+            console.log('ERRR > ', e);
+            res.status(500).send(e);
         }
     };
 }

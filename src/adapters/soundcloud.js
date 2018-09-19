@@ -1,3 +1,4 @@
+import config from '../config';
 export class SoundcloudAdapter {
     adaptTrack = (track, clientId) => {
         const keys = [ 'uri', 'stream_url', 'download_url', 'attachments_uri' ];
@@ -7,7 +8,7 @@ export class SoundcloudAdapter {
         return track;
     };
 
-    adapt = (data, profile) => data.map((track) => this.adaptTrack(track, profile.soundcloud.clientId));
+    adapt = (data) => data.map((track) => this.adaptTrack(track, config.soundcloud.clientId));
 }
 
 export default SoundcloudAdapter;

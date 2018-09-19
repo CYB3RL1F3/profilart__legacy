@@ -76,17 +76,19 @@ export class Profiles extends Service {
                 (!profile.mailer.mailgun ||
                     (profile.mailer.mailgun && profile.mailer.mailgun.endpoint && profile.mailer.mailgun.email))));
 
-    create = async (args, profile, sender) => {
-        args = sanitize(args);
+    create = async (args, profile) => {
+        console.log('pass');
+        profile = sanitize(profile);
+        console.log(profile);
         if (this.isValid(profile)) {
             const uid = uuid().substring(0, 8);
             profile.uid = uid;
-            const encryption = await this.encrypter.encrypt(profile.password);
-            profile.password = encryption.hash;
-            profile.encryption = encryption.encryption;
+            const { hash, encryption } = await this.encrypter.encrypt(profile.password);
+            profile.password = hash;
+            profile.encryption = encryption;
             await this.persist({ uid }, 'profiles', profile);
             this.sendConfirmationByMail(profile);
-            return this.cleanResults(profile, sender);
+            return this.cleanResults(profile);
         } else {
             throw err(400, 'invalid payload for profile creation');
         }
@@ -100,10 +102,17 @@ export class Profiles extends Service {
     update = async (profile, args) => {
         args = sanitize(args);
         if (this.isValid(args)) {
+            console.log(args.uid, profile.uid);
+            if (args.uid !== profile.uid) {
+                throw err(400, 'illegal operation');
+                return;
+            }
             if (args.newPassword) {
                 const isPasswordValid = await this.encrypter.check(args.password, profile.password);
-                if (!isPasswordValid) throw err(400, 'old password required to set a new one');
-                return;
+                if (!isPasswordValid) {
+                    throw err(400, 'old password required to set a new one');
+                    return;
+                }
             }
             let update;
             if (args.totalReplace) {
@@ -112,10 +121,10 @@ export class Profiles extends Service {
             } else {
                 update = Object.assign({}, profile, this.replaceFields(args));
             }
-            delete args.totalReplace;
-            const encryption = await this.encrypter.encrypt(update.password);
-            update.password = encryption.hash;
-            update.encryption = encryption.encryption;
+            delete update.totalReplace;
+            const { encryption, hash } = await this.encrypter.encrypt(update.password);
+            update.password = hash;
+            update.encryption = encryption;
             const data = await this.persist(profile, 'profiles', update);
             if (data) return this.cleanResults(update);
             throw err(400, 'failed during persisting data');
