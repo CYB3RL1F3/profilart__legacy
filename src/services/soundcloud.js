@@ -11,13 +11,13 @@ export class Soundcloud extends Service {
         this.adapter = new SoundcloudAdapter();
     }
 
-    getTracks = (profile, args) =>
+    getTracks = (profile) =>
         new Promise((resolve, reject) => {
             SC.init({
-                id: profile.soundcloud.clientId,
-                secret: profile.soundcloud.clientSecret
+                id: config.soundcloud.clientId,
+                secret: config.soundcloud.clientSecret
             });
-            SC.get(`/users/${profile.soundcloud.id}/tracks`, (err, res) => {
+            SC.get(`/users/${profile.soundcloud.id}/tracks`, (error, res) => {
                 if (res) {
                     let tracks = this.adapter.adapt(res);
                     this.persist(profile, 'tracks', tracks).then(() => {
@@ -29,7 +29,8 @@ export class Soundcloud extends Service {
                             resolve(data.content);
                         })
                         .catch((e) => {
-                            if (err) reject(err);
+                            console.log(e);
+                            if (error) reject(err(400, error));
                             else {
                                 reject(err(400, 'request to soundcloud not completed...'));
                             }

@@ -128,19 +128,30 @@ export class Router {
     initRoutes() {
         this.initPublicRoutes();
         this.initAuthRoutes();
+        this.init404();
     }
 
     run = async (req, query, service, dataProvider) => {
         const { uid } = req.params;
         let profile = null;
         if (service !== 'login' && service !== 'create') {
-            profile = await this.profiles.get(uid);
-            this.validator.checkProfile(profile, service);
+            try {
+                profile = await this.profiles.get(uid);
+                console.log(profile);
+                if (!profile) throw err(400, 'profile not found');
+                this.validator.checkProfile(profile, service);
+            } catch (e) {
+                throw err(404, 'profile not found');
+                return;
+            }
         }
-        console.log('req.query', dataProvider);
-        const response = await query(profile, dataProvider);
-        console.log('passs  ', response);
-        return response;
+        try {
+            const response = await query(profile, dataProvider);
+            console.log('passs  ', response);
+            return response;
+        } catch (e) {
+            throw e;
+        }
     };
 
     initPublicRoutes() {
@@ -152,7 +163,9 @@ export class Router {
                     const result = await this.run(req, query, service, req.query);
                     res.status(200).send(JSON.stringify(result));
                 } catch (e) {
-                    res.status(400).send(e);
+                    const err = JSON.parse(e.message);
+                    console.log(err);
+                    res.status(err.code).send(JSON.stringify({ error: err }));
                 }
             });
         });
@@ -165,8 +178,9 @@ export class Router {
                     const result = await this.run(req, query, service, req.body);
                     res.status(200).send(JSON.stringify(result));
                 } catch (e) {
-                    console.log('err >>> ', e);
-                    res.status(400).send(e);
+                    const err = JSON.parse(e.message);
+                    console.log(err);
+                    res.status(err.code).send(JSON.stringify({ error: err }));
                 }
             });
         });
@@ -211,14 +225,28 @@ export class Router {
         });
     }
 
+    init404 = () => {
+        this.app.get('*', function(req, res) {
+            res.status(404).send(
+                JSON.stringify({
+                    error: {
+                        code: 404,
+                        message: 'this endpoint does not exist'
+                    }
+                })
+            );
+        });
+    };
+
     runAuthQuery = (query, service, isGet) => async (req, res) => {
         try {
             const result = await this.run(req, query, service, isGet ? req.query : req.body);
             console.log('PASS PAR ICI !!', result);
             res.status(200).send(JSON.stringify(result));
         } catch (e) {
-            console.log('ERRR > ', e);
-            res.status(500).send(e);
+            const err = JSON.parse(e.message);
+            console.log(err);
+            res.status(err.code).send(JSON.stringify(err));
         }
     };
 }

@@ -29,6 +29,11 @@ export class Validator {
                 throw err('400', 'RA ArtistName must be provided in database');
             }
         }
+        if (query === 'tracks') {
+            if (!profile.soundcloud.id) {
+                throw err('400', 'Soundcloud ID must be provided in database');
+            }
+        }
         if (query === 'releases' && (!profile.discogs || (profile.discogs && !profile.discogs.artistId))) {
             throw err('400', 'Discogs informations must be provided in database');
         }
@@ -37,33 +42,8 @@ export class Validator {
                 throw err('400', 'mailer informations must be provided');
             }
 
-            if (profile.use === 'nodemailer') {
-                if (!profile.mailer.nodemailer.service) {
-                    throw err('400', 'mailer service must be defined (exemple : gmail)');
-                }
-
-                if (!profile.mailer.nodemailer.recipient) {
-                    throw err('400', 'mailer email recipient must be defined in database');
-                }
-
-                if (profile.mailer.nodemailer.service !== 'gmail' && !profile.mailer.host) {
-                    throw err('400', 'mailer host must be provided in database');
-                }
-
-                if (
-                    !profile.mailer.nodemailer.auth ||
-                    !profile.mailer.nodemailer.auth.user ||
-                    !profile.mailer.nodemailer.auth.pass
-                ) {
-                    throw err('400', 'mailer auth informations user & pass must be provided in database');
-                }
-            } else if (profile.use === 'mailgun') {
-                if (!profile.mailer.mailgun.endpoint) {
-                    throw err('400', 'mailer mailgun endpoint must be defined in database');
-                }
-                if (!profile.mailer.mailgun.email) {
-                    throw err('400', 'mailer mailgun email must be defined in database');
-                }
+            if (!profile.mailer.recipient) {
+                throw err('400', 'recipient email must be defined in database');
             }
 
             if (!profile.mailer.prefix) {

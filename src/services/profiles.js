@@ -53,28 +53,17 @@ export class Profiles extends Service {
         };
     };
 
+    isEmail = (email) => /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(email);
+
     isValid = (profile) =>
         profile &&
         profile.email &&
+        this.isEmail(profile.email) &&
         profile.password &&
         profile.artistName &&
         (!profile.RA || (profile.RA && profile.RA.userId && profile.RA.accessKey && profile.RA.DJID)) &&
-        (!profile.soundcloud ||
-            (profile.soundcloud &&
-                (profile.soundcloud.id && profile.soundcloud.clientId && profile.soundcloud.clientSecret))) &&
-        (!profile.mailer ||
-            (profile.mailer &&
-                profile.mailer.recipient &&
-                profile.mailer.use &&
-                (!profile.mailer.nodemail ||
-                    (profile.mailer.nodemail &&
-                        profile.mailer.nodemail.service &&
-                        profile.mailer.nodemail.host &&
-                        profile.mailer.nodemail.auth &&
-                        profile.mailer.nodemail.auth.user &&
-                        profile.mailer.nodemail.auth.pass)) &&
-                (!profile.mailer.mailgun ||
-                    (profile.mailer.mailgun && profile.mailer.mailgun.endpoint && profile.mailer.mailgun.email))));
+        (!profile.soundcloud || (profile.soundcloud && profile.soundcloud.id)) &&
+        (!profile.mailer || (profile.mailer && profile.mailer.recipient && this.isEmail(profile.mailer.recipient)));
 
     create = async (args, profile) => {
         console.log('pass');

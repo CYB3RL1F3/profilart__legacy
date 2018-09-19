@@ -1,7 +1,13 @@
 import https from 'https';
 import config from '../config';
 
-export const bip = () => https.get(config.url);
+export const bip = () => {
+    try {
+        https.get(config.url);
+    } catch (e) {
+        console.log(e);
+    }
+};
 
 // maintain service up...
 export const snoose = () => {
