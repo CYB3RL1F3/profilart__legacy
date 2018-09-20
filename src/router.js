@@ -77,12 +77,9 @@ export class Router {
         };
         passport.use(
             new Strategy(opts, async (req, payload, done) => {
-                console.log('here');
                 const { email, authenticated, signature, id } = payload;
-                console.log(payload);
                 const p = await new Promise((resolve) =>
                     req.store.hget(config.redis.collection, id, (err, result) => {
-                        console.log(result);
                         result ? resolve(result) : resolve(false);
                     })
                 );
@@ -119,7 +116,6 @@ export class Router {
             );
             req.store.hset(config.redis.collection, profile.uid, JSON.stringify(profile), redis.print);
             delete profile.token;
-            console.log('here');
             return {
                 authenticated: true,
                 token,
@@ -132,6 +128,7 @@ export class Router {
 
     fail = (res, e) => {
         const err = JSON.parse(e.message);
+        console.log(err);
         res.status(err.code).send(
             JSON.stringify({
                 error: {
@@ -163,7 +160,6 @@ export class Router {
         }
         try {
             const response = await query(profile, dataProvider, req);
-            console.log('passs  ', response);
             return response;
         } catch (e) {
             throw e;
@@ -188,9 +184,7 @@ export class Router {
         Object.keys(this.services.public.post).forEach((service) => {
             this.app.post(`/${service}`, async (req, res) => {
                 try {
-                    console.log('HEEEERREE !!!');
                     const query = this.services.public.post[service];
-                    console.log(query);
                     const result = await this.run(req, query, service, req.body);
                     res.status(200).send(JSON.stringify(result));
                 } catch (e) {
@@ -248,7 +242,6 @@ export class Router {
     runAuthQuery = (query, service, isGet) => async (req, res) => {
         try {
             const result = await this.run(req, query, service, isGet ? req.query : req.body);
-            console.log('PASS PAR ICI !!', result);
             res.status(200).send(JSON.stringify(result));
         } catch (e) {
             this.fail(res, e);

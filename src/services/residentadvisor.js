@@ -15,7 +15,6 @@ export class ResidentAdvisor extends Service {
     }
 
     query = async (endpoint, method, payload) => {
-        console.log('là');
         const url = `${endpoint}/${method}`;
         const options = {
             url: url,
@@ -77,7 +76,6 @@ export class ResidentAdvisor extends Service {
 
     getInfos = async (profile) => {
         try {
-            console.log(config.api.residentAdvisor.dj, profile);
             const response = await this.query(config.api.residentAdvisor.dj, 'getartist', {
                 UserID: profile.RA.userId,
                 AccessKey: profile.RA.accessKey,
@@ -85,7 +83,6 @@ export class ResidentAdvisor extends Service {
                 ArtistName: profile.artistName,
                 URL: ''
             });
-            console.log('response', response);
             const infos = this.adapter.adapt(response, 'infos');
             await this.persist(profile, 'infos', infos);
             return infos;

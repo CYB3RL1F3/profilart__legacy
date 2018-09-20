@@ -44,8 +44,8 @@ export class Mailer {
             const html = await this.getTemplate(template, args);
             return await this.process(args.name, this.profile.email, args.subject, html);
         } catch (e) {
-            console.log('ERROR >> ', e);
-            throw err(500, 'unable to send mail');
+            console.log(e);
+            throw err(500, `unable to send mail for reason ${e}`);
         }
     };
 

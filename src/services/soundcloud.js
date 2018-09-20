@@ -29,7 +29,6 @@ export class Soundcloud extends Service {
                             resolve(data.content);
                         })
                         .catch((e) => {
-                            console.log(e);
                             if (error) reject(err(400, error));
                             else {
                                 reject(err(400, 'request to soundcloud not completed...'));

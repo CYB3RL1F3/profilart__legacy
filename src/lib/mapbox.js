@@ -14,7 +14,6 @@ export class Mapbox {
         try {
             const uri = this.buildGeolocationApiCallUrl(address);
             const location = await new Promise((resolve, reject) => {
-                console.log(uri);
                 https.get(uri, (response) => {
                     var body = '';
                     response.on('data', function(d) {
@@ -30,7 +29,6 @@ export class Mapbox {
             });
             return this.adapter.adapt('geocoding', location);
         } catch (e) {
-            console.log(e);
             return null;
         }
     };

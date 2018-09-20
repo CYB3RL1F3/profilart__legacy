@@ -69,9 +69,7 @@ export class Profiles extends Service {
         (!profile.mailer || (profile.mailer && profile.mailer.recipient && this.isEmail(profile.mailer.recipient)));
 
     create = async (args, profile) => {
-        console.log('pass');
         profile = sanitize(profile);
-        console.log(profile);
         if (this.isValid(profile)) {
             const uid = uuid().substring(0, 8);
             profile.uid = uid;
@@ -94,7 +92,6 @@ export class Profiles extends Service {
     update = async (profile, args) => {
         args = sanitize(args);
         if (this.isValid(args)) {
-            console.log(args.uid, profile.uid);
             if (args.uid !== profile.uid) {
                 throw err(400, 'illegal operation. Must send corresponding UID.');
                 return;
