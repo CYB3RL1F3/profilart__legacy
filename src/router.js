@@ -1,7 +1,4 @@
 import passport from 'passport';
-import { Strategy, ExtractJwt } from 'passport-jwt';
-import jwt from 'jsonwebtoken';
-import redis from 'redis';
 
 import ResidentAdvisor from './services/residentadvisor';
 import Discogs from './services/discogs';
@@ -11,6 +8,7 @@ import Validator from './lib/validator';
 import Database from './lib/database';
 import Profiles from './services/profiles';
 import All from './services/all';
+import Authenticator from './authenticator';
 import config from './config';
 import { err } from './err';
 
@@ -37,6 +35,7 @@ export class Router {
         const all = new All(database, residentAdvisor, discogs, soundcloud);
         this.validator = new Validator();
         this.profiles = new Profiles(database);
+        this.authenticator = new Authenticator();
 
         // fill services dictionnary with different ones
         this.services = {
@@ -71,56 +70,12 @@ export class Router {
     }
 
     initMiddlewares() {
-        const opts = {
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ...config.jwt
-        };
-        passport.use(
-            new Strategy(opts, async (req, payload, done) => {
-                const { email, authenticated, signature, id } = payload;
-                const p = await new Promise((resolve) =>
-                    req.store.hget(config.redis.collection, id, (err, result) => {
-                        result ? resolve(result) : resolve(false);
-                    })
-                );
-                if (!p) return done(null, false);
-                const profile = JSON.parse(p);
-                if (
-                    authenticated &&
-                    profile &&
-                    profile.uid === id &&
-                    profile.email === email &&
-                    profile.token === signature
-                ) {
-                    req.params.uid = id;
-                    return done(null, p);
-                } else {
-                    return done(null, false);
-                }
-            })
-        );
+        passport.use(this.authenticator.getStrategy());
     }
 
     authenticate = async (p, body, req) => {
-        const { email, password } = body;
         try {
-            const profile = await this.profiles.login({ email, password });
-            const token = jwt.sign(
-                {
-                    authenticated: true,
-                    id: profile.uid,
-                    signature: profile.token,
-                    email
-                },
-                config.jwt.secretOrKey
-            );
-            req.store.hset(config.redis.collection, profile.uid, JSON.stringify(profile), redis.print);
-            delete profile.token;
-            return {
-                authenticated: true,
-                token,
-                profile
-            };
+            return await this.authenticator.authenticate(body, req, this.profiles.login);
         } catch (e) {
             throw e;
         }
