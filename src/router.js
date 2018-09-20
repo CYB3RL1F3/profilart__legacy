@@ -87,11 +87,20 @@ export class Router {
         res.status(err.code).send(
             JSON.stringify({
                 error: {
-                    code: 404,
+                    code: err.code,
                     message: err.message
                 }
             })
         );
+    };
+
+    forbidden = (req, res) => {
+        this.fail(res, {
+            message: JSON.stringify({
+                code: 403,
+                message: 'authentication required'
+            })
+        });
     };
 
     initRoutes() {
@@ -102,7 +111,7 @@ export class Router {
 
     run = async (req, query, service, dataProvider) => {
         let profile = null;
-        if (service !== 'login' && service !== 'create') {
+        if (service !== 'login' && service !== 'create' && service !== 'forbidden') {
             try {
                 const { uid } = req.params;
                 profile = await this.profiles.get(uid);
@@ -147,7 +156,15 @@ export class Router {
                 }
             });
         });
+
+        this.app.get('/forbidden', this.forbidden);
     }
+
+    getAuthMiddleware = () =>
+        passport.authenticate('jwt', {
+            session: false,
+            failureRedirect: '/forbidden'
+        });
 
     initAuthRoutes() {
         Object.keys(this.services.auth).forEach((method) => {
@@ -158,28 +175,28 @@ export class Router {
                     case 'get':
                         this.app.get(
                             uri,
-                            passport.authenticate('jwt', { session: false }),
+                            this.getAuthMiddleware(),
                             this.runAuthQuery(services[service], service, true)
                         );
                         break;
                     case 'post':
                         this.app.post(
                             uri,
-                            passport.authenticate('jwt', { session: false }),
+                            this.getAuthMiddleware(),
                             this.runAuthQuery(services[service], service, false)
                         );
                         break;
                     case 'patch':
                         this.app.patch(
                             uri,
-                            passport.authenticate('jwt', { session: false }),
+                            this.getAuthMiddleware(),
                             this.runAuthQuery(services[service], service, false)
                         );
                         break;
                     case 'delete':
                         this.app.delete(
                             uri,
-                            passport.authenticate('jwt', { session: false }),
+                            this.getAuthMiddleware(),
                             this.runAuthQuery(services[service], service, false)
                         );
                         break;
