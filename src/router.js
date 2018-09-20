@@ -77,9 +77,12 @@ export class Router {
         };
         passport.use(
             new Strategy(opts, async (req, payload, done) => {
+                console.log('here');
                 const { email, authenticated, signature, id } = payload;
+                console.log(payload);
                 const p = await new Promise((resolve) =>
                     req.store.hget(config.redis.collection, id, (err, result) => {
+                        console.log(result);
                         result ? resolve(result) : resolve(false);
                     })
                 );
@@ -101,26 +104,40 @@ export class Router {
         );
     }
 
-    authenticate = async (req, res) => {
-        const { email, password } = req.body;
-        const profile = await this.profiles.login({ email, password });
-        const token = jwt.sign(
-            {
-                authenticated: true,
-                id: profile.uid,
-                signature: profile.token,
-                email
-            },
-            config.jwt.secretOrKey
-        );
-        req.store.hset(config.redis.collection, profile.uid, JSON.stringify(profile), redis.print);
-        delete profile.token;
-        res.status(200).send(
-            JSON.stringify({
+    authenticate = async (p, body, req) => {
+        const { email, password } = body;
+        try {
+            const profile = await this.profiles.login({ email, password });
+            const token = jwt.sign(
+                {
+                    authenticated: true,
+                    id: profile.uid,
+                    signature: profile.token,
+                    email
+                },
+                config.jwt.secretOrKey
+            );
+            req.store.hset(config.redis.collection, profile.uid, JSON.stringify(profile), redis.print);
+            delete profile.token;
+            console.log('here');
+            return {
                 authenticated: true,
                 token,
-                signature: profile.token,
                 profile
+            };
+        } catch (e) {
+            throw e;
+        }
+    };
+
+    fail = (res, e) => {
+        const err = JSON.parse(e.message);
+        res.status(err.code).send(
+            JSON.stringify({
+                error: {
+                    code: 404,
+                    message: err.message
+                }
             })
         );
     };
@@ -132,12 +149,11 @@ export class Router {
     }
 
     run = async (req, query, service, dataProvider) => {
-        const { uid } = req.params;
         let profile = null;
         if (service !== 'login' && service !== 'create') {
             try {
+                const { uid } = req.params;
                 profile = await this.profiles.get(uid);
-                console.log(profile);
                 if (!profile) throw err(400, 'profile not found');
                 this.validator.checkProfile(profile, service);
             } catch (e) {
@@ -146,7 +162,7 @@ export class Router {
             }
         }
         try {
-            const response = await query(profile, dataProvider);
+            const response = await query(profile, dataProvider, req);
             console.log('passs  ', response);
             return response;
         } catch (e) {
@@ -163,9 +179,7 @@ export class Router {
                     const result = await this.run(req, query, service, req.query);
                     res.status(200).send(JSON.stringify(result));
                 } catch (e) {
-                    const err = JSON.parse(e.message);
-                    console.log(err);
-                    res.status(err.code).send(JSON.stringify({ error: err }));
+                    this.fail(res, e);
                 }
             });
         });
@@ -174,13 +188,13 @@ export class Router {
         Object.keys(this.services.public.post).forEach((service) => {
             this.app.post(`/${service}`, async (req, res) => {
                 try {
+                    console.log('HEEEERREE !!!');
                     const query = this.services.public.post[service];
+                    console.log(query);
                     const result = await this.run(req, query, service, req.body);
                     res.status(200).send(JSON.stringify(result));
                 } catch (e) {
-                    const err = JSON.parse(e.message);
-                    console.log(err);
-                    res.status(err.code).send(JSON.stringify({ error: err }));
+                    this.fail(res, e);
                 }
             });
         });
@@ -226,15 +240,8 @@ export class Router {
     }
 
     init404 = () => {
-        this.app.get('*', function(req, res) {
-            res.status(404).send(
-                JSON.stringify({
-                    error: {
-                        code: 404,
-                        message: 'this endpoint does not exist'
-                    }
-                })
-            );
+        this.app.get('*', (req, res) => {
+            this.fail(res, err(404, 'this endpoint does not exist'));
         });
     };
 
@@ -244,9 +251,7 @@ export class Router {
             console.log('PASS PAR ICI !!', result);
             res.status(200).send(JSON.stringify(result));
         } catch (e) {
-            const err = JSON.parse(e.message);
-            console.log(err);
-            res.status(err.code).send(JSON.stringify(err));
+            this.fail(res, e);
         }
     };
 }

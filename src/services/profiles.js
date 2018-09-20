@@ -53,7 +53,10 @@ export class Profiles extends Service {
         };
     };
 
-    isEmail = (email) => /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(email);
+    isEmail = (email) =>
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+            email
+        );
 
     isValid = (profile) =>
         profile &&
@@ -93,7 +96,7 @@ export class Profiles extends Service {
         if (this.isValid(args)) {
             console.log(args.uid, profile.uid);
             if (args.uid !== profile.uid) {
-                throw err(400, 'illegal operation');
+                throw err(400, 'illegal operation. Must send corresponding UID.');
                 return;
             }
             if (args.newPassword) {
