@@ -114,6 +114,8 @@ export class Profiles extends Service {
                 update = Object.assign({}, profile, this.replaceFields(args));
             }
             delete update.totalReplace;
+            update = await this.resolvers.resolveProfile(update);
+
             const { encryption, hash } = await this.encrypter.encrypt(update.password);
             update.password = hash;
             update.encryption = encryption;

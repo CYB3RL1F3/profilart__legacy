@@ -26,13 +26,10 @@ class Resolvers {
         if (profile.soundcloud && profile.soundcloud.url) {
             const clientId = await this.resolveSoundcloudClientId(profile.soundcloud.url);
             profile.soundcloud.id = clientId;
-            // no assign
         }
         if (profile.discogs && profile.discogs.url) {
             profile.discogs.artistId = this.resolveDiscogsArtistId(profile.discogs.url);
-            console.log(this.resolveDiscogsArtistId(profile.discogs.url));
         }
-        console.log(profile);
         return profile;
     };
 }
