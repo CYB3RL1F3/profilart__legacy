@@ -1,9 +1,10 @@
+import sanitize from 'mongo-sanitize';
+import { v4 as uuid } from 'uuid';
 import Service from '../service';
 import err from '../err';
-import { v4 as uuid } from 'uuid';
 import Encrypter from '../lib/encrypter';
 import Mailer from '../lib/mailer';
-import sanitize from 'mongo-sanitize';
+import Resolvers from '../lib/resolvers';
 
 export class Profiles extends Service {
     profiles = {};
@@ -65,12 +66,14 @@ export class Profiles extends Service {
         profile.password &&
         profile.artistName &&
         (!profile.RA || (profile.RA && profile.RA.userId && profile.RA.accessKey && profile.RA.DJID)) &&
-        (!profile.soundcloud || (profile.soundcloud && profile.soundcloud.id)) &&
+        (!profile.soundcloud || (profile.soundcloud && profile.soundcloud.url)) &&
+        (!profile.discogs || (profile.discogs && profile.discogs.url)) &&
         (!profile.mailer || (profile.mailer && profile.mailer.recipient && this.isEmail(profile.mailer.recipient)));
 
     create = async (args, profile) => {
         profile = sanitize(profile);
         if (this.isValid(profile)) {
+            profile = await this.resolvers.resolveProfile(profile);
             const uid = uuid().substring(0, 8);
             profile.uid = uid;
             const { hash, encryption } = await this.encrypter.encrypt(profile.password);
@@ -166,6 +169,7 @@ export class Profiles extends Service {
     constructor(database) {
         super(database);
         this.encrypter = new Encrypter();
+        this.resolvers = new Resolvers();
     }
 }
 
