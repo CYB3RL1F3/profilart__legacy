@@ -39,7 +39,7 @@ export class Authenticator {
             const { email, authenticated, signature, id } = payload;
             const p = await new Promise((resolve) =>
                 req.store.hget(config.redis.collection, id, (err, result) => {
-                    result ? resolve(result) : resolve(false);
+                    result && !err ? resolve(result) : resolve(false);
                 })
             );
             if (!p) return done(null, false);

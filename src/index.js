@@ -6,6 +6,7 @@ import http from 'http';
 import Router from './router';
 import config from './config';
 import passport from 'passport';
+import cors from 'cors';
 import { snoose } from './lib/snoose';
 // initialization
 const app = express();
@@ -26,8 +27,10 @@ app.set('port', port);
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
+app.use(cors());
 app.use((req, res, next) => {
     req.store = redisStore;
+    res.setHeader('Content-Type', 'application/json');
     return next();
 });
 
