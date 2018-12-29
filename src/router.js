@@ -43,8 +43,10 @@ export class Router {
         get: {
           charts: residentAdvisor.getCharts,
           events: residentAdvisor.getEvents,
+          event: residentAdvisor.getEventById,
           infos: residentAdvisor.getInfos,
           tracks: soundcloud.getTracks,
+          playlist: soundcloud.getPlaylist,
           releases: discogs.getReleases,
           all: all.get
         },
