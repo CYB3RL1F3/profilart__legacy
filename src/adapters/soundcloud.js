@@ -21,9 +21,12 @@ export class SoundcloudAdapter {
       }
     });
     return {
+      title: track.title,
+      date: track.display_date,
       artwork: track.artwork_url,
       description: track.description,
       download: track.download_url,
+      downloadable: track.downloadable,
       soundcloud: track.permalink_url,
       duration: source.duration,
       url: audio.url
