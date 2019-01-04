@@ -1,12 +1,34 @@
 import config from "../config";
 import Api from "../lib/api";
 export class SoundcloudAdapter {
-  adaptTrack = (track, clientId) => {
+  adaptTrack = track => {
+    const clientId = config.soundcloud.clientId;
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach(key => {
       track[key] = `${track[key]}?clientId=${clientId}`;
     });
-    return track;
+    return {
+      id: track.id,
+      title: track.title,
+      date: track.created_at,
+      genre: track.genre,
+      artwork: track.artwork_url,
+      description: track.description,
+      download: track.download_url,
+      downloadable: track.downloadable,
+      soundcloud: track.permalink_url,
+      duration: track.duration,
+      waveform: track.waveform_url,
+      taglist: this.extractTagList(track.tag_list),
+      uri: track.uri,
+      url: track.stream_url,
+      license: track.license,
+      stats: {
+        count: track.playback_count,
+        downloads: track.download_count,
+        favorites: track.favoritings_count
+      }
+    };
   };
 
   adaptPlaylistTrack = async track => {
@@ -37,8 +59,16 @@ export class SoundcloudAdapter {
       download: track.download_url,
       downloadable: track.downloadable,
       soundcloud: track.permalink_url,
+      genre: track.genre,
+      license: track.license,
+      stats: {
+        count: track.playback_count,
+        downloads: track.download_count,
+        favorites: track.favoritings_count
+      },
       duration: source.duration,
       url: audio.url,
+      taglist: this.extractTagList(track.tag_list),
       waveform: trackInfos.waveform_url
     };
   };
@@ -74,8 +104,7 @@ export class SoundcloudAdapter {
     };
   };
 
-  adapt = data =>
-    data.map(track => this.adaptTrack(track, config.soundcloud.clientId));
+  adapt = data => data.map(track => this.adaptTrack(track));
 }
 
 export default SoundcloudAdapter;
