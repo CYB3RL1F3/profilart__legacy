@@ -20,7 +20,16 @@ export class SoundcloudAdapter {
         "Content-Type": "application/json"
       }
     });
+    const trackInfos = await api.requestAndParseJSON({
+      url: `${track.uri}?client_id=${config.soundcloud.clientId}`,
+      method: "GET",
+      headers: {
+        "User-Agent": "Profilart/1.0 +https://profilart.herokuapp.com",
+        "Content-Type": "application/json"
+      }
+    });
     return {
+      id: track.id,
       title: track.title,
       date: track.display_date,
       artwork: track.artwork_url,
@@ -29,7 +38,8 @@ export class SoundcloudAdapter {
       downloadable: track.downloadable,
       soundcloud: track.permalink_url,
       duration: source.duration,
-      url: audio.url
+      url: audio.url,
+      waveform: trackInfos.waveform_url
     };
   };
 

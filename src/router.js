@@ -46,6 +46,7 @@ export class Router {
           event: residentAdvisor.getEventById,
           infos: residentAdvisor.getInfos,
           tracks: soundcloud.getTracks,
+          track: soundcloud.getTrack,
           playlist: soundcloud.getPlaylist,
           releases: discogs.getReleases,
           all: all.get

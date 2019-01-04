@@ -13,6 +13,39 @@ export class Soundcloud extends Service {
     this.adapter = new SoundcloudAdapter();
   }
 
+  getTrack = (profile, args) =>
+    new Promise((resolve, reject) => {
+      const { id } = args;
+      if (!id) throw err(400, "id required");
+      SC.init({
+        id: config.soundcloud.clientId,
+        secret: config.soundcloud.clientSecret
+      });
+      SC.get(`/tracks/${id}`, (error, res) => {
+        if (res && !error) {
+          try {
+            const track = this.adapter.adaptTrack(res);
+            resolve(track);
+          } catch (e) {
+            reject(err(500, "error during payload construction"));
+          }
+        } else {
+          this.fromDb(profile, "tracks")
+            .then(data => {
+              const track = data.content.find(v => v.id === id);
+              if (track) {
+                resolve(track);
+              } else {
+                reject(err(400, "track not found"));
+              }
+            })
+            .catch(e => {
+              reject(err(500, e.message || "an error occured"));
+            });
+        }
+      });
+    });
+
   getTracks = profile =>
     new Promise((resolve, reject) => {
       SC.init({
