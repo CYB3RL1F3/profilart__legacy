@@ -2,7 +2,7 @@ import config from "../config";
 import Api from "../lib/api";
 export class SoundcloudAdapter {
   adaptTrack = track => {
-    const clientId = config.soundcloud.clientId;
+    const { clientId } = config.soundcloud;
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach(key => {
       track[key] = `${track[key]}?clientId=${clientId}`;
@@ -49,6 +49,12 @@ export class SoundcloudAdapter {
         "User-Agent": "Profilart/1.0 +https://profilart.herokuapp.com",
         "Content-Type": "application/json"
       }
+    });
+    const keys = ["permalink_url", "download_url"];
+
+    const { clientId } = config.soundcloud;
+    keys.forEach(key => {
+      track[key] = `${track[key]}?clientId=${clientId}`;
     });
     return {
       id: track.id,
