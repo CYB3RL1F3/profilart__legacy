@@ -1,44 +1,81 @@
+@import url("https://fonts.googleapis.com/css?family=Quattrocento+Sans|Amatic+SC");
+* {
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    margin: 0;
-    box-sizing: content-box;
-    background-color: white;
-    width: 100%;
-    height: 100%;
-    font-family: arial;
+  margin: 0;
+  box-sizing: content-box;
+  width: 100vw;
+  height: 100vh;
+  font-family: arial;
+  background-color: black;
+  background-image: url("./dj.jpg");
+  background-size: cover;
+}
+
+@keyframes yolo {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 h1 {
-    text-align: center;
-    width: 100%;
-    height: 200px;
-    background: #ECECEC;
-    margin: 0;
-    padding: 0;
-    line-height: 200px;
-    vertical-align: middle;
-    font-size: 60px;
+  text-align: center;
+  width: 100%;
+  height: 100px;
+  color: #ececec;
+  margin: 1rem;
+  padding: 0;
+  line-height: 100px;
+  vertical-align: middle;
+  font-size: 60px;
+  text-align: left;
+  font-family: "Amatic SC", cursive;
 }
 
 h4 {
-    color: #DE1212;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    line-height: 100px;
-    height: 100px;
-    vertical-align: middle;
+  color: #ccc;
+  text-align: center;
+  margin: 1rem;
+  margin-top: 5rem;
+  padding: 1rem 10vw;
+  width: 100vw;
+  line-height: 1.4rem;
+  font-size: 1.4rem;
+  vertical-align: middle;
+  flex: 1;
+  opacity: 0;
+  animation: yolo 0.25s linear forwards;
+  animation-delay: 0.4s;
+  font-family: "Quattrocento Sans", sans-serif;
 }
 
 p.link {
-    text-align: center;
-}
-a {
-    margin-top: 20px;
-    color: black;
-    text-decoration: underline;
+  text-align: center;
+  width: 100vw;
+  flex: 1;
+  color: #ccc;
+  opacity: 0;
+  animation: yolo 0.25s linear forwards;
+  animation-delay: 0.5s;
+  font-family: "Quattrocento Sans", sans-serif;
 }
 
-br {
-    margin: 10px 0;
-    border: solid 1px #363636;
+a {
+  margin-top: 20px;
+  color: #777;
+  text-decoration: underline;
+  font-family: "Quattrocento Sans", sans-serif;
+}
+
+.informations {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
 }

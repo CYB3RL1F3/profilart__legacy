@@ -90,7 +90,7 @@ export class ResidentAdvisorAdapter {
       RA: `${data.raprofile}`,
       facebook: `https://facebook.com/${data.facebook}`,
       twitter: `https://twitter.com/${data.twitter}`,
-      discogs: `${data.discogs}`,
+      discogs: `https://discogs.com/artist/${data.discogs}`,
       soundcloud: `https://soundcloud.com/${data.soundcloud}`,
       picture: `${data.profileimage}`,
       bio: {
