@@ -18,6 +18,13 @@ export class GraphQL {
         track(uid: String!, id: Int!): Track
         playlist(uid: String!, name: String!): Playlist
       },
+      type Mutation {
+        contact(uid: String!, name: String!, email: String!, subject: String!, message: String!): Status
+      },
+      type Status {
+        statusCode: Int
+        message: String
+      },
       type Bio {
         intro: String
         content: String
@@ -85,7 +92,7 @@ export class GraphQL {
         area: String
         areaId: String
         title: String
-        adress: String
+        address: String
         lineup: [String]
         cost: String
         promoter: String
@@ -154,6 +161,20 @@ export class GraphQL {
     }
   };
 
+  transposeArgs = (service, args) => {
+    if (service === "contact") {
+      return {
+        params: {
+          name: args.name,
+          email: args.email,
+          subject: args.subject,
+          message: args.message
+        }
+      };
+    }
+    return args;
+  };
+
   getResolver = () => {
     const services = Object.keys(this.router.services.public.get).filter(
       obj => obj !== "all"
@@ -166,6 +187,16 @@ export class GraphQL {
           service,
           this.router.services.public.get[service],
           args
+        );
+    });
+    const mutations = Object.keys(this.router.services.public.uidPost);
+    mutations.forEach(mutation => {
+      resolvers[mutation] = async args =>
+        await this.run(
+          args.uid,
+          mutation,
+          this.router.services.public.uidPost[mutation],
+          this.transposeArgs(mutation, args)
         );
     });
     return resolvers;

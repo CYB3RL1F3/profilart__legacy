@@ -17,7 +17,7 @@ export class Mapbox {
       const uri = this.buildGeolocationApiCallUrl(address);
       const location = await new Promise((resolve, reject) => {
         https.get(uri, response => {
-          var body = "";
+          let body = "";
           response.on("data", function(d) {
             body += d;
           });
