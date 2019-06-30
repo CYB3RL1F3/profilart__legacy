@@ -9,8 +9,8 @@ import Database from "./lib/database";
 import Profiles from "./services/profiles";
 import All from "./services/all";
 import Authenticator from "./authenticator";
-import config from "./config";
 import { err } from "./err";
+import GraphQL from "./graphql";
 
 export class Router {
   services = {};
@@ -106,6 +106,7 @@ export class Router {
   initRoutes() {
     this.initPublicRoutes();
     this.initAuthRoutes();
+    this.initGraphQL();
     this.init404();
   }
 
@@ -123,7 +124,6 @@ export class Router {
         this.validator.checkProfile(profile, service);
       } catch (e) {
         throw err(404, "profile not found");
-        return;
       }
     }
     try {
@@ -133,6 +133,11 @@ export class Router {
       throw e;
     }
   };
+
+  initGraphQL() {
+    const graphQl = new GraphQL(this);
+    this.app.use("/graphql", graphQl.getMiddleware());
+  }
 
   initPublicRoutes() {
     // GET requests

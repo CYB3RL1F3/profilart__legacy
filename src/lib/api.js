@@ -9,7 +9,6 @@ export class Api {
 
   requestAndParseJSON = async options => {
     const response = await this.request(options);
-    console.log("RESPONSE ==> ", response.body);
     return await JSON.parse(response.body);
   };
 
@@ -17,10 +16,8 @@ export class Api {
     new Promise((resolve, reject) => {
       request(options, (error, response) => {
         if (!error && response.statusCode == 200) {
-          console.log("RSP => ERR => ", error, "RES => ", response);
           resolve(response);
         } else {
-          console.log("ERRP ==> ", error);
           reject(error);
         }
       });

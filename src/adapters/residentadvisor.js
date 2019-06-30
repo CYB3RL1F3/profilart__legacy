@@ -19,11 +19,10 @@ export class ResidentAdvisorAdapter {
   };
 
   adaptChart = ({ charts }) => {
-    const adaptedCharts = {};
-    charts.forEach(
+    return charts.map(
       ({ track }) =>
-        !adaptedCharts[track[0].chartid] &&
-        (adaptedCharts[track[0].chartid] = {
+        track[0] &&
+        track[0].chartid && {
           id: `${track[0].chartid}`,
           date: `${track[0].chartdate}`,
           rank: `${track[0].rank}`,
@@ -36,9 +35,8 @@ export class ResidentAdvisorAdapter {
             cover: `${t.cover}`,
             RA_link: `${t.tracklink}`
           }))
-        })
+        }
     );
-    return adaptedCharts;
   };
 
   adaptEvent = async event => {

@@ -73,7 +73,9 @@ export class SoundcloudAdapter {
         favorites: track.favoritings_count
       },
       duration: source.duration,
+      uri: audio.url,
       url: audio.url,
+      license: track.license,
       taglist: this.extractTagList(track.tag_list),
       waveform: trackInfos.waveform_url
     };

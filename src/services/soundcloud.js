@@ -93,14 +93,12 @@ export class Soundcloud extends Service {
         const playlist = await this.adapter.adaptPlaylist(res);
         console.log(playlist);
         await this.persist(profile, "playlist", playlist);
-        console.log("pass");
         return playlist;
       } catch (e) {
         console.log(e);
         throw err(500, "an error occured : database's unavailable");
       }
     } else {
-      console.log("hummmm");
       const data = await this.fromDb(profile, "playlist");
       console.log(data);
       if (data) {
