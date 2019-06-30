@@ -1,12 +1,12 @@
 # Profilart
 
-**Profilart** is an open-source service that provides data of electronic music artists through sockets to apps, websites...
+**Profilart** is an open-source web service that provides merged data of electronic music artists to apps, websites...
 
-Each artist or manager creates a profile providing API credentials from RA & discogs (and later soundcloud & youtube).
+Each artist or manager creates a profile providing informations from RA, soundcloud, and discogs, and contact infos.
 
 The interest of the project consists in avoiding data repetition on the web by using backoffices for apps whereas data like bio, gigs, discography... is already available on those popular services which provide APIs.
 
-Concentrating multiple source of data in one API accessible with just a simple UID affected to a profile is an interesting way of approaching data consumption. This open-source project initially made to respond to a personal need, is a concrete example of how we could approach web data in the future : avoiding redondance and platforms multiplication hell connecting all services together in one.
+Concentrating multiple source of data in one API accessible with just a simple UID affected to a profile is an interesting way of approaching data consumption. This open-source project initially made to respond to a personal need, is a concrete example of how we could approach web data in the future : reusing data from platforms and connect different services together in one.
 
 Data provided from different services are also locally persisted. In case of unavailability of service, data could be restored from the local database.
 
