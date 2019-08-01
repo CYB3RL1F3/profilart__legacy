@@ -5,6 +5,21 @@ export class ResidentAdvisorAdapter {
     this.mapbox = new Mapbox();
   }
 
+  extractLineup = lineup => {
+    let bypass = false;
+    return `${lineup}`.split(", ").reduce((acc, content) => {
+      if (bypass) {
+        acc[acc.length - 1] += `, ${content}`;
+        bypass = content.indexOf(")") === -1;
+      } else {
+        acc.push(content);
+        bypass = content.indexOf("(") > -1;
+      }
+
+      return acc;
+    }, []);
+  };
+
   adapt = async (response, adapt) => {
     switch (adapt) {
       case "events":
@@ -53,7 +68,7 @@ export class ResidentAdvisorAdapter {
       title: `${event.venue}`,
       address: `${addr}`,
       location,
-      lineup: `${event.lineup}`.split(", "),
+      lineup: this.extractLineup(event.lineup),
       time: {
         begin: `${time[0]}`,
         end: `${time[1]}`
