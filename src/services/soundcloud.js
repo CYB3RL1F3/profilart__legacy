@@ -89,9 +89,7 @@ export class Soundcloud extends Service {
     });
     if (res) {
       try {
-        console.log(res);
         const playlist = await this.adapter.adaptPlaylist(res);
-        console.log(playlist);
         await this.persist(profile, "playlist", playlist);
         return playlist;
       } catch (e) {
@@ -100,7 +98,6 @@ export class Soundcloud extends Service {
       }
     } else {
       const data = await this.fromDb(profile, "playlist");
-      console.log(data);
       if (data) {
         return data.content;
       } else {

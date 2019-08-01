@@ -142,7 +142,8 @@ export class Router {
   initPublicRoutes() {
     // GET requests
     Object.keys(this.services.public.get).forEach(service => {
-      this.app.get(`/:uid/${service}`, async (req, res) => {
+      const serviceName = service === "all" ? "" : service;
+      this.app.get(`/:uid/${serviceName}`, async (req, res) => {
         try {
           const query = this.services.public.get[service];
           const result = await this.run(req, query, service, req.query);

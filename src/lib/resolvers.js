@@ -23,7 +23,6 @@ class Resolvers {
   };
 
   resolvePlaylistUrl = (profile, endpoint) => {
-    console.log(profile.soundcloud);
     const baseUrl = profile.soundcloud.url;
     const url = `${baseUrl}/sets/${endpoint}`;
     return `https://api-v2.soundcloud.com/resolve?url=${url}&client_id=${
