@@ -152,7 +152,7 @@ export class GraphQL {
   run = async (uid, serviceName, service, args) => {
     try {
       const profile = await this.router.profiles.get(uid);
-      if (!profile) throw err(400, "profile not found");
+      if (!profile) throw err(404, "profile not found");
       this.router.validator.checkProfile(profile, serviceName);
       const result = await service(profile, args);
       return result;

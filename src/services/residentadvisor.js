@@ -14,16 +14,16 @@ export class ResidentAdvisor extends Service {
     this.adapter = new ResidentAdvisorAdapter();
   }
 
-  query = async (endpoint, method, payload) => {
+  query = async (endpoint, method, form) => {
     const url = `${endpoint}/${method}`;
     const options = {
-      url: url,
+      url,
       method: "POST",
       headers: {
-        "User-Agent": "RAPI/0.0.1",
+        "User-Agent": "Profilart/1.0 +https://profilart.fr",
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      form: payload
+      form
     };
     const { RA } = await this.api.requestAndParseXML(options);
     return RA;
@@ -42,12 +42,14 @@ export class ResidentAdvisor extends Service {
           ChartID: ""
         }
       );
+      if (!response.charts[0]) throw this.getError(["no chart data"]);
       const charts = this.adapter.adapt(response, "charts");
       await this.persist(profile, "charts", charts);
       return charts;
     } catch (e) {
       console.log(e);
       const { content } = await this.fromDb(profile, "charts");
+      if (!charts.length) throw e;
       return content;
     }
   };
@@ -73,11 +75,18 @@ export class ResidentAdvisor extends Service {
           year: args.year || ""
         }
       );
+      if (
+        !response.events[0] ||
+        (response.events[0].accesserrors || []).length
+      ) {
+        throw this.getError(response.events[0].accesserrors[0].error);
+      }
       const events = await this.adapter.adaptEvents(response);
       await this.persist(profile, persistKey, events);
       return events;
     } catch (e) {
       const { content } = await this.fromDb(profile, persistKey);
+      if (!content.length) throw e;
       return content;
     }
   };
@@ -95,6 +104,9 @@ export class ResidentAdvisor extends Service {
     return event;
   };
 
+  getError = error =>
+    err(500, `error with Resident Advisor API : ${error.join(", ")}`);
+
   getInfos = async profile => {
     try {
       const response = await this.query(
@@ -108,11 +120,19 @@ export class ResidentAdvisor extends Service {
           URL: ""
         }
       );
+
+      if (
+        !response.artist[0] ||
+        (response.artist[0].accesserrors || []).length
+      ) {
+        throw this.getError(response.artist[0].accesserrors[0].error);
+      }
       const infos = this.adapter.adapt(response, "infos");
       await this.persist(profile, "infos", infos);
       return infos;
     } catch (e) {
       const { content } = await this.fromDb(profile, "infos");
+      if (!content.name) throw e;
       return content;
     }
   };
