@@ -82,6 +82,7 @@ export class Router {
   };
 
   fail = (res, e) => {
+    console.log(e);
     const err = JSON.parse(e.message);
     console.log(err);
     res.status(err.code).send(
@@ -104,9 +105,9 @@ export class Router {
   };
 
   initRoutes() {
+    this.initGraphQL();
     this.initPublicRoutes();
     this.initAuthRoutes();
-    this.initGraphQL();
     this.init404();
   }
 

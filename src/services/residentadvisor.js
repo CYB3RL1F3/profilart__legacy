@@ -75,14 +75,9 @@ export class ResidentAdvisor extends Service {
           year: args.year || ""
         }
       );
-      if (
-        !response.events[0] ||
-        (response.events[0].accesserrors || []).length
-      ) {
-        throw this.getError(response.events[0].accesserrors[0].error);
-      }
-      const events = await this.adapter.adaptEvents(response);
+
       await this.persist(profile, persistKey, events);
+      const events = await this.adapter.adaptEvents(response);
       return events;
     } catch (e) {
       const { content } = await this.fromDb(profile, persistKey);
@@ -105,7 +100,12 @@ export class ResidentAdvisor extends Service {
   };
 
   getError = error =>
-    err(500, `error with Resident Advisor API : ${error.join(", ")}`);
+    err(
+      500,
+      `error with Resident Advisor API : ${
+        error && error.length ? error.join(", ") : error
+      }`
+    );
 
   getInfos = async profile => {
     try {
@@ -120,12 +120,14 @@ export class ResidentAdvisor extends Service {
           URL: ""
         }
       );
-
+      if (!response || !response.artist) throw this.getError("no infos data");
       if (
         !response.artist[0] ||
         (response.artist[0].accesserrors || []).length
       ) {
-        throw this.getError(response.artist[0].accesserrors[0].error);
+        throw this.getError(
+          response.artist[0].accesserrors[0].error || ["unknown error"]
+        );
       }
       const infos = this.adapter.adapt(response, "infos");
       await this.persist(profile, "infos", infos);
