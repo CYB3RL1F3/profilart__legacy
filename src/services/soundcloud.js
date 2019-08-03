@@ -52,7 +52,6 @@ export class Soundcloud extends Service {
         id: config.soundcloud.clientId,
         secret: config.soundcloud.clientSecret
       });
-      console.log(config.soundcloud.clientId);
       SC.get(`/users/${profile.soundcloud.id}`, (error, res) => {
         if (res) {
           let infos = this.adapter.adaptInfos(res);
