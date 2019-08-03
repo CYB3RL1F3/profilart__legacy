@@ -20,7 +20,6 @@ export class Soundcloud extends Service {
     new Promise((resolve, reject) => {
       const { id } = args;
       if (!id) throw err(400, "id required");
-
       SC.get(`/tracks/${id}`, (error, res) => {
         if (res && !error) {
           try {
@@ -48,10 +47,6 @@ export class Soundcloud extends Service {
 
   getInfos = profile =>
     new Promise((resolve, reject) => {
-      SC.init({
-        id: config.soundcloud.clientId,
-        secret: config.soundcloud.clientSecret
-      });
       SC.get(`/users/${profile.soundcloud.id}`, (error, res) => {
         if (res) {
           let infos = this.adapter.adaptInfos(res);
@@ -75,14 +70,13 @@ export class Soundcloud extends Service {
 
   getTracks = profile =>
     new Promise((resolve, reject) => {
-      SC.init({
-        id: config.soundcloud.clientId,
-        secret: config.soundcloud.clientSecret
-      });
+      const fromCache = this.cache.get(profile, "soundcloud", "tracks");
+      if (fromCache) return fromCache;
       SC.get(`/users/${profile.soundcloud.id}/tracks`, (error, res) => {
         if (res) {
           let tracks = this.adapter.adapt(res);
           this.persist(profile, "tracks", tracks).then(() => {
+            this.cache.set(profile, "soundcloud", "tracks", tracks);
             resolve(tracks);
           });
         } else {
@@ -103,6 +97,11 @@ export class Soundcloud extends Service {
   getPlaylist = async (profile, args) => {
     const { name } = args;
     if (!name) throw err(400, "missing playlist url fragment in query");
+    const playlistKey = `playlist_${name}`;
+    const fromCache = this.cache.get(profile, "soundcloud", playlistKey);
+    console.log(fromCache);
+    if (fromCache) return fromCache;
+
     const resolver = new Resolvers();
     const api = new Api();
     const resolvedUrl = resolver.resolvePlaylistUrl(profile, name);
@@ -117,14 +116,15 @@ export class Soundcloud extends Service {
     if (res) {
       try {
         const playlist = await this.adapter.adaptPlaylist(res);
-        await this.persist(profile, "playlist", playlist);
+        await this.persist(profile, playlistKey, playlist);
+        this.cache.set(profile, "soundcloud", playlistKey, playlist);
         return playlist;
       } catch (e) {
         console.log(e);
         throw err(500, "an error occured : database's unavailable");
       }
     } else {
-      const data = await this.fromDb(profile, "playlist");
+      const data = await this.fromDb(profile, playlistKey);
       if (data) {
         return data.content;
       } else {

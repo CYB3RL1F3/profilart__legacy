@@ -31,6 +31,8 @@ export class ResidentAdvisor extends Service {
 
   getCharts = async (profile, args) => {
     try {
+      const fromCache = this.cache.get(profile, "RA", "charts");
+      if (fromCache) return fromCache;
       const response = await this.query(
         config.api.residentAdvisor.dj,
         "getcharts",
@@ -45,6 +47,7 @@ export class ResidentAdvisor extends Service {
       if (!response.charts[0]) throw this.getError(["no chart data"]);
       const charts = this.adapter.adapt(response, "charts");
       await this.persist(profile, "charts", charts);
+      this.cache.set(profile, "RA", "charts", charts);
       return charts;
     } catch (e) {
       console.log(e);
@@ -58,7 +61,11 @@ export class ResidentAdvisor extends Service {
     if (!(args && args.type)) {
       throw err(400, "an arg TYPE must be provided.");
     }
-    const persistKey = `events_${this.constructor.EVENTS_TYPE[args.type]}`;
+    const type = this.constructor.EVENTS_TYPE[args.type];
+    const persistKey = `events_${type}`;
+    const fromCache = this.cache.get(profile, "RA", persistKey);
+    if (fromCache) return fromCache;
+
     try {
       const response = await this.query(
         config.api.residentAdvisor.events,
@@ -75,9 +82,9 @@ export class ResidentAdvisor extends Service {
           year: args.year || ""
         }
       );
-
-      await this.persist(profile, persistKey, events);
       const events = await this.adapter.adaptEvents(response);
+      await this.persist(profile, persistKey, events);
+      this.cache.set(profile, "RA", persistKey, events);
       return events;
     } catch (e) {
       const { content } = await this.fromDb(profile, persistKey);
@@ -109,6 +116,8 @@ export class ResidentAdvisor extends Service {
 
   getInfos = async profile => {
     try {
+      const fromCache = this.cache.get(profile, "RA", "infos");
+      if (fromCache) return fromCache;
       const response = await this.query(
         config.api.residentAdvisor.dj,
         "getartist",
@@ -131,6 +140,7 @@ export class ResidentAdvisor extends Service {
       }
       const infos = this.adapter.adapt(response, "infos");
       await this.persist(profile, "infos", infos);
+      this.cache.set(profile, "RA", "infos", infos);
       return infos;
     } catch (e) {
       const { content } = await this.fromDb(profile, "infos");

@@ -36,6 +36,7 @@
     "mailgun-js": "^0.22.0",
     "mongo-sanitize": "^1.0.1",
     "mongodb": "3.2.7",
+    "node-cache": "^4.2.1",
     "node-scrypt": "^0.0.1",
     "node-soundcloud": "^0.0.6",
     "nodemailer": "^6.3.0",

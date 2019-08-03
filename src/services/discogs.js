@@ -10,9 +10,12 @@ export class Discogs extends Service {
 
   getReleases = async profile => {
     try {
+      const fromCache = this.cache.get(profile, "discogs", "releases");
+      if (fromCache) return fromCache;
       const id = profile && profile.discogs && profile.discogs.artistId;
       const endpoint = `${config.api.discogs.api_url}/artists/${id}/releases`;
       const { releases } = await this.query(endpoint);
+
       let results = [];
       if (releases) {
         const partialResults = await Promise.all(
@@ -38,6 +41,7 @@ export class Discogs extends Service {
         });
       }
       await this.persist(profile, "releases", results);
+      this.cache.set(profile, "discogs", "releases", results);
       return results;
     } catch (e) {
       try {
