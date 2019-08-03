@@ -1,4 +1,3 @@
-// to be implemented
 import SC from "node-soundcloud";
 import config from "../config";
 import SoundcloudAdapter from "../adapters/soundcloud";
@@ -11,16 +10,17 @@ export class Soundcloud extends Service {
   constructor(database) {
     super(database);
     this.adapter = new SoundcloudAdapter();
+    SC.init({
+      id: config.soundcloud.clientId,
+      secret: config.soundcloud.clientSecret
+    });
   }
 
   getTrack = (profile, args) =>
     new Promise((resolve, reject) => {
       const { id } = args;
       if (!id) throw err(400, "id required");
-      SC.init({
-        id: config.soundcloud.clientId,
-        secret: config.soundcloud.clientSecret
-      });
+
       SC.get(`/tracks/${id}`, (error, res) => {
         if (res && !error) {
           try {
@@ -41,6 +41,34 @@ export class Soundcloud extends Service {
             })
             .catch(e => {
               reject(err(500, e.message || "an error occured"));
+            });
+        }
+      });
+    });
+
+  getInfos = profile =>
+    new Promise((resolve, reject) => {
+      SC.init({
+        id: config.soundcloud.clientId,
+        secret: config.soundcloud.clientSecret
+      });
+      console.log(config.soundcloud.clientId);
+      SC.get(`/users/${profile.soundcloud.id}`, (error, res) => {
+        if (res) {
+          let infos = this.adapter.adaptInfos(res);
+          this.persist(profile, "infos", infos).then(() => {
+            resolve(infos);
+          });
+        } else {
+          this.fromDb(profile, "infos")
+            .then(data => {
+              resolve(data.content);
+            })
+            .catch(e => {
+              if (error) reject(err(400, error));
+              else {
+                reject(err(400, "request to soundcloud not completed..."));
+              }
             });
         }
       });

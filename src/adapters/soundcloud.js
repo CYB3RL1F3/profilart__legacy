@@ -5,7 +5,7 @@ export class SoundcloudAdapter {
     const { clientId } = config.soundcloud;
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach(key => {
-      track[key] = `${track[key]}?clientId=${clientId}`;
+      track[key] = track[key] ? `${track[key]}?clientId=${clientId}` : null;
     });
     return {
       id: track.id,
@@ -78,6 +78,26 @@ export class SoundcloudAdapter {
       license: track.license,
       taglist: this.extractTagList(track.tag_list),
       waveform: trackInfos.waveform_url
+    };
+  };
+
+  adaptInfos = data => {
+    return {
+      name: data.username,
+      realname: data.full_name,
+      country: data.country,
+      labels: "",
+      website: data.website,
+      RA: "",
+      facebook: "",
+      twitter: "",
+      discogs: `https://discogs.com/artist/${data.discogs_name}`,
+      soundcloud: data.permalink_url,
+      picture: data.avatar_url,
+      bio: {
+        intro: "",
+        content: data.description
+      }
     };
   };
 

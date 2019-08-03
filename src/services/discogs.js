@@ -21,7 +21,11 @@ export class Discogs extends Service {
             if (infos.main_release_url) {
               infos = await this.query(infos.main_release_url);
             }
-            return this.adapter.adaptRelease(release, infos);
+            const adaptedRelease = await this.adapter.adaptRelease(
+              release,
+              infos
+            );
+            return adaptedRelease;
           })
         );
         partialResults.forEach(value => {
