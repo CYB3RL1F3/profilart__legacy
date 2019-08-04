@@ -57,11 +57,25 @@ export class ResidentAdvisor extends Service {
     }
   };
 
+  getEventType(type) {
+    if (type.toString() === "1" || type.toString() === "2") {
+      return this.constructor.EVENTS_TYPE[type];
+    }
+    if (
+      type === this.constructor.EVENTS_TYPE["1"] ||
+      type === this.constructor.EVENTS_TYPE["2"]
+    ) {
+      return type;
+    }
+    return null;
+  }
+
   getEvents = async (profile, args) => {
     if (!(args && args.type)) {
       throw err(400, "an arg TYPE must be provided.");
     }
-    const type = this.constructor.EVENTS_TYPE[args.type];
+    const type = this.getEventType(args.type);
+    if (!type) throw err(400, "invalid type arg");
     const persistKey = `events_${type}`;
     const fromCache = this.cache.get(profile, "RA", persistKey);
     if (fromCache) return fromCache;
