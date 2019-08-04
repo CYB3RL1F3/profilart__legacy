@@ -95,6 +95,7 @@ export class ResidentAdvisor extends Service {
 
   getEventById = async (profile, args) => {
     if (!(args && args.ID)) {
+      if (args && args.name) return this.getEventByName(profile, args);
       throw err(400, "an arg ID must be provided.");
     }
     if (!(args && args.type)) {
@@ -102,6 +103,19 @@ export class ResidentAdvisor extends Service {
     }
     const events = await this.getEvents(profile, args);
     const event = events.find(event => event.id === args.ID);
+    if (!event) throw err(400, "Event not found");
+    return event;
+  };
+
+  getEventByName = async (profile, args) => {
+    if (!(args && args.name)) {
+      throw err(400, "an arg name must be provided.");
+    }
+    if (!(args && args.type)) {
+      throw err(400, "an arg TYPE must be provided.");
+    }
+    const events = await this.getEvents(profile, args);
+    const event = events.find(event => event.title === args.name);
     if (!event) throw err(400, "Event not found");
     return event;
   };

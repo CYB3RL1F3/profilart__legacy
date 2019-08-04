@@ -99,7 +99,6 @@ export class Soundcloud extends Service {
     if (!name) throw err(400, "missing playlist url fragment in query");
     const playlistKey = `playlist_${name}`;
     const fromCache = this.cache.get(profile, "soundcloud", playlistKey);
-    console.log(fromCache);
     if (fromCache) return fromCache;
 
     const resolver = new Resolvers();

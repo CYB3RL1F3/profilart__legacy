@@ -49,6 +49,7 @@ export class Router {
           track: soundcloud.getTrack,
           playlist: soundcloud.getPlaylist,
           releases: discogs.getReleases,
+          release: discogs.getReleaseById,
           all: all.get
         },
         post: { create: this.profiles.create, login: this.authenticate },

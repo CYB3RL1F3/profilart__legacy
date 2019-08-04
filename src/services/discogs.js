@@ -8,6 +8,30 @@ export class Discogs extends Service {
     this.adapter = new DiscogsAdapter();
   }
 
+  getReleaseByName = async (profile, args) => {
+    if (!(args && args.name)) throw err(400, "a name arg must be provided");
+
+    const releases = await this.getReleases(profile);
+    const release = releases.find(
+      release => release.title.toLowerCase() === args.name.toLowerCase()
+    );
+    return release;
+  };
+
+  getReleaseById = async (profile, args) => {
+    if (!(args && args.id)) {
+      if (args && args.name) return this.getReleaseByName(profile, args);
+      throw err(400, "a name arg must be provided");
+    }
+    const endpoint = `${config.api.discogs.api_url}/releases/${args.id}`;
+
+    const infos = await this.query(endpoint);
+    const release = await this.query(infos.master_url);
+    release.artist = infos.artists_sort;
+    const adaptedRelease = await this.adapter.adaptRelease(release, infos);
+    return adaptedRelease;
+  };
+
   getReleases = async profile => {
     try {
       const fromCache = this.cache.get(profile, "discogs", "releases");
