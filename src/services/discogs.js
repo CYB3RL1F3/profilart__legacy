@@ -1,6 +1,7 @@
 import config from "../config";
 import Service from "../service";
 import DiscogsAdapter from "../adapters/discogs";
+import err from "../err";
 
 export class Discogs extends Service {
   constructor(database) {
@@ -15,6 +16,7 @@ export class Discogs extends Service {
     const release = releases.find(
       release => release.title.toLowerCase() === args.name.toLowerCase()
     );
+    if (!release) throw err(404, "release not found");
     return release;
   };
 
@@ -23,13 +25,12 @@ export class Discogs extends Service {
       if (args && args.name) return this.getReleaseByName(profile, args);
       throw err(400, "a name arg must be provided");
     }
-    const endpoint = `${config.api.discogs.api_url}/releases/${args.id}`;
-
-    const infos = await this.query(endpoint);
-    const release = await this.query(infos.master_url);
-    release.artist = infos.artists_sort;
-    const adaptedRelease = await this.adapter.adaptRelease(release, infos);
-    return adaptedRelease;
+    const releases = await this.getReleases(profile);
+    const release = releases.find(
+      release => parseInt(release.id, 10) === parseInt(args.id, 10)
+    );
+    if (!release) throw err(404, "release not found");
+    return release;
   };
 
   getReleases = async profile => {

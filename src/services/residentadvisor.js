@@ -103,7 +103,7 @@ export class ResidentAdvisor extends Service {
     }
     const events = await this.getEvents(profile, args);
     const event = events.find(event => event.id === args.ID);
-    if (!event) throw err(400, "Event not found");
+    if (!event) throw err(404, "Event not found");
     return event;
   };
 
@@ -115,8 +115,10 @@ export class ResidentAdvisor extends Service {
       throw err(400, "an arg TYPE must be provided.");
     }
     const events = await this.getEvents(profile, args);
-    const event = events.find(event => event.title === args.name);
-    if (!event) throw err(400, "Event not found");
+    const event = events.find(
+      event => event.title.toLowerCase() === args.name.toLowerCase()
+    );
+    if (!event) throw err(404, "Event not found");
     return event;
   };
 
