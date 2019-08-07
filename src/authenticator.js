@@ -36,7 +36,10 @@ export class Authenticator {
         profile
       };
     } catch (e) {
-      Sentry.captureException(e);
+      Sentry.withScope(scope => {
+        scope.setExtra("authenticate", e);
+        Sentry.captureException(e);
+      });
       throw e;
     }
   };

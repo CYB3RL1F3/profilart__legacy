@@ -9,6 +9,7 @@ import passport from "passport";
 import cors from "cors";
 import { snoose } from "./lib/snoose";
 import * as Sentry from "@sentry/node";
+const Ddos = require("ddos");
 
 Sentry.init({
   dsn: config.sentry.dsn
@@ -28,11 +29,33 @@ redisStore.on("error", function(err) {
   console.log("Something went wrong " + err);
 });
 
+// DDOS protection
+const ddos = new Ddos({
+  burst: 3,
+  limit: 6,
+  maxexpiry: 10,
+  trustProxy: true,
+  onDenial: req => {
+    const ip =
+      req.headers["x-forwarded-for"] ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      (req.connection.socket ? req.connection.socket.remoteAddress : null);
+    req.res.status(429).end(
+      JSON.stringify({
+        error: 429,
+        message: `too many request with IP ${ip}`
+      })
+    );
+  }
+});
+
 let port = process.env.PORT || 3000;
 app.set("port", port);
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
+app.use(ddos.express);
 
 app.use(Sentry.Handlers.requestHandler());
 

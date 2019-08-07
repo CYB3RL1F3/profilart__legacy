@@ -160,7 +160,10 @@ export class GraphQL {
       const result = await service(profile, args);
       return result;
     } catch (e) {
-      Sentry.captureException(e);
+      Sentry.withScope(scope => {
+        scope.setExtra("graphql", e);
+        Sentry.captureException(e);
+      });
       throw e;
     }
   };

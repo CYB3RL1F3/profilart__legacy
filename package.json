@@ -24,6 +24,7 @@
     "connect-redis": "^3.4.2",
     "cookieparser": "^0.1.0",
     "cors": "^2.8.5",
+    "ddos": "^0.2.1",
     "dotenv": "^8.0.0",
     "ejs": "^2.6.2",
     "express": "^4.17.1",
