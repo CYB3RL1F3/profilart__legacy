@@ -15,11 +15,23 @@ export class Cache {
   }
   set(profile, service, entry, value) {
     const { cache } = profile;
-    if (cache.use && cache.ttl && cache.ttl[service] > 0) {
+    if (
+      cache.use &&
+      cache.ttl &&
+      cache.ttl[service] > 0 &&
+      this.isSettable(value)
+    ) {
       const key = this.getKey(profile, entry);
       return this.nodeCache.set(key, value, cache.ttl[entry]);
     }
     return false;
+  }
+
+  // choice done not to write in cache empty data
+  isSettable(value) {
+    if (value instanceof Array) return value.length > 0;
+    if (value instanceof Object) return Object.keys(value).length > 0;
+    return true;
   }
 }
 

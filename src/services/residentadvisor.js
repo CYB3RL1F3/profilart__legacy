@@ -2,6 +2,7 @@ import config from "../config";
 import ResidentAdvisorAdapter from "../adapters/residentadvisor";
 import Service from "../service";
 import err from "../err";
+import { RA_Scrapper } from "../lib/ra_scrapper";
 
 export class ResidentAdvisor extends Service {
   static EVENTS_TYPE = {
@@ -148,6 +149,8 @@ export class ResidentAdvisor extends Service {
     try {
       const fromCache = this.cache.get(profile, "RA", "infos");
       if (fromCache) return fromCache;
+      /* TEMPORARY DISABLED ==> API limitation problem. Using scrapper instead.
+      // Might be re-enabled with test cases (if not working, then try scrapping)
       const response = await this.query(
         config.api.residentAdvisor.dj,
         "getartist",
@@ -169,10 +172,14 @@ export class ResidentAdvisor extends Service {
         );
       }
       const infos = this.adapter.adapt(response, "infos");
+      */
+      const scrapper = new RA_Scrapper(profile);
+      const infos = await scrapper.getScrappedData();
       await this.persist(profile, "infos", infos);
       this.cache.set(profile, "RA", "infos", infos);
       return infos;
     } catch (e) {
+      console.log(e);
       const { content } = await this.fromDb(profile, "infos");
       if (!content.name) throw e;
       return content;

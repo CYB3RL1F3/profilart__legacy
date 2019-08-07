@@ -25,7 +25,9 @@ export class Api {
 
   parseXML = response =>
     new Promise((resolve, reject) => {
-      const parser = new xml2js.Parser();
+      const parser = new xml2js.Parser({
+        cdata: true
+      });
       parser.parseString(response.body, (error, data) => {
         if (data && !error) {
           resolve(data);

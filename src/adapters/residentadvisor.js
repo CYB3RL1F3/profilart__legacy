@@ -38,17 +38,17 @@ export class ResidentAdvisorAdapter {
       ({ track }) =>
         track[0] &&
         track[0].chartid && {
-          id: `${track[0].chartid}`,
-          date: `${track[0].chartdate}`,
-          rank: `${track[0].rank}`,
+          id: track[0].chartid[0],
+          date: track[0].chartdate[0],
+          rank: track[0].rank[0],
           tracks: track.map(t => ({
-            id: `${t.trackid}`,
-            artist: `${t.artist}`,
-            title: `${t.title}`,
-            label: `${t.label}`,
-            remix: `${t.mix}`,
-            cover: `${t.cover}`,
-            RA_link: `${t.tracklink}`
+            id: t.trackid[0],
+            artist: t.artist[0],
+            title: t.title[0],
+            label: t.label[0],
+            remix: t.mix[0],
+            cover: t.cover[0],
+            RA_link: t.tracklink[0]
           }))
         }
     );
@@ -57,29 +57,29 @@ export class ResidentAdvisorAdapter {
   adaptEvent = async event => {
     const addr = event.address[0] || event.address;
     const location = await this.mapbox.getLocation(addr);
-    const time = `${event.time}`.split(" - ");
+    const time = event.time[0].split(" - ");
     return {
-      id: `${event.id}`,
-      venueId: `${event.venueid}`,
-      date: `${event.eventdate}`,
-      country: `${event.countryname}`,
-      area: `${event.areaname}`,
-      areaId: `${event.areaId}`,
-      title: `${event.venue}`,
-      address: `${addr}`,
+      id: event.id[0],
+      venueId: event.venueid[0],
+      date: event.eventdate[0],
+      country: event.countryname[0],
+      area: event.areaname[0],
+      areaId: event.areaId[0],
+      title: event.venue[0],
+      address: addr[0],
       location,
       lineup: this.extractLineup(event.lineup),
       time: {
-        begin: `${time[0]}`,
-        end: `${time[1]}`
+        begin: time[0][0],
+        end: time[1][0]
       },
-      cost: `${event.cost}`,
-      promoter: `${event.promoter}`,
+      cost: event.cost[0],
+      promoter: event.promoter[0],
       links: {
-        event: `${event.eventlink}`,
-        venue: `${event.venuelink}`
+        event: event.eventlink[0],
+        venue: event.venuelink[0]
       },
-      flyer: `${event.imagelisting}`
+      flyer: event.imagelisting[0]
     };
   };
 
@@ -95,20 +95,20 @@ export class ResidentAdvisorAdapter {
   adaptInfos = response => {
     const data = response.artist[0];
     return {
-      name: `${data.artistname}`,
-      realname: `${data.realname}`,
-      country: `${data.countryname}`,
-      labels: `${data.labels}`.split(", "),
-      website: `${data.website}`,
-      RA: `${data.raprofile}`,
+      name: data.artistname[0],
+      realname: data.realname[0],
+      country: data.countryname[0],
+      labels: data.labels[0].split(", "),
+      website: data.website[0],
+      RA: data.raprofile[0],
       facebook: `https://facebook.com/${data.facebook}`,
       twitter: `https://twitter.com/${data.twitter}`,
       discogs: `https://discogs.com/artist/${data.discogs}`,
       soundcloud: `https://soundcloud.com/${data.soundcloud}`,
-      picture: `${data.profileimage}`,
+      picture: data.profileimage[0],
       bio: {
-        intro: this.clean(`${data.biointro}`),
-        content: this.clean(`${data.bio}`)
+        intro: this.clean(data.biointro[0]),
+        content: this.clean(data.bio[0])
       }
     };
   };

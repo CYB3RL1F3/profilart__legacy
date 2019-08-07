@@ -10,10 +10,11 @@ export class GraphQL {
     buildSchema(`
       type Query {
         infos(uid: String!): Infos
-        releases(uid: String!): [Releases]
+        releases(uid: String!): [Release]
+        release(uid: String!, id: String, name: String): Release
         charts(uid: String!): [Chart]
-        events(uid: String!, type: Int!): [Event]
-        event(uid: String!, type: Int!, ID: String!): Event
+        events(uid: String!, type: String!): [Event]
+        event(uid: String!, type: String!, ID: String, name: String): Event
         tracks(uid: String!): [Track]
         track(uid: String!, id: Int!): Track
         playlist(uid: String!, name: String!): Playlist
@@ -54,8 +55,10 @@ export class GraphQL {
         title: String
         position: String
         duration: String
+        titleTrack: String
+        stream: Track
       },
-      type Releases {
+      type Release {
         id: Int
         stats: Stats
         thumb: String

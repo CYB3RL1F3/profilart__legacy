@@ -8,9 +8,15 @@ export class Service {
   cache = {};
 
   persist = (profile, key, value) =>
-    this.database.persist(profile.uid, key, value);
+    this.isPersistable(value) && this.database.persist(profile.uid, key, value);
 
   fromDb = (profile, key) => this.database.select(profile.uid, key);
+
+  isPersistable(value) {
+    if (value instanceof Array) return value.length > 0;
+    if (value instanceof Object) return Object.keys(value).length > 0;
+    return true;
+  }
 
   constructor(database) {
     this.api = new Api();
