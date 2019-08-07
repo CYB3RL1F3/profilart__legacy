@@ -1,6 +1,7 @@
 import { SoundcloudAdapter } from "../adapters/soundcloud";
 import SC from "node-soundcloud";
 import config from "../config";
+import * as Sentry from "@sentry/node";
 
 export class ReleaseMatcher {
   soundcloudAdapter = {};
@@ -102,6 +103,10 @@ export class ReleaseMatcher {
           },
           (error, res) => {
             if (error) {
+              Sentry.withScope(scope => {
+                scope.setExtra("releaseMatcher", error);
+                Sentry.captureException(error);
+              });
               reject(error);
             }
             if (res) {

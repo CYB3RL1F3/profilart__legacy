@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/maps": "^0.4.6",
+    "@sentry/node": "5.5.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
@@ -48,6 +49,7 @@
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "scrypt": "^6.0.3",
+    "sentry": "^0.1.2",
     "session": "^0.1.0",
     "winston": "^3.2.1",
     "ws": "^7.0.1",

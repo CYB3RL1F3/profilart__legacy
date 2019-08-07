@@ -2,6 +2,7 @@ import Mailgun from "mailgun-js";
 import Template from "./template";
 import err from "../err";
 import config from "../config";
+import * as Sentry from "@sentry/node";
 
 export class Mailer {
   profile = {};
@@ -49,8 +50,11 @@ export class Mailer {
         html
       );
     } catch (e) {
-      console.log(e);
-      throw err(500, `unable to send mail for reason ${e}`);
+      Sentry.withScope(scope => {
+        scope.setExtra("mailer send", e);
+        Sentry.captureException(e);
+      });
+      throw err(500, `unable to send mail for reason ${e.message || e}`);
     }
   };
 

@@ -2,6 +2,7 @@ import { MongoClient } from "mongodb";
 import sanitize from "mongo-sanitize";
 import config from "../config";
 import err from "../err";
+import * as Sentry from "@sentry/node";
 
 export class Database {
   connect = () =>
@@ -51,6 +52,10 @@ export class Database {
           );
         });
       } catch (e) {
+        Sentry.withScope(scope => {
+          scope.setExtra("persist database", e);
+          Sentry.captureException(e);
+        });
         reject(e);
       }
     });
@@ -72,6 +77,10 @@ export class Database {
           });
         });
       } catch (e) {
+        Sentry.withScope(scope => {
+          scope.setExtra("insert database", e);
+          Sentry.captureException(e);
+        });
         reject(e);
       }
     });
@@ -93,7 +102,10 @@ export class Database {
           });
         });
       } catch (e) {
-        console.log(e);
+        Sentry.withScope(scope => {
+          scope.setExtra("find database", e);
+          Sentry.captureException(e);
+        });
         reject(e);
       }
     });
@@ -104,7 +116,8 @@ export class Database {
         uid = sanitize(uid);
         const client = await this.connect();
         const db = client.db(config.db.base);
-        db.collection(coll, (err, collection) => {
+        db.collection(coll, (error, collection) => {
+          if (error) reject(error);
           const selector = { _id: uid };
           collection.remove(selector, (err, deleted) => {
             client.close();
@@ -116,6 +129,10 @@ export class Database {
           });
         });
       } catch (e) {
+        Sentry.withScope(scope => {
+          scope.setExtra("remove database", error);
+          Sentry.captureException(error);
+        });
         reject(e);
       }
     });

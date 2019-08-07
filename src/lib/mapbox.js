@@ -1,6 +1,7 @@
 import https from "https";
 import MapboxAdapter from "../adapters/mapbox";
 import config from "../config";
+import * as Sentry from "@sentry/node";
 
 export class Mapbox {
   constructor() {
@@ -31,6 +32,10 @@ export class Mapbox {
       });
       return this.adapter.adapt("geocoding", location);
     } catch (e) {
+      Sentry.withScope(scope => {
+        scope.setExtra("mapbox", e);
+        Sentry.captureException(e);
+      });
       return null;
     }
   };

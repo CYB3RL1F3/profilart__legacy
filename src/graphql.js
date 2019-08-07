@@ -1,6 +1,6 @@
 import graphql from "express-graphql";
 import { buildSchema } from "graphql";
-
+import * as Sentry from "@sentry/node";
 export class GraphQL {
   router;
   constructor(router) {
@@ -160,6 +160,7 @@ export class GraphQL {
       const result = await service(profile, args);
       return result;
     } catch (e) {
+      Sentry.captureException(e);
       throw e;
     }
   };

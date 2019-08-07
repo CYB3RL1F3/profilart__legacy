@@ -2,6 +2,7 @@ import { Strategy, ExtractJwt } from "passport-jwt";
 import jwt from "jsonwebtoken";
 import redis from "redis";
 import config from "./config";
+import * as Sentry from "@sentry/node";
 
 export class Authenticator {
   opts = () => ({
@@ -35,6 +36,7 @@ export class Authenticator {
         profile
       };
     } catch (e) {
+      Sentry.captureException(e);
       throw e;
     }
   };

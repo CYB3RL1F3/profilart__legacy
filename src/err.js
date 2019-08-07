@@ -1,9 +1,12 @@
-export const err = (code, message) =>
-  new Error(
+export const err = (code, message) => {
+  const stack = new Error().stack;
+  return new Error(
     JSON.stringify({
       code,
-      message
+      message,
+      stack
     })
   );
+};
 
 export default err;

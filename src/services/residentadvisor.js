@@ -3,6 +3,7 @@ import ResidentAdvisorAdapter from "../adapters/residentadvisor";
 import Service from "../service";
 import err from "../err";
 import { RA_Scrapper } from "../lib/ra_scrapper";
+import * as Sentry from "@sentry/node";
 
 export class ResidentAdvisor extends Service {
   static EVENTS_TYPE = {
@@ -46,12 +47,15 @@ export class ResidentAdvisor extends Service {
         }
       );
       if (!response.charts[0]) throw this.getError(["no chart data"]);
-      const charts = this.adapter.adapt(response, "charts");
+      const charts = await this.adapter.adapt(response, "charts");
       await this.persist(profile, "charts", charts);
       this.cache.set(profile, "RA", "charts", charts);
       return charts;
     } catch (e) {
-      console.log(e);
+      Sentry.withScope(scope => {
+        scope.setExtra("getCharts", e);
+        Sentry.captureException(e);
+      });
       const { content } = await this.fromDb(profile, "charts");
       if (!charts.length) throw e;
       return content;
@@ -102,6 +106,10 @@ export class ResidentAdvisor extends Service {
       this.cache.set(profile, "RA", persistKey, events);
       return events;
     } catch (e) {
+      Sentry.withScope(scope => {
+        scope.setExtra("getEvents", e);
+        Sentry.captureException(e);
+      });
       const { content } = await this.fromDb(profile, persistKey);
       if (!content.length) throw e;
       return content;
@@ -179,9 +187,12 @@ export class ResidentAdvisor extends Service {
       this.cache.set(profile, "RA", "infos", infos);
       return infos;
     } catch (e) {
-      console.log(e);
+      Sentry.withScope(scope => {
+        scope.setExtra("loading", e);
+        Sentry.captureException(e);
+      });
       const { content } = await this.fromDb(profile, "infos");
-      if (!content.name) throw e;
+      if (!content.name) throw err(500, e.message || e);
       return content;
     }
   };

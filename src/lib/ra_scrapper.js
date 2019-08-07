@@ -100,11 +100,6 @@ export class RA_Scrapper {
     }
   };
 
-  getContact = $ =>
-    $(
-      "#Form1 > main > ul > li:nth-child(2) > section > div > div:nth-child(4) > div > div"
-    ).text();
-
   getLabels = $ => {
     const basicLinks = $("#label-slide > ul li");
     const labels = [];

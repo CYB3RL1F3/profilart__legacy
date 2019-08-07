@@ -2,6 +2,7 @@ import config from "../config";
 import Service from "../service";
 import DiscogsAdapter from "../adapters/discogs";
 import err from "../err";
+import * as Sentry from "@sentry/node";
 
 export class Discogs extends Service {
   constructor(database) {
@@ -69,9 +70,17 @@ export class Discogs extends Service {
       this.cache.set(profile, "discogs", "releases", results);
       return results;
     } catch (e) {
+      Sentry.withScope(scope => {
+        scope.setExtra("getReleases", e);
+        Sentry.captureException(e);
+      });
       try {
         return await this.fromDb(profile, "releases");
       } catch (err) {
+        Sentry.withScope(scope => {
+          scope.setExtra("getRelease", err);
+          Sentry.captureException(err);
+        });
         throw e;
       }
     }

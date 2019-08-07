@@ -14,7 +14,8 @@ const {
   SOUNDCLOUD_API_CLIENT_SECRET,
   MAILGUN_USER,
   MAILGUN_EMAIL,
-  MAILGUN_ENDPOINT
+  MAILGUN_ENDPOINT,
+  SENTRY_DSN
 } = process.env;
 
 export const config = {
@@ -56,6 +57,9 @@ export const config = {
       email: MAILGUN_EMAIL,
       endpoint: MAILGUN_ENDPOINT
     }
+  },
+  sentry: {
+    dsn: SENTRY_DSN
   }
 };
 

@@ -5,6 +5,7 @@ import Service from "../service";
 import err from "../err";
 import Api from "../lib/api";
 import Resolvers from "../lib/resolvers";
+import * as Sentry from "@sentry/node";
 
 export class Soundcloud extends Service {
   constructor(database) {
@@ -26,7 +27,11 @@ export class Soundcloud extends Service {
             const track = this.adapter.adaptTrack(res);
             resolve(track);
           } catch (e) {
-            reject(err(500, "error during payload construction"));
+            reject(
+              this.error(
+                err(500, e.message || "error during payload construction")
+              )
+            );
           }
         } else {
           this.fromDb(profile, "tracks")
@@ -39,7 +44,7 @@ export class Soundcloud extends Service {
               }
             })
             .catch(e => {
-              reject(err(500, e.message || "an error occured"));
+              reject(this.error(err(500, e.message || "an error occured")));
             });
         }
       });
@@ -59,14 +64,24 @@ export class Soundcloud extends Service {
               resolve(data.content);
             })
             .catch(e => {
-              if (error) reject(err(400, error));
-              else {
-                reject(err(400, "request to soundcloud not completed..."));
-              }
+              if (error) reject(this.error(err(400, error)));
+              else if (e) reject(this.error(err(500, e.message || e)));
+              else
+                reject(
+                  this.error(err(400, "request to soundcloud not completed..."))
+                );
             });
         }
       });
     });
+
+  error = err => {
+    Sentry.withScope(scope => {
+      scope.setExtra("soundcloud", err);
+      Sentry.captureException(err);
+    });
+    return err;
+  };
 
   getTracks = profile =>
     new Promise((resolve, reject) => {
@@ -85,10 +100,9 @@ export class Soundcloud extends Service {
               resolve(data.content);
             })
             .catch(e => {
-              if (error) reject(err(400, error));
-              else {
-                reject(err(400, "request to soundcloud not completed..."));
-              }
+              if (error) reject(this.error(err(400, error)));
+              else if (e) reject(this.error(err(500, e.message || e)));
+              else reject(err(400, "request to soundcloud not completed..."));
             });
         }
       });
@@ -119,16 +133,14 @@ export class Soundcloud extends Service {
         this.cache.set(profile, "soundcloud", playlistKey, playlist);
         return playlist;
       } catch (e) {
-        console.log(e);
-        throw err(500, "an error occured : database's unavailable");
+        throw this.error(
+          err(500, e.message || "an error occured : database's unavailable")
+        );
       }
     } else {
       const data = await this.fromDb(profile, playlistKey);
-      if (data) {
-        return data.content;
-      } else {
-        throw err(400, "request to soundcloud not completed...");
-      }
+      if (data) return data.content;
+      else throw this.error(err(400, "request to soundcloud not completed..."));
     }
   };
 }
