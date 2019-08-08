@@ -75,6 +75,13 @@ export class ResidentAdvisor extends Service {
     return null;
   }
 
+  getEventTypeNumber(type) {
+    if (type.toString() === "1" || type.toString() === "2") return type;
+    if (type === this.constructor.EVENTS_TYPE["1"]) return 1;
+    if (type === this.constructor.EVENTS_TYPE["2"]) return 2;
+    return null;
+  }
+
   getEvents = async (profile, args) => {
     if (!(args && args.type)) {
       throw err(400, "an arg TYPE must be provided.");
@@ -97,7 +104,7 @@ export class ResidentAdvisor extends Service {
           PromoterID: args.promoterId || "",
           VenueID: args.venueId || "",
           DJID: profile.RA.DJID,
-          option: args.type,
+          option: this.getEventTypeNumber(args.type),
           year: args.year || ""
         }
       );

@@ -66,12 +66,12 @@ export class ResidentAdvisorAdapter {
       area: event.areaname[0],
       areaId: event.areaId[0],
       title: event.venue[0],
-      address: addr[0],
+      address: addr,
       location,
       lineup: this.extractLineup(event.lineup),
       time: {
-        begin: time[0][0],
-        end: time[1][0]
+        begin: time[0],
+        end: time[1]
       },
       cost: event.cost[0],
       promoter: event.promoter[0],
