@@ -1,11 +1,15 @@
 import config from "../config";
 import Api from "../lib/api";
 export class SoundcloudAdapter {
+  clientQS = `?client_id=${config.soundcloud.clientId}`;
+
+  resolveStream = track =>
+    `https://api.soundcloud.com/tracks/${track.id}/stream${this.clientQS}`;
+
   adaptTrack = track => {
-    const { clientId } = config.soundcloud;
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach(key => {
-      track[key] = track[key] ? `${track[key]}?client_id=${clientId}` : null;
+      track[key] = track[key] ? `${track[key]}${this.clientQS}` : null;
     });
     return {
       id: track.id,
@@ -52,9 +56,8 @@ export class SoundcloudAdapter {
     });
     const keys = ["permalink_url", "download_url"];
 
-    const { clientId } = config.soundcloud;
     keys.forEach(key => {
-      track[key] = `${track[key]}?client_id=${clientId}`;
+      track[key] = `${track[key]}${this.clientQS}`;
     });
     return {
       id: track.id,
@@ -73,8 +76,8 @@ export class SoundcloudAdapter {
         favorites: track.favoritings_count
       },
       duration: source.duration,
-      uri: audio.url,
-      url: audio.url,
+      uri: audio.stream_url,
+      url: this.resolveStream(track),
       license: track.license,
       taglist: this.extractTagList(track.tag_list),
       waveform: trackInfos.waveform_url
