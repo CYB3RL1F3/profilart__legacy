@@ -30,6 +30,8 @@ export class DiscogsAdapter {
     release.notes = infos.notes;
     release.images = infos.images.map(image => image.uri);
     release.thumb = release.images[0] || release.thumb;
+    release.discogs = infos.uri;
+    release.styles = infos.styles;
     return release;
   }
 }
