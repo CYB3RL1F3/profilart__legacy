@@ -5,7 +5,7 @@ export class SoundcloudAdapter {
     const { clientId } = config.soundcloud;
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach(key => {
-      track[key] = track[key] ? `${track[key]}?clientId=${clientId}` : null;
+      track[key] = track[key] ? `${track[key]}?client_id=${clientId}` : null;
     });
     return {
       id: track.id,
