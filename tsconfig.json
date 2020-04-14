@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "declaration": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": false,
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "lib": ["es2019", "dom"],
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["*"]
+    }
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["dist", "build", "node_modules"]
+}
