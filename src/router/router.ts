@@ -10,7 +10,7 @@ import Profiles from "../services/profiles";
 import All from "../services/all";
 import Authenticator from "../authenticator";
 import { err } from "../err";
-import GraphQL from "../graphql";
+import GraphQL from "../gql";
 import { Express } from "express";
 import { Services } from "./router.d";
 
