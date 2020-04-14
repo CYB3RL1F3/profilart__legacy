@@ -1,7 +1,7 @@
 import { SoundcloudAdapter } from "adapters/soundcloud";
 import SC from "node-soundcloud";
 import config from "config";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import { ReleaseTrack } from "model/releases";
 import { regexIndexOf } from "./string";
 
@@ -105,9 +105,9 @@ export class ReleaseMatcher {
           },
           (error, res) => {
             if (error) {
-              Sentry.withScope((scope) => {
+              withScope((scope) => {
                 scope.setExtra("releaseMatcher", error);
-                Sentry.captureException(error);
+                captureException(error);
               });
               reject(error);
             }

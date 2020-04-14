@@ -1,18 +1,20 @@
+require("module-alias/register");
+
 /* eslint-disable no-console */
-import express, { Response } from "express";
-import * as bodyParser from "body-parser";
+import bodyParser from "body-parser";
 import Redis from "redis";
+import express from "express";
 import { createServer } from "http";
 import Router from "./router";
 import config from "./config";
 import passport from "passport";
 import cors from "cors";
 import { snoose } from "./lib/snoose";
-import * as Sentry from "@sentry/node";
-import { AddressInfo } from "net";
+import { init as sentry, Handlers } from "@sentry/node";
+
 const Ddos = require("ddos");
 
-Sentry.init({
+sentry({
   dsn: config.sentry.dsn
 });
 
@@ -58,11 +60,10 @@ app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 app.use(ddos.express);
 
-app.use(Sentry.Handlers.requestHandler());
+app.use(Handlers.requestHandler());
 
 app.use(cors());
-app.use((req, res: Response<any>, next) => {
-  req.store = redisStore;
+app.use((req, res, next) => {
   if (/(.css)/g.test(req.path)) {
     res.setHeader("Content-Type", "text/css");
     return next();
@@ -88,11 +89,10 @@ app.use(passport.initialize());
 
 const listen = () => {
   const server = createServer(app);
-  const address: AddressInfo = server.address() as AddressInfo;
-  const router = new Router(app);
+  const router = new Router(app, redisStore);
   router.init();
   server.listen(port, () => {
-    console.log("Listening on %d", address.port);
+    console.log("Listening on %d", port);
     snoose();
   });
 };

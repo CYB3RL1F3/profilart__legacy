@@ -1,6 +1,6 @@
 import graphql from "express-graphql";
 import { buildSchema } from "graphql";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import err from "err";
 import Router from "router";
 import { ProfileModel } from "model/profile";
@@ -169,9 +169,9 @@ export class GraphQL {
       const result = await service(profile, args);
       return result;
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("graphql", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       throw e;
     }

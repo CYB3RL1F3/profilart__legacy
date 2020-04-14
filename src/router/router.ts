@@ -13,6 +13,7 @@ import { err } from "../err";
 import GraphQL from "../gql";
 import { Express } from "express";
 import { Services } from "./router.d";
+import { RedisClient } from "redis";
 
 export class Router {
   services: Services;
@@ -20,9 +21,11 @@ export class Router {
   app: Express;
   validator: Validator;
   profiles: Profiles;
+  redisClient: RedisClient;
 
-  constructor(app: Express) {
+  constructor(app: Express, redisClient: RedisClient) {
     this.app = app;
+    this.redisClient = redisClient;
   }
 
   init() {
@@ -40,7 +43,7 @@ export class Router {
     const all: All = new All(database, residentAdvisor, discogs, soundcloud);
     this.validator = new Validator();
     this.profiles = new Profiles(database);
-    this.authenticator = new Authenticator();
+    this.authenticator = new Authenticator(this.redisClient);
 
     // fill services dictionnary with different ones
     this.services = {

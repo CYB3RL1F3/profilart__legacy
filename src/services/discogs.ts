@@ -2,7 +2,7 @@ import config from "config";
 import Service from "service";
 import DiscogsAdapter from "adapters/discogs";
 import err from "err";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import Database from "lib/database";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
@@ -91,9 +91,9 @@ export class Discogs extends Service {
       this.cache.set<Release[]>(profile, "discogs", Models.releases, results);
       return results;
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("getReleases", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       try {
         const { content } = await this.fromDb<Release[]>(
@@ -102,9 +102,9 @@ export class Discogs extends Service {
         );
         return content;
       } catch (err) {
-        Sentry.withScope((scope) => {
+        withScope((scope) => {
           scope.setExtra("getRelease", err);
-          Sentry.captureException(err);
+          captureException(err);
         });
         throw e;
       }

@@ -6,11 +6,23 @@
   "scripts": {
     "start": "yarn run build && node ./dist/index.js",
     "dev": "nodemon",
-    "build": "yarn install && tsc --outFile ./dist/index.js",
+    "build": "yarn install && tsc",
     "production": "yarn run build && node ./dist/index.js"
   },
   "author": "Cyberlife <cyberlife.music@gmail.com>",
   "license": "ISC",
+  "_moduleAliases": {
+    "lib": "dist/lib",
+    "config": "dist/config",
+    "adapters": "dist/adapters",
+    "model": "dist/model",
+    "router": "dist/router",
+    "services": "dist/services",
+    "authenticator": "dist/authenticator",
+    "err": "dist/err",
+    "gql": "dist/gql",
+    "service": "dist/service"
+  },
   "dependencies": {
     "@google/maps": "^1.1.0",
     "@sentry/node": "5.15.4",
@@ -49,8 +61,9 @@
     "idx": "^2.5.6",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
+    "module-alias": "^2.2.2",
     "mongo-sanitize": "^1.1.0",
-    "mongodb": "3.5.5",
+    "mongodb": "3.5.6",
     "node-cache": "^5.1.0",
     "node-scrypt": "^0.0.1",
     "node-soundcloud": "^0.0.6",
@@ -65,6 +78,7 @@
     "scrypt": "^6.0.3",
     "sentry": "^0.1.2",
     "session": "^0.1.0",
+    "ts-node": "^8.8.2",
     "typescript": "^3.8.3",
     "winston": "^3.2.1",
     "ws": "^7.2.3",

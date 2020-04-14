@@ -8,7 +8,8 @@ import {
 import sanitize from "mongo-sanitize";
 import config from "../../config";
 import err from "../../err";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
+
 import { Data, Selectable } from "./database.d";
 
 export class Database {
@@ -60,9 +61,9 @@ export class Database {
             );
           });
         } catch (e) {
-          Sentry.withScope((scope) => {
+          withScope((scope) => {
             scope.setExtra("persist database", e);
-            Sentry.captureException(e);
+            captureException(e);
           });
           reject(e);
         }
@@ -86,9 +87,9 @@ export class Database {
           });
         });
       } catch (e) {
-        Sentry.withScope((scope) => {
+        withScope((scope) => {
           scope.setExtra("insert database", e);
-          Sentry.captureException(e);
+          captureException(e);
         });
         reject(e);
       }
@@ -115,9 +116,9 @@ export class Database {
           );
         });
       } catch (e) {
-        Sentry.withScope((scope) => {
+        withScope((scope) => {
           scope.setExtra("find database", e);
-          Sentry.captureException(e);
+          captureException(e);
         });
         reject(e);
       }
@@ -142,9 +143,9 @@ export class Database {
           });
         });
       } catch (e) {
-        Sentry.withScope((scope) => {
+        withScope((scope) => {
           scope.setExtra("remove database", e);
-          Sentry.captureException(e);
+          captureException(e);
         });
         reject(e);
       }

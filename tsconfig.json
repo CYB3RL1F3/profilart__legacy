@@ -2,7 +2,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "target": "es5",
-    "module": "amd",
+    "module": "commonjs",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -15,9 +15,11 @@
     "strictNullChecks": false,
     "outDir": "dist",
     "esModuleInterop": true,
-    "lib": ["es6", "es7", "dom"],
+    "lib": ["es2019", "dom"],
     "baseUrl": "./src",
-    "rootDirs": ["src"]
+    "paths": {
+      "*": ["*"]
+    }
   },
   "include": ["./src/**/*"],
   "exclude": ["dist", "build", "node_modules"]

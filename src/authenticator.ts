@@ -1,8 +1,8 @@
 import { Strategy, ExtractJwt, JwtFromRequestFunction } from "passport-jwt";
 import jwt from "jsonwebtoken";
-import redis from "redis";
+import redis, { RedisClient } from "redis";
 import config from "./config";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import { Request } from "express";
 import { Credentials, AuthenticatedProfileResponseModel } from "model/profile";
 import { AuthenticatedProfileModel } from "./model/profile";
@@ -21,6 +21,10 @@ interface AuthenticationPayload {
 }
 
 export class Authenticator {
+  redisClient: RedisClient;
+  constructor(redisClient: RedisClient) {
+    this.redisClient = redisClient;
+  }
   opts = (): Options => ({
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     ...config.jwt
@@ -45,7 +49,7 @@ export class Authenticator {
         },
         config.jwt.secretOrKey
       );
-      req.store.hset(
+      this.redisClient.hset(
         config.redis.collection,
         profile.uid,
         JSON.stringify(profile),
@@ -58,9 +62,9 @@ export class Authenticator {
         profile
       };
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("authenticate", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       throw e;
     }
@@ -73,9 +77,13 @@ export class Authenticator {
         const { email, authenticated, signature, id } = payload;
         const profile = await new Promise<AuthenticatedProfileModel>(
           (resolve) =>
-            req.store.hget(config.redis.collection, id, (err, result) => {
-              result && !err ? resolve(JSON.parse(result)) : resolve(null);
-            })
+            this.redisClient.hget(
+              config.redis.collection,
+              id,
+              (err, result) => {
+                result && !err ? resolve(JSON.parse(result)) : resolve(null);
+              }
+            )
         );
         if (
           authenticated &&

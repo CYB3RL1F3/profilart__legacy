@@ -2,7 +2,7 @@ import Mailgun from "mailgun-js";
 import Template from "./template";
 import err from "../err";
 import config from "../config";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import { ProfileModel } from "model/profile";
 
 export interface EmailParams {
@@ -73,9 +73,9 @@ export class Mailer {
         html
       );
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("mailer send", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       throw err(500, `unable to send mail for reason ${e.message || e}`);
     }

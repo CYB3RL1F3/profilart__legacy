@@ -3,7 +3,7 @@ import ResidentAdvisorAdapter from "../adapters/residentadvisor";
 import Service from "../service";
 import err from "../err";
 import { RA_Scrapper } from "../lib/ra_scrapper";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
 import { Options } from "request";
@@ -80,9 +80,9 @@ export class ResidentAdvisor extends Service {
       this.cache.set<ChartsModel[]>(profile, "RA", Models.charts, charts);
       return charts;
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("getCharts", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       const { content } = await this.fromDb<ChartsModel[]>(
         profile,
@@ -147,9 +147,9 @@ export class ResidentAdvisor extends Service {
       this.cache.set(profile, "RA", persistKey, events);
       return events;
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("getEvents", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       const { content } = await this.fromDb<EventModel[]>(profile, persistKey);
       if (!content.length) throw e;
@@ -234,9 +234,9 @@ export class ResidentAdvisor extends Service {
       this.cache.set<InfosModel>(profile, "RA", Models.infos, infos);
       return infos;
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("loading", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       const { content } = await this.fromDb<InfosModel>(profile, Models.infos);
       if (!content.name) throw err(500, e.message || e);

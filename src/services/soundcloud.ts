@@ -5,7 +5,7 @@ import Service from "../service";
 import err from "../err";
 import Api from "../lib/api";
 import Resolvers from "../lib/resolvers";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
 import { TracksArgs } from "model/tracks";
@@ -92,9 +92,9 @@ export class Soundcloud extends Service {
     });
 
   error = (err) => {
-    Sentry.withScope((scope) => {
+    withScope((scope) => {
       scope.setExtra("soundcloud", err);
-      Sentry.captureException(err);
+      captureException(err);
     });
     return err;
   };

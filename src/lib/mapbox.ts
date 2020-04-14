@@ -1,5 +1,5 @@
 import https from "https";
-import * as Sentry from "@sentry/node";
+import { withScope, captureException } from "@sentry/node";
 import config from "config";
 import MapboxAdapter, { RawLocation } from "adapters/mapbox";
 import { Geocoding } from "model/events";
@@ -35,9 +35,9 @@ export class Mapbox {
       });
       return this.adapter.adaptGeocoding(location);
     } catch (e) {
-      Sentry.withScope((scope) => {
+      withScope((scope) => {
         scope.setExtra("mapbox", e);
-        Sentry.captureException(e);
+        captureException(e);
       });
       return null;
     }
