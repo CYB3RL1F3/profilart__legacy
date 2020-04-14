@@ -4,11 +4,11 @@
   "description": "Profilart's a nodejs API service that provides aggregated data of electronic music artists from popular APIs / websites (RA, Discogs...), to feed apps, etc...",
   "main": "src/index.js",
   "engines": {
-    "node": ">=10.6.0 <12.0.0",
-    "npm": ">=6.0.0"
+    "node": "10.6.0",
+    "npm": "6.10.0"
   },
   "scripts": {
-    "start": "yarn run build && node ./dist/index.js",
+    "start": "node ./dist/index.js",
     "dev": "nodemon",
     "build": "yarn install && tsc",
     "production": "yarn run build && node ./dist/index.js"
@@ -69,7 +69,6 @@
     "mongo-sanitize": "^1.1.0",
     "mongodb": "3.5.6",
     "node-cache": "^5.1.0",
-    "node-scrypt": "^0.0.1",
     "node-soundcloud": "^0.0.6",
     "nodemailer": "^6.4.6",
     "nodemailer-smtp-transport": "^2.7.4",

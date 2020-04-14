@@ -3484,11 +3484,6 @@ node-cache@*, node-cache@^5.1.0:
   dependencies:
     clone "2.x"
 
-node-scrypt@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/node-scrypt/-/node-scrypt-0.0.1.tgz#60299a931a93971c8b617195cc54a578cfd96d11"
-  integrity sha1-YCmakxqTlxyLYXGVzFSleM/ZbRE=
-
 node-soundcloud@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/node-soundcloud/-/node-soundcloud-0.0.6.tgz#99e40b6caa9c9945579c4966868e963ad4415a7e"
