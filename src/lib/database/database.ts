@@ -25,7 +25,7 @@ export class Database {
       }
       MongoClient.connect(
         config.db.address,
-        { useNewUrlParser: true },
+        { useNewUrlParser: true, useUnifiedTopology: true },
         (error, db) => {
           if (error || !db) {
             reject(err(500, "can't connect to DB"));
