@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "dev": "nodemon",
-    "build": "yarn install && tsc",
+    "build": "rimraf ./dist && yarn install && tsc",
     "production": "yarn run build && node ./dist/index.js"
   },
   "author": "Cyberlife <cyberlife.music@gmail.com>",
