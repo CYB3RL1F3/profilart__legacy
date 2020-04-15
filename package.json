@@ -78,6 +78,7 @@
     "passport-local": "^1.0.0",
     "redis": "^3.0.2",
     "request": "^2.88.2",
+    "rimraf": "^3.0.2",
     "scrypt": "^6.0.3",
     "sentry": "^0.1.2",
     "session": "^0.1.0",
