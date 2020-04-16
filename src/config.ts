@@ -18,7 +18,56 @@ const {
   SENTRY_DSN
 } = process.env;
 
-export const config = {
+interface Config {
+  url: string;
+  api: {
+    residentAdvisor: {
+      dj: string;
+      events: string;
+    };
+    discogs: {
+      api_url: string;
+      key: string;
+      secret: string;
+    };
+    timeline: {
+      url: string;
+    };
+  },
+  db: {
+    address: string;
+    base: string;
+  };
+  mapbox: {
+    baseurl: string;
+    api_key: string;
+  };
+  jwt: {
+    secretOrKey: string;
+    passReqToCallback: boolean;
+  };
+  redis: {
+    store: string;
+    collection: string;
+  };
+  soundcloud: {
+    clientId: string;
+    clientSecret: string;
+  };
+  mailer: {
+    mailgun: {
+      user: string;
+      email: string;
+      endpoint: string;
+    };
+  };
+  sentry: {
+    dsn: string;
+  };
+  userAgent: string;
+}
+
+export const config: Config = {
   url: URL,
   api: {
     residentAdvisor: {
@@ -29,6 +78,9 @@ export const config = {
       api_url: "https://api.discogs.com/",
       key: DISCOGS_API_KEY,
       secret: DISCOGS_API_SECRET
+    },
+    timeline: {
+      url: "https://profilart-timeline.herokuapp.com"
     }
   },
   db: {

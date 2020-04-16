@@ -14,6 +14,7 @@ import GraphQL from "../gql";
 import { Express } from "express";
 import { Services } from "./router.d";
 import { RedisClient } from "redis";
+import { Timeline } from '../services/timeline';
 
 export class Router {
   services: Services;
@@ -22,6 +23,7 @@ export class Router {
   validator: Validator;
   profiles: Profiles;
   redisClient: RedisClient;
+  timeline: Timeline;
 
   constructor(app: Express, redisClient: RedisClient) {
     this.app = app;
@@ -41,6 +43,7 @@ export class Router {
     const soundcloud = new Soundcloud(database);
     const contact = new Contact();
     const all: All = new All(database, residentAdvisor, discogs, soundcloud);
+    const timeline = new Timeline(database);
     this.validator = new Validator();
     this.profiles = new Profiles(database);
     this.authenticator = new Authenticator(this.redisClient);
@@ -58,6 +61,7 @@ export class Router {
           playlist: soundcloud.getPlaylist,
           releases: discogs.getReleases,
           release: discogs.getReleaseById,
+          posts: timeline.getPosts,
           all: all.get
         },
         post: {
