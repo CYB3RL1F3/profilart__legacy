@@ -13,6 +13,7 @@ import { Release, ReleasesByIdArgs } from "model/releases";
 import { AllServiceResults } from "model/all";
 import { Status, ContactParams } from "services/contact";
 import { TracksArgs } from "model/tracks";
+import { Posts } from "model/timeline";
 
 export interface Services {
   public: {
@@ -38,6 +39,7 @@ export interface Services {
         profile: ProfileModel,
         args: ReleasesByIdArgs
       ) => Promise<Release>;
+      posts: (profile: ProfileModel) => Promise<Posts>;
       all: (profile: ProfileModel) => Promise<AllServiceResults>;
     };
     post: {
