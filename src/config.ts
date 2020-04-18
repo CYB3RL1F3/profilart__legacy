@@ -15,59 +15,11 @@ const {
   MAILGUN_USER,
   MAILGUN_EMAIL,
   MAILGUN_ENDPOINT,
-  SENTRY_DSN
+  SENTRY_DSN,
+  TIMELINE_URL
 } = process.env;
 
-interface Config {
-  url: string;
-  api: {
-    residentAdvisor: {
-      dj: string;
-      events: string;
-    };
-    discogs: {
-      api_url: string;
-      key: string;
-      secret: string;
-    };
-    timeline: {
-      url: string;
-    };
-  },
-  db: {
-    address: string;
-    base: string;
-  };
-  mapbox: {
-    baseurl: string;
-    api_key: string;
-  };
-  jwt: {
-    secretOrKey: string;
-    passReqToCallback: boolean;
-  };
-  redis: {
-    store: string;
-    collection: string;
-  };
-  soundcloud: {
-    clientId: string;
-    clientSecret: string;
-  };
-  mailer: {
-    mailgun: {
-      user: string;
-      email: string;
-      endpoint: string;
-    };
-  };
-  sentry: {
-    dsn: string;
-  };
-  userAgent: string;
-}
-
-export const config: Config = {
+export const config = {
   url: URL,
   api: {
     residentAdvisor: {
@@ -80,7 +32,7 @@ export const config: Config = {
       secret: DISCOGS_API_SECRET
     },
     timeline: {
-      url: "https://profilart-timeline.herokuapp.com"
+      url: TIMELINE_URL
     }
   },
   db: {

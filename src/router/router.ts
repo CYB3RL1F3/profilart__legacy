@@ -72,11 +72,18 @@ export class Router {
       },
       auth: {
         get: { profile: this.profiles.read },
+        post: { 
+          posts: timeline.addPost
+        },
         patch: {
           profile: this.profiles.update,
-          password: this.profiles.forgottenPassword
+          password: this.profiles.forgottenPassword,
+          posts: timeline.editPost,
         },
-        delete: { profile: this.profiles.remove }
+        delete: { 
+          profile: this.profiles.remove,
+          "posts/:id": timeline.deletePost
+        }
       }
     };
   }
@@ -122,8 +129,8 @@ export class Router {
 
   initRoutes() {
     this.initGraphQL();
-    this.initPublicRoutes();
     this.initAuthRoutes();
+    this.initPublicRoutes();
     this.init404();
   }
 
@@ -135,7 +142,8 @@ export class Router {
       service !== "forbidden"
     ) {
       try {
-        const { uid } = req.params;
+        let { uid } = req.params;
+        if (!uid) throw err(400, "UID not provided");
         profile = await this.profiles.get(uid);
         if (!profile) throw err(400, "profile not found");
         this.validator.checkProfile(profile, service);
@@ -160,6 +168,7 @@ export class Router {
     // GET requests
     Object.keys(this.services.public.get).forEach((service) => {
       const serviceName = service === "all" ? "" : service;
+      console.log(`INIT [GET] /:uid/${serviceName} `);
       this.app.get(`/:uid/${serviceName}`, async (req, res) => {
         try {
           const query = this.services.public.get[service];
@@ -173,6 +182,7 @@ export class Router {
 
     // POST requests
     Object.keys(this.services.public.post).forEach((service) => {
+      console.log(`INIT [POST] /${service} `);
       this.app.post(`/${service}`, async (req, res) => {
         try {
           const query = this.services.public.post[service];
@@ -186,6 +196,7 @@ export class Router {
 
     // UID POST requests
     Object.keys(this.services.public.uidPost).forEach((service) => {
+      console.log(`INIT [POST] /:uid/${service} `);
       this.app.post(`/:uid/${service}`, async (req, res) => {
         try {
           const query = this.services.public.uidPost[service];
@@ -196,48 +207,50 @@ export class Router {
         }
       });
     });
-
-    this.app.get("/forbidden", this.forbidden);
   }
-
+  
   getAuthMiddleware = () =>
-    passport.authenticate("jwt", {
+    passport.authenticate('jwt', {
       session: false,
       failureRedirect: "/forbidden"
     });
 
   initAuthRoutes() {
+    const authMiddleware = this.getAuthMiddleware();
+    this.app.get("/forbidden", this.forbidden);
+    
     Object.keys(this.services.auth).forEach((method) => {
       const services = this.services.auth[method];
       Object.keys(services).forEach((service) => {
-        const uri = `/${service}`;
+        let uri = `/${service}`;
+        console.log(`INIT [${method.toUpperCase()}] ${uri}`)
         switch (method) {
           case "get":
             this.app.get(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, true)
             );
             break;
           case "post":
             this.app.post(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, false)
             );
             break;
           case "patch":
             this.app.patch(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, false)
             );
             break;
           case "delete":
             this.app.delete(
               uri,
-              this.getAuthMiddleware(),
-              this.runAuthQuery(services[service], service, false)
+              authMiddleware,
+              this.runAuthQuery(services[service], service, true)
             );
             break;
         }

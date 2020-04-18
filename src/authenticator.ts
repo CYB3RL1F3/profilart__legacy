@@ -1,4 +1,5 @@
 import { Strategy, ExtractJwt, JwtFromRequestFunction } from "passport-jwt";
+
 import jwt from "jsonwebtoken";
 import redis, { RedisClient } from "redis";
 import config from "./config";
@@ -30,16 +31,42 @@ export class Authenticator {
     ...config.jwt
   });
 
+  verify = async (req: Request, payload: AuthenticationPayload, done) => {
+    const { email, authenticated, signature, id } = payload;
+    const profile = await new Promise<AuthenticatedProfileModel>(
+      (resolve) =>
+        this.redisClient.hget(
+          config.redis.collection,
+          id,
+          (err, result) => {
+            result && !err ? resolve(JSON.parse(result)) : resolve(null);
+          }
+        )
+    );
+    if (
+      authenticated &&
+      profile &&
+      profile.uid === id &&
+      profile.email === email &&
+      profile.token === signature
+    ) {
+      req.params.uid = id;
+      return done(null, JSON.stringify(profile));
+    } else {
+      return done(null, false);
+    }
+  }
+
   authenticate = async (
     credentials: Credentials,
     req: Request,
-    withMethod: (
+    login: (
       credentials: Credentials
     ) => Promise<AuthenticatedProfileResponseModel>
   ) => {
     const { email, password } = credentials;
     try {
-      const profile = await withMethod({ email, password });
+      const profile = await login({ email, password });
       const token = jwt.sign(
         {
           authenticated: true,
@@ -73,32 +100,8 @@ export class Authenticator {
   getStrategy = (): Strategy =>
     new Strategy(
       this.opts(),
-      async (req: Request, payload: AuthenticationPayload, done) => {
-        const { email, authenticated, signature, id } = payload;
-        const profile = await new Promise<AuthenticatedProfileModel>(
-          (resolve) =>
-            this.redisClient.hget(
-              config.redis.collection,
-              id,
-              (err, result) => {
-                result && !err ? resolve(JSON.parse(result)) : resolve(null);
-              }
-            )
-        );
-        if (
-          authenticated &&
-          profile &&
-          profile.uid === id &&
-          profile.email === email &&
-          profile.token === signature
-        ) {
-          req.params.uid = id;
-          return done(null, JSON.stringify(profile));
-        } else {
-          return done(null, false);
-        }
-      }
-    );
+      this.verify
+    )
 }
 
 export default Authenticator;

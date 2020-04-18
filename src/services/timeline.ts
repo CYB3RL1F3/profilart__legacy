@@ -3,8 +3,10 @@ import Database from "lib/database";
 import { ProfileModel } from 'model/profile';
 import config from "config";
 import { Options } from "request";
-import { Posts } from "model/timeline";
+import { Posts, UpdatePost } from "model/timeline";
 import err from "err";
+import { Request } from "express";
+import { DeletePost } from '../model/timeline';
 
 enum HTTPMethod {
   POST = "post",
@@ -28,15 +30,24 @@ export class Timeline extends Service {
       }
     };
     if (token) options.headers.Authorization = token;
-    if (payload) options.body = payload;
+    if (payload) options.body = JSON.stringify(payload);
     try {
       return await this.api.requestAndParseJSON<Result>(options);
     } catch(e) {
+      console.log(e);
       throw err(500, "service unavailable");
     }
    }
   
-  getPosts = async (profile: ProfileModel): Promise<Posts> => 
-    await this.query<Posts>(HTTPMethod.GET, `posts/of/${profile.uid}`)
+  getPosts = async (profile: ProfileModel): Promise<Posts[]> => 
+    await this.query<Posts[]>(HTTPMethod.GET, `posts/of/${profile.uid}`)
   
+  addPost = async (profile: ProfileModel, args: Posts, req: Request): Promise<Posts> => 
+    await this.query<Posts, Posts>(HTTPMethod.POST, `posts`, args, req.header("Authorization"))
+  
+  editPost = async (profile: ProfileModel, args: UpdatePost, req: Request): Promise<Posts> => 
+    await this.query<Posts, Posts>(HTTPMethod.PATCH, `posts/${args.id}`, args.post, req.header("Authorization"))
+
+  deletePost = async (profile: ProfileModel, args: DeletePost, req: Request) => 
+    await this.query<Posts, Posts>(HTTPMethod.DELETE, `posts/${args.id}`, null, req.header("Authorization"))
 }
