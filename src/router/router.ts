@@ -265,9 +265,7 @@ export class Router {
   };
 
   runAuthQuery = (query, service, isGet) => async (req, res) => {
-    console.log('AAAAAAAA');
     try {
-      console.log('PASS > ', service);
       const result = await this.run(
         req,
         query,
