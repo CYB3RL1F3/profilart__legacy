@@ -130,7 +130,7 @@ export class SoundcloudAdapter {
 
   adaptPlaylist = async (playlist: RawPlaylist): Promise<PlaylistModel> => {
     const tracks = await Promise.all<Track>(
-      playlist.tracks.map(async (track) => await this.adaptPlaylistTrack(track))
+      playlist.tracks.map(async (track) => await this.adaptTrack(track))
     );
     return {
       title: playlist.title,

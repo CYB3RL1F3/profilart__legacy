@@ -106,7 +106,15 @@ export class Router {
 
   fail = (res, e) => {
     console.log(e);
-    const err = JSON.parse(e.message);
+    let err;
+    try {
+      err = JSON.parse(e.message);
+    } catch(e) {
+      err = {
+        code: 500,
+        message: "Uncaught fatal exception"
+      }
+    }
     console.log(err);
     res.status(err.code).send(
       JSON.stringify({

@@ -4,7 +4,7 @@ export enum Models {
   events_upcoming = "events_upcoming",
   infos = "infos",
   playlist = "playlist",
-  "profile_dj-sets" = "profile_dj-sets",
+  "playlist_dj-sets" = "playlist_dj-sets",
   profiles = "profiles",
   releases = "releases",
   tracks = "tracks"
