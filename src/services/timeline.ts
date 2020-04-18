@@ -34,6 +34,7 @@ export class Timeline extends Service {
     try {
       return await this.api.requestAndParseJSON<Result>(options);
     } catch(e) {
+      console.log(e);
       throw err(500, "service unavailable");
     }
    }
