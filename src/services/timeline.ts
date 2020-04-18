@@ -30,7 +30,7 @@ export class Timeline extends Service {
       }
     };
     if (token) options.headers.Authorization = token;
-    if (payload) options.body = payload;
+    if (payload) options.body = JSON.stringify(payload);
     try {
       return await this.api.requestAndParseJSON<Result>(options);
     } catch(e) {

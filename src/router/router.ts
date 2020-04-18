@@ -82,7 +82,7 @@ export class Router {
         },
         delete: { 
           profile: this.profiles.remove,
-          posts: timeline.deletePost
+          "posts/:id": timeline.deletePost
         }
       }
     };
@@ -168,6 +168,7 @@ export class Router {
     // GET requests
     Object.keys(this.services.public.get).forEach((service) => {
       const serviceName = service === "all" ? "" : service;
+      console.log(`INIT [GET] /:uid/${serviceName} `);
       this.app.get(`/:uid/${serviceName}`, async (req, res) => {
         try {
           const query = this.services.public.get[service];
@@ -181,6 +182,7 @@ export class Router {
 
     // POST requests
     Object.keys(this.services.public.post).forEach((service) => {
+      console.log(`INIT [POST] /${service} `);
       this.app.post(`/${service}`, async (req, res) => {
         try {
           const query = this.services.public.post[service];
@@ -194,6 +196,7 @@ export class Router {
 
     // UID POST requests
     Object.keys(this.services.public.uidPost).forEach((service) => {
+      console.log(`INIT [POST] /:uid/${service} `);
       this.app.post(`/:uid/${service}`, async (req, res) => {
         try {
           const query = this.services.public.uidPost[service];
@@ -204,8 +207,6 @@ export class Router {
         }
       });
     });
-
-    this.app.get("/forbidden", this.forbidden);
   }
   
   getAuthMiddleware = () =>
@@ -216,10 +217,13 @@ export class Router {
 
   initAuthRoutes() {
     const authMiddleware = this.getAuthMiddleware();
+    this.app.get("/forbidden", this.forbidden);
+    
     Object.keys(this.services.auth).forEach((method) => {
       const services = this.services.auth[method];
       Object.keys(services).forEach((service) => {
-        const uri = `/${service}`;
+        let uri = `/${service}`;
+        console.log(`INIT [${method.toUpperCase()}] ${uri}`)
         switch (method) {
           case "get":
             this.app.get(
@@ -246,7 +250,7 @@ export class Router {
             this.app.delete(
               uri,
               authMiddleware,
-              this.runAuthQuery(services[service], service, false)
+              this.runAuthQuery(services[service], service, true)
             );
             break;
         }

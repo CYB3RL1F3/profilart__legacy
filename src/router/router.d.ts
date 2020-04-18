@@ -71,7 +71,7 @@ export interface Services {
     };
     delete: { 
       profile: (profile: ProfileModel) => Promise<DeletedStatus> 
-      posts: (profile: ProfileModel, args: DeletePost, req: Request) => Promise<any>
+      "posts/:id": (profile: ProfileModel, args: DeletePost, req: Request) => Promise<any>
     };
   };
 }

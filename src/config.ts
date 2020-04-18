@@ -15,7 +15,8 @@ const {
   MAILGUN_USER,
   MAILGUN_EMAIL,
   MAILGUN_ENDPOINT,
-  SENTRY_DSN
+  SENTRY_DSN,
+  TIMELINE_URL
 } = process.env;
 
 export const config = {
@@ -31,7 +32,7 @@ export const config = {
       secret: DISCOGS_API_SECRET
     },
     timeline: {
-      url: "https://profilart-timeline.herokuapp.com"
+      url: TIMELINE_URL
     }
   },
   db: {

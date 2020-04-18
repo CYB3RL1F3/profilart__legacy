@@ -19,6 +19,7 @@ export class Cache {
   set<T>(profile: ProfileModel, service: string, entry: string, value: T) {
     const { cache } = profile;
     if (
+      cache &&
       cache.use &&
       cache.ttl &&
       cache.ttl[service] > 0 &&

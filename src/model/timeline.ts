@@ -6,6 +6,10 @@ export interface Posts {
     createdAt?: Date;
 }
 
+export interface CreatePost extends Posts {
+    authorId?: string;
+}
+
 export interface UpdatePost {
     id: string;
     post: Posts;
