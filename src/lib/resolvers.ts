@@ -26,7 +26,7 @@ class Resolvers {
   resolvePlaylistUrl = (profile: ProfileModel, endpoint: string) => {
     const baseUrl = profile.soundcloud.url;
     const url = `${baseUrl}/sets/${endpoint}`;
-    return `https://api-v2.soundcloud.com/resolve?url=${url}&client_id=${config.soundcloud.clientId}`;
+    return `https://api.soundcloud.com/resolve?url=${url}&client_id=${config.soundcloud.clientId}`;
   };
 
   resolveDiscogsArtistId = (url: string) =>

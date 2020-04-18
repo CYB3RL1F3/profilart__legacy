@@ -158,12 +158,12 @@ export class Soundcloud extends Service {
       try {
         const playlist = await this.adapter.adaptPlaylist(res);
         await this.persist<PlaylistModel>(profile, playlistKey, playlist);
-        this.cache.set<PlaylistModel>(
-          profile,
-          "soundcloud",
-          playlistKey,
-          playlist
-        );
+          this.cache.set<PlaylistModel>(
+            profile,
+            "soundcloud",
+            playlistKey,
+            playlist
+          );
         return playlist;
       } catch (e) {
         throw this.error(
