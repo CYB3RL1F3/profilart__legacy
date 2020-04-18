@@ -72,11 +72,18 @@ export class Router {
       },
       auth: {
         get: { profile: this.profiles.read },
+        post: { 
+          posts: timeline.addPost
+        },
         patch: {
           profile: this.profiles.update,
-          password: this.profiles.forgottenPassword
+          password: this.profiles.forgottenPassword,
+          posts: timeline.editPost,
         },
-        delete: { profile: this.profiles.remove }
+        delete: { 
+          profile: this.profiles.remove,
+          posts: timeline.deletePost
+        }
       }
     };
   }
@@ -122,8 +129,8 @@ export class Router {
 
   initRoutes() {
     this.initGraphQL();
-    this.initPublicRoutes();
     this.initAuthRoutes();
+    this.initPublicRoutes();
     this.init404();
   }
 
@@ -135,7 +142,8 @@ export class Router {
       service !== "forbidden"
     ) {
       try {
-        const { uid } = req.params;
+        let { uid } = req.params;
+        if (!uid) throw err(400, "UID not provided");
         profile = await this.profiles.get(uid);
         if (!profile) throw err(400, "profile not found");
         this.validator.checkProfile(profile, service);
@@ -199,14 +207,15 @@ export class Router {
 
     this.app.get("/forbidden", this.forbidden);
   }
-
+  
   getAuthMiddleware = () =>
-    passport.authenticate("jwt", {
+    passport.authenticate('jwt', {
       session: false,
       failureRedirect: "/forbidden"
     });
 
   initAuthRoutes() {
+    const authMiddleware = this.getAuthMiddleware();
     Object.keys(this.services.auth).forEach((method) => {
       const services = this.services.auth[method];
       Object.keys(services).forEach((service) => {
@@ -215,28 +224,28 @@ export class Router {
           case "get":
             this.app.get(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, true)
             );
             break;
           case "post":
             this.app.post(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, false)
             );
             break;
           case "patch":
             this.app.patch(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, false)
             );
             break;
           case "delete":
             this.app.delete(
               uri,
-              this.getAuthMiddleware(),
+              authMiddleware,
               this.runAuthQuery(services[service], service, false)
             );
             break;
@@ -252,7 +261,9 @@ export class Router {
   };
 
   runAuthQuery = (query, service, isGet) => async (req, res) => {
+    console.log('AAAAAAAA');
     try {
+      console.log('PASS > ', service);
       const result = await this.run(
         req,
         query,

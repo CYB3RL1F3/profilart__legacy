@@ -1,7 +1,7 @@
 require("module-alias/register");
 
 /* eslint-disable no-console */
-import bodyParser from "body-parser";
+import * as bodyParser from "body-parser";
 import Redis from "redis";
 import express from "express";
 import { createServer } from "http";
