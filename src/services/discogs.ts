@@ -86,9 +86,9 @@ export class Discogs extends Service {
             results.push(release);
           }
         });
+        await this.persist<Release[]>(profile, Models.releases, results);
+        this.cache.set<Release[]>(profile, "discogs", Models.releases, results);
       }
-      await this.persist<Release[]>(profile, Models.releases, results);
-      this.cache.set<Release[]>(profile, "discogs", Models.releases, results);
       return results;
     } catch (e) {
       withScope((scope) => {
@@ -111,15 +111,24 @@ export class Discogs extends Service {
     }
   };
 
-  query = <T>(url: string) =>
-    this.api.requestAndParseJSON<T>({
-      url: `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`,
-      method: "GET",
-      headers: {
-        "User-Agent": config.userAgent,
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    });
+  query = async <T>(url: string) => {
+    try {
+      return await this.api.requestAndParseJSON<T>({
+        url: `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`,
+        method: "GET",
+        headers: {
+          "User-Agent": config.userAgent,
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      });
+    } catch(e) {
+      withScope((scope) => {
+          scope.setExtra("fail discogs query", url);
+          captureException(e);
+        });
+      return null;
+    }
+  }
 }
 
 export default Discogs;

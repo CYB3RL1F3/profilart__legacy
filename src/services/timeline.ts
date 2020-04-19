@@ -7,6 +7,7 @@ import { Posts, UpdatePost } from "model/timeline";
 import err from "err";
 import { Request } from "express";
 import { DeletePost } from '../model/timeline';
+import { withScope, captureException } from "@sentry/node";
 
 enum HTTPMethod {
   POST = "post",
@@ -35,6 +36,10 @@ export class Timeline extends Service {
       return await this.api.requestAndParseJSON<Result>(options);
     } catch(e) {
       console.log(e);
+      withScope((scope) => {
+        scope.setExtra("timeline", options);
+        captureException(err);
+      });
       throw err(500, "service unavailable");
     }
    }
