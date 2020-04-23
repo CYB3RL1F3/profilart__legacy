@@ -10,8 +10,11 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "dev": "nodemon",
-    "build": "rimraf ./dist && yarn install && tsc",
-    "production": "yarn run build && node ./dist/index.js"
+    "build": "yarn run clean && yarn install && tsc",
+    "production": "yarn run build && node ./dist/index.js",
+    "postbuild": "yarn run copy-files",
+    "copy-files": "./node_modules/copyfiles/copyfiles -u 1 src/**/*.json dist",
+    "clean": "rimraf ./dist"
   },
   "author": "Cyberlife <cyberlife.music@gmail.com>",
   "license": "ISC",
@@ -51,6 +54,7 @@
     "concurrently": "^5.1.0",
     "connect-redis": "^4.0.4",
     "cookieparser": "^0.1.0",
+    "copyfiles": "^2.2.0",
     "cors": "^2.8.5",
     "ddos": "^0.2.1",
     "dotenv": "^8.2.0",
