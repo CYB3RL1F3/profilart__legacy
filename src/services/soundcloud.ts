@@ -108,7 +108,6 @@ export class Soundcloud extends Service {
         
       }
       SC.get(`/users/${profile.soundcloud.id}/tracks`, (error, res) => {
-        console.log(error, res);
         if (res) {
           let tracks = this.adapter.adapt(res);
           this.persist<Track[]>(profile, Models.tracks, tracks).then(() => {

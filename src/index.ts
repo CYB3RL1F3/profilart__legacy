@@ -58,7 +58,6 @@ app.set("port", port);
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
-app.use(ddos.express);
 
 app.use(Handlers.requestHandler());
 
@@ -80,10 +79,15 @@ app.use((req, res, next) => {
     res.setHeader("Content-Type", "text/html");
     return next();
   }
+  if (req.path === "/swagger") {
+    res.setHeader("Content-Type", "text/html");
+    return next();
+  }
   res.setHeader("Content-Type", "application/json");
   return next();
 });
 
+app.use(ddos.express);
 app.use(express.static("public"));
 app.use(passport.initialize());
 

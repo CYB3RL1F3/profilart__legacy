@@ -139,16 +139,21 @@ export class Router {
 
   initSwagger() {
     this.app.use('/swagger', Swagger.serve);
-    this.app.get('/swagger', Swagger.setup(swaggerDocument, {
-      explorer: true
-    }));
+    
+    this.app.use('/swagger', (req, res, next) => {
+      try {
+        res.setHeader("Content-Type", "text/html");
+      } catch(e) {}
+      return next();
+    });
+    this.app.get('/swagger', Swagger.setup(swaggerDocument));
   }
 
   initRoutes() {
     this.initGraphQL();
+    this.initSwagger();
     this.initAuthRoutes();
     this.initPublicRoutes();
-    this.initSwagger();
     this.init404();
   }
 

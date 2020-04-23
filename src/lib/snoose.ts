@@ -5,7 +5,11 @@ export const bip = () => {
   try {
     https.get(config.url);
     setTimeout(() => {
-      https.get(config.api.timeline.url)
+      try {
+        https.get(config.api.timeline.url)
+      } catch(e) {
+        console.log(e);
+      }
     }, 10 * 60 * 1000)
   } catch (e) {
     console.log(e);

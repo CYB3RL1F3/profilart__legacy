@@ -110,6 +110,35 @@
         }
       }
     },
+    "/{uid}/posts": {
+      "get": {
+        "tags": [
+          "posts"
+        ],
+        "summary": "display artist's post from Timeline API",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Posts"
+            }
+          }
+        }
+      }
+    },
     "/{uid}/tracks": {
       "get": {
         "tags": [
@@ -133,7 +162,43 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/Stream"
+              "$ref": "#/definitions/Tracks"
+            }
+          }
+        }
+      }
+    },
+    "/{uid}/playlist?name={name}": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "summary": "display artist's charts from Resident Advisor",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "name of playlist",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Playlist"
             }
           }
         }
@@ -169,7 +234,7 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/Charts"
+              "$ref": "#/definitions/Events"
             }
           }
         }
@@ -186,51 +251,66 @@
   "definitions": {
     "Infos": {
       "type": "object",
+      "description": "infos data",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "artist name"
         },
         "realname": {
-          "type": "string"
+          "type": "string",
+          "description": "artist real name"
         },
         "country": {
-          "type": "string"
+          "type": "string",
+          "description": "artist country"
         },
         "labels": {
           "type": "array",
+          "description": "list of labels where artist figures on",
           "items": {
             "type": "string"
           }
         },
         "website": {
-          "type": "string"
+          "type": "string",
+          "description": "artist's website"
         },
         "RA": {
-          "type": "string"
+          "type": "string",
+          "description": "link to resident advisor artist page"
         },
         "facebook": {
-          "type": "string"
+          "type": "string",
+          "description": "link to facebook page"
         },
         "twitter": {
-          "type": "string"
+          "type": "string",
+          "description": "link to twitter account"
         },
         "discogs": {
-          "type": "string"
+          "type": "string",
+          "description": "link to discogs page"
         },
         "soundcloud": {
-          "type": "string"
+          "type": "string",
+          "description": "link to soundcloud account"
         },
         "picture": {
-          "type": "string"
+          "type": "string",
+          "description": "picture"
         },
         "bio": {
           "type": "object",
+          "description": "bio of the artist",
           "properties": {
             "intro": {
-              "type": "string"
+              "type": "string",
+              "description": "introduction of the bio"
             },
             "content": {
-              "type": "string"
+              "type": "string",
+              "description": "detailed content of the bio"
             }
           }
         }
@@ -239,112 +319,151 @@
         "name": "Infos"
       }
     },
-    "Releases": {
+    "Tracks": {
       "type": "array",
       "items": {
-        "stats": {
-          "type": "object",
-          "properties": {
-            "community": {
-              "type": "object",
-              "properties": {
-                "in_collection": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "in_wantlist": {
-                  "type": "integer",
-                  "format": "int64"
+        "$ref": "#/definitions/Stream"
+      }
+    },
+    "Releases": {
+      "type": "array",
+      "description": "list of releases from discogs",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "type": "object",
+            "description": "release discogs's stats",
+            "properties": {
+              "community": {
+                "type": "object",
+                "properties": {
+                  "in_collection": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "how many people have it in collection"
+                  },
+                  "in_wantlist": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "how many people have it in wantlist"
+                  }
                 }
               }
             }
-          }
-        },
-        "thumb": {
-          "type": "string"
-        },
-        "artist": {
-          "type": "string"
-        },
-        "main_release": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "title": {
-          "type": "string"
-        },
-        "role": {
-          "type": "string"
-        },
-        "year": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "resource_url": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "label": {
-          "type": "string"
-        },
-        "releaseDate": {
-          "type": "string"
-        },
-        "cat": {
-          "type": "string"
-        },
-        "tracklist": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "title": {
-                "type": "string"
-              },
-              "duration": {
-                "type": "string"
-              },
-              "position": {
-                "type": "string"
-              },
-              "fullTitle": {
-                "type": "string"
-              },
-              "stream": {
-                "$ref": "#/definitions/Stream"
-              },
-              "extraartists": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "join": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "anv": {
-                      "type": "string"
-                    },
-                    "tracks": {
-                      "type": "string"
-                    },
-                    "role": {
-                      "type": "string"
-                    },
-                    "resource_url": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "integer",
-                      "format": "int64"
+          },
+          "thumb": {
+            "type": "string",
+            "description": "link to thumb of the artwork"
+          },
+          "artist": {
+            "type": "string",
+            "description": "artist name"
+          },
+          "main_release": {
+            "type": "integer",
+            "format": "int64",
+            "description": "main Discogs release ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "release title"
+          },
+          "role": {
+            "type": "string",
+            "description": "artist's role"
+          },
+          "year": {
+            "type": "integer",
+            "format": "int64",
+            "description": "year of release"
+          },
+          "resource_url": {
+            "type": "string",
+            "description": "discogs url"
+          },
+          "type": {
+            "type": "string",
+            "description": "type"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "ID"
+          },
+          "label": {
+            "type": "string",
+            "description": "label"
+          },
+          "releaseDate": {
+            "type": "string",
+            "description": "release date"
+          },
+          "cat": {
+            "type": "string",
+            "description": "vinyl label cat number"
+          },
+          "tracklist": {
+            "type": "array",
+            "description": "tracklist",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "track title"
+                },
+                "duration": {
+                  "type": "string",
+                  "description": "track duration"
+                },
+                "position": {
+                  "type": "string",
+                  "description": "track order on the tracklist"
+                },
+                "fullTitle": {
+                  "type": "string",
+                  "description": "full resolved title incl. remix"
+                },
+                "stream": {
+                  "$ref": "#/definitions/Stream",
+                  "description": "track streaming from soundcloud"
+                },
+                "extraartists": {
+                  "type": "array",
+                  "description": "list of artists who were working on the track",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "join": {
+                        "type": "string",
+                        "description": "join"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "artist name"
+                      },
+                      "anv": {
+                        "type": "string",
+                        "description": "anv"
+                      },
+                      "tracks": {
+                        "type": "string",
+                        "description": "track list"
+                      },
+                      "role": {
+                        "type": "string",
+                        "description": "artist role"
+                      },
+                      "resource_url": {
+                        "type": "string",
+                        "description": "link to discogs track item url"
+                      },
+                      "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "track ID"
+                      }
                     }
                   }
                 }
@@ -359,95 +478,119 @@
     },
     "Stream": {
       "type": "object",
+      "description": "track stream infos from soundcloud",
       "properties": {
         "id": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "soundcloud track ID"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track title"
         },
         "date": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud publish date"
         },
         "genre": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track genre"
         },
         "artwork": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track artwork"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track description"
         },
         "download": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track download URL"
         },
         "downloadable": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "true if soundcloud track can be downloaded"
         },
         "taglist": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "soundcloud track tags associated"
           }
         },
         "uri": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track uri"
         },
         "url": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track full url"
         },
         "license": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud track license of utilization"
         },
         "stats": {
           "type": "object",
           "properties": {
             "count": {
               "type": "integer",
-              "format": "int64"
+              "format": "int64",
+              "description": "number of counts of the soundcloud track"
             },
             "downloads": {
               "type": "integer",
-              "format": "int64"
+              "format": "int64",
+              "description": "number of downloads of the soundcloud track"
             },
             "favorites": {
               "type": "integer",
-              "format": "int64"
+              "format": "int64",
+              "description": "number of favoritess of the soundcloud track"
             }
           }
         }
       },
       "xml": {
-        "name": "Pet"
+        "name": "Stream"
       }
     },
     "Playlist": {
       "type": "object",
+      "description": "playlist from soundcloud",
       "properties": {
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "name of playlist"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "description of playlist"
         },
         "genre": {
-          "type": "string"
+          "type": "string",
+          "description": "main genre of the playlist"
         },
         "artwork": {
-          "type": "string"
+          "type": "string",
+          "description": "artwork"
         },
         "soundcloud": {
-          "type": "string"
+          "type": "string",
+          "description": "soundcloud URL of the playlist"
         },
         "taglist": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "list of tags of the playlist"
           }
         },
         "tracks": {
           "type": "array",
+          "description": "list of soundcloud tracks in the playlist",
           "items": {
             "$ref": "#/definitions/Stream"
           }
@@ -457,141 +600,205 @@
         "name": "Playlist"
       }
     },
+    "Posts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "post ID"
+          },
+          "authorId": {
+            "type": "string",
+            "description": "UID"
+          },
+          "title": {
+            "type": "string",
+            "description": "post title"
+          },
+          "content": {
+            "type": "string",
+            "description": "post content"
+          },
+          "illustration": {
+            "type": "string",
+            "description": "URL to the image illustring the post"
+          },
+          "subtitle": {
+            "type": "string",
+            "description": "post subtitle"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "post creation date"
+          }
+        }
+      }
+    },
     "Charts": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Resident Advisor chart ID"
           },
           "date": {
-            "type": "string"
-          },
-          "quantity": {
-            "type": "string"
+            "type": "string",
+            "description": "date of publication of the Resident Advisor chart"
           },
           "rank": {
-            "type": "string"
+            "type": "string",
+            "description": "rank in the resident advisor charts list of the artist"
           },
           "tracks": {
             "type": "array",
             "items": {
-              "id": {
-                "type": "string"
-              },
-              "artist": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "remix": {
-                "type": "string"
-              },
-              "cover": {
-                "type": "string"
-              },
-              "RA_link": {
-                "type": "string"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "track ID"
+                },
+                "artist": {
+                  "type": "string",
+                  "description": "artist name of the track"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "track title"
+                },
+                "label": {
+                  "type": "string",
+                  "description": "label where the track is released"
+                },
+                "remix": {
+                  "type": "string",
+                  "description": "remix name (if remixed)"
+                },
+                "cover": {
+                  "type": "string",
+                  "description": "url of the cover picture"
+                },
+                "RA_link": {
+                  "type": "string",
+                  "description": "link to resident advisor track information page"
+                }
               }
             }
           }
         }
-      },
-      "xml": {
-        "name": "Charts"
       }
     },
     "Events": {
       "type": "array",
+      "description": "list of artist's events",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "resident advisor's event ID"
           },
           "venueId": {
-            "type": "string"
+            "type": "string",
+            "description": "resident advisor's venue ID"
           },
           "date": {
-            "type": "string"
+            "type": "string",
+            "description": "event date"
           },
           "country": {
-            "type": "string"
+            "type": "string",
+            "description": "country where event takes place"
           },
           "area": {
-            "type": "string"
+            "type": "string",
+            "description": "area where event takes place"
           },
           "areaId": {
-            "type": "string"
+            "type": "string",
+            "description": "resident advisor's ID of area where event takes place"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "name of the event"
           },
           "address": {
-            "type": "string"
+            "type": "string",
+            "description": "address of the event"
           },
           "location": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": "string",
+                "description": "Mapbox ID of the location"
               },
               "address": {
-                "type": "string"
+                "type": "string",
+                "description": "address resolved by mapbox"
               },
               "position": {
                 "type": "array",
+                "description": "position resolved by mapbox of the place defined in resident advisor's event page",
                 "items": {
                   "type": "number"
-                }
+                },
+                "maxItems": 2,
+                "minItems": 2
               }
             }
           },
           "lineup": {
             "type": "array",
+            "description": "list of artists playing on the lineup of the event",
             "items": {
               "type": "string"
-            }
+            },
+            "uniqueItems": true
           },
           "time": {
             "type": "object",
             "properties": {
               "begin": {
-                "type": "string"
+                "type": "string",
+                "description": "time when event begins"
               },
               "end": {
-                "type": "string"
+                "type": "string",
+                "description": "time when event ends"
               }
             }
           },
           "cost": {
-            "type": "string"
+            "type": "string",
+            "description": "price at the entrance"
           },
           "promoter": {
-            "type": "string"
+            "type": "string",
+            "description": "promoter name"
           },
           "links": {
             "type": "object",
+            "description": "links provided with event",
             "properties": {
               "event": {
-                "type": "string"
+                "type": "string",
+                "description": "link to event page on Resident Advisor"
               },
               "venue": {
-                "type": "string"
+                "type": "string",
+                "description": "link to promoter page on Resident Advisor"
               }
             }
           },
           "flyer": {
-            "type": "string"
+            "type": "string",
+            "description": "URL to the image representing the flyer of the event"
           }
-        },
-        "xml": {
-          "name": "Events"
         }
       }
     }
