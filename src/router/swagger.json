@@ -1,0 +1,603 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Profilart API swagger.",
+    "version": "1.0.5",
+    "title": "Profilart API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "contact@profilart.fr"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "profilart.fr",
+  "basePath": "/",
+  "tags": [
+    
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/{uid}/infos": {
+      "get": {
+        "tags": [
+          "infos"
+        ],
+        "summary": "display artist's infos from RA",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Infos"
+            }
+          }
+        }
+      }
+    },
+    "/{uid}/releases": {
+      "get": {
+        "tags": [
+          "releases"
+        ],
+        "summary": "display artist's releases from discogs",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Releases"
+            }
+          }
+        }
+      }
+    },
+    "/{uid}/charts": {
+      "get": {
+        "tags": [
+          "charts"
+        ],
+        "summary": "display artist's charts from Resident Advisor",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Charts"
+            }
+          }
+        }
+      }
+    },
+    "/{uid}/tracks": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "summary": "display artist's charts from Resident Advisor",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Stream"
+            }
+          }
+        }
+      }
+    },
+    "/{uid}/events?type={type}": {
+      "get": {
+        "tags": [
+          "charts"
+        ],
+        "summary": "display artist's charts from Resident Advisor",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "ID of user",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Event type",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Charts"
+            }
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "jwt",
+      "name": "authorization",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "Infos": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "realname": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "website": {
+          "type": "string"
+        },
+        "RA": {
+          "type": "string"
+        },
+        "facebook": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "discogs": {
+          "type": "string"
+        },
+        "soundcloud": {
+          "type": "string"
+        },
+        "picture": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "object",
+          "properties": {
+            "intro": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Infos"
+      }
+    },
+    "Releases": {
+      "type": "array",
+      "items": {
+        "stats": {
+          "type": "object",
+          "properties": {
+            "community": {
+              "type": "object",
+              "properties": {
+                "in_collection": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "in_wantlist": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "thumb": {
+          "type": "string"
+        },
+        "artist": {
+          "type": "string"
+        },
+        "main_release": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "year": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "resource_url": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "label": {
+          "type": "string"
+        },
+        "releaseDate": {
+          "type": "string"
+        },
+        "cat": {
+          "type": "string"
+        },
+        "tracklist": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "string"
+              },
+              "position": {
+                "type": "string"
+              },
+              "fullTitle": {
+                "type": "string"
+              },
+              "stream": {
+                "$ref": "#/definitions/Stream"
+              },
+              "extraartists": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "join": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "anv": {
+                      "type": "string"
+                    },
+                    "tracks": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    },
+                    "resource_url": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Releases"
+      }
+    },
+    "Stream": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "genre": {
+          "type": "string"
+        },
+        "artwork": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "download": {
+          "type": "string"
+        },
+        "downloadable": {
+          "type": "boolean"
+        },
+        "taglist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uri": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "license": {
+          "type": "string"
+        },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "downloads": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "favorites": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Pet"
+      }
+    },
+    "Playlist": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "genre": {
+          "type": "string"
+        },
+        "artwork": {
+          "type": "string"
+        },
+        "soundcloud": {
+          "type": "string"
+        },
+        "taglist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stream"
+          }
+        }
+      },
+      "xml": {
+        "name": "Playlist"
+      }
+    },
+    "Charts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "string"
+          },
+          "tracks": {
+            "type": "array",
+            "items": {
+              "id": {
+                "type": "string"
+              },
+              "artist": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "remix": {
+                "type": "string"
+              },
+              "cover": {
+                "type": "string"
+              },
+              "RA_link": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Charts"
+      }
+    },
+    "Events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "venueId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "areaId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "position": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "lineup": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "time": {
+            "type": "object",
+            "properties": {
+              "begin": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              }
+            }
+          },
+          "cost": {
+            "type": "string"
+          },
+          "promoter": {
+            "type": "string"
+          },
+          "links": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "type": "string"
+              },
+              "venue": {
+                "type": "string"
+              }
+            }
+          },
+          "flyer": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "Events"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}

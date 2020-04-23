@@ -101,9 +101,14 @@ export class Soundcloud extends Service {
 
   getTracks = (profile: ProfileModel) =>
     new Promise<Track[]>((resolve, reject) => {
-      const fromCache = this.cache.get(profile, "soundcloud", "tracks");
-      if (fromCache) return fromCache;
+      try {
+        const fromCache = this.cache.get<Track[]>(profile, "soundcloud", "tracks");
+        if (fromCache) return resolve(fromCache);
+      } catch(e) {
+        
+      }
       SC.get(`/users/${profile.soundcloud.id}/tracks`, (error, res) => {
+        console.log(error, res);
         if (res) {
           let tracks = this.adapter.adapt(res);
           this.persist<Track[]>(profile, Models.tracks, tracks).then(() => {
@@ -121,9 +126,10 @@ export class Soundcloud extends Service {
               resolve(data.content);
             })
             .catch((e) => {
+              console.log(e);
               if (error) reject(this.error(err(400, error)));
               else if (e) reject(this.error(err(500, e.message || e)));
-              else reject(err(400, "request to soundcloud not completed..."));
+              else reject(this.error(err(400, "request to soundcloud not completed...")));
             });
         }
       });

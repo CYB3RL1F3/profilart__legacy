@@ -15,6 +15,8 @@ import { Express } from "express";
 import { Services } from "./router.d";
 import { RedisClient } from "redis";
 import { Timeline } from '../services/timeline';
+import Swagger from "swagger-ui-express";
+const swaggerDocument = require('./swagger.json');
 
 export class Router {
   services: Services;
@@ -135,10 +137,18 @@ export class Router {
     });
   };
 
+  initSwagger() {
+    this.app.use('/swagger', Swagger.serve);
+    this.app.get('/swagger', Swagger.setup(swaggerDocument, {
+      explorer: true
+    }));
+  }
+
   initRoutes() {
     this.initGraphQL();
     this.initAuthRoutes();
     this.initPublicRoutes();
+    this.initSwagger();
     this.init404();
   }
 
