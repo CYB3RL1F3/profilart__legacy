@@ -28,7 +28,7 @@ export class ResidentAdvisorAdapter extends Adapter {
     }, []);
   };
 
-  adapt = async (response, adapt) => {
+  adapt = async (response, adapt: string): Promise<EventModel[] | ChartsModel[] | InfosModel> => {
     switch (adapt) {
       case "events":
         return await this.adaptEvents(response);

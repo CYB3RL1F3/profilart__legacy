@@ -91,9 +91,9 @@ export class Soundcloud extends Service {
       );
     });
 
-  error = (err) => {
+  error = (err, extra = null) => {
     withScope((scope) => {
-      scope.setExtra("soundcloud", err);
+      scope.setExtra("soundcloud", extra || err);
       captureException(err);
     });
     return err;
@@ -101,8 +101,12 @@ export class Soundcloud extends Service {
 
   getTracks = (profile: ProfileModel) =>
     new Promise<Track[]>((resolve, reject) => {
-      const fromCache = this.cache.get(profile, "soundcloud", "tracks");
-      if (fromCache) return fromCache;
+      try {
+        const fromCache = this.cache.get<Track[]>(profile, "soundcloud", "tracks");
+        if (fromCache) return resolve(fromCache);
+      } catch(e) {
+        
+      }
       SC.get(`/users/${profile.soundcloud.id}/tracks`, (error, res) => {
         if (res) {
           let tracks = this.adapter.adapt(res);
@@ -121,9 +125,10 @@ export class Soundcloud extends Service {
               resolve(data.content);
             })
             .catch((e) => {
+              console.log(e);
               if (error) reject(this.error(err(400, error)));
               else if (e) reject(this.error(err(500, e.message || e)));
-              else reject(err(400, "request to soundcloud not completed..."));
+              else reject(this.error(err(400, "request to soundcloud not completed...")));
             });
         }
       });
@@ -146,14 +151,20 @@ export class Soundcloud extends Service {
     const resolver = new Resolvers();
     const api = new Api();
     const resolvedUrl = resolver.resolvePlaylistUrl(profile, name);
-    const res = await api.requestAndParseJSON<RawPlaylist>({
-      url: resolvedUrl,
-      method: "GET",
-      headers: {
-        "User-Agent": config.userAgent,
-        "Content-Type": "application/json"
-      }
-    });
+    let res;
+    try {
+      res = await api.requestAndParseJSON<RawPlaylist>({
+        url: resolvedUrl,
+        method: "GET",
+        headers: {
+          "User-Agent": config.userAgent,
+          "Content-Type": "application/json"
+        }
+      });
+    } catch(e) {
+      this.error(e, `calling ${resolvedUrl}`);
+    }
+    
     if (res) {
       try {
         const playlist = await this.adapter.adaptPlaylist(res);

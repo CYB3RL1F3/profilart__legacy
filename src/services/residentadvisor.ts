@@ -52,8 +52,19 @@ export class ResidentAdvisor extends Service {
       },
       form
     };
-    const { RA } = await this.api.requestAndParseXML<RAResp<Response>>(options);
-    return RA;
+    try {
+      const { RA } = await this.api.requestAndParseXML<RAResp<Response>>(options);
+      if (!RA) throw new Error(`failing request: ${options.url}`)
+      return RA;
+    } catch(e) {
+      const err = new Error(`failing request: ${options.url}`)
+      withScope((scope) => {
+        scope.setExtra(`call ${endpoint}`, options);
+        captureException(e);
+        captureException(err);
+      });
+      return null;
+    }
   };
 
   getCharts = async (
@@ -143,8 +154,10 @@ export class ResidentAdvisor extends Service {
         }
       );
       const events = await this.adapter.adaptEvents(response);
-      await this.persist(profile, persistKey, events);
-      this.cache.set(profile, "RA", persistKey, events);
+      if (events) {
+        await this.persist(profile, persistKey, events);
+        this.cache.set(profile, "RA", persistKey, events);
+      }
       return events;
     } catch (e) {
       withScope((scope) => {
@@ -230,6 +243,8 @@ export class ResidentAdvisor extends Service {
       */
       const scrapper = new RA_Scrapper(profile);
       const infos = await scrapper.getScrappedData();
+
+      if (!infos) throw this.getError(["no infos"]);
       await this.persist<InfosModel>(profile, Models.infos, infos);
       this.cache.set<InfosModel>(profile, "RA", Models.infos, infos);
       return infos;
