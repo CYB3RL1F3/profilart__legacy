@@ -13,7 +13,7 @@ import { Release, ReleasesByIdArgs } from "model/releases";
 import { AllServiceResults } from "model/all";
 import { Status, ContactParams } from "services/contact";
 import { TracksArgs } from "model/tracks";
-import { Posts, UpdatePost, DeletePost } from "model/timeline";
+import { Post, UpdatePost, DeletePost } from "model/timeline";
 import { Request } from 'express';
 
 export interface Services {
@@ -40,7 +40,7 @@ export interface Services {
         profile: ProfileModel,
         args: ReleasesByIdArgs
       ) => Promise<Release>;
-      posts: (profile: ProfileModel) => Promise<Posts[]>;
+      posts: (profile: ProfileModel) => Promise<Post[]>;
       all: (profile: ProfileModel) => Promise<AllServiceResults>;
     };
     post: {
@@ -59,7 +59,7 @@ export interface Services {
       profile: (profile: ProfileModel) => AuthenticatedProfileResponseModel;
     };
     post: {
-      posts: (profile: ProfileModel, args: Posts, req: Request) => Promise<Posts>;
+      posts: (profile: ProfileModel, args: Post, req: Request) => Promise<Post>;
     };
     patch: {
       profile: (
@@ -67,7 +67,7 @@ export interface Services {
         args: UpdateProfileArgs
       ) => Promise<AuthenticatedProfileResponseModel>;
       password: (args, credentials: Credentials) => Promise<Status>;
-      posts: (profile: ProfileModel, args: UpdatePost, req: Request) => Promise<Posts>;
+      posts: (profile: ProfileModel, args: UpdatePost, req: Request) => Promise<Post>;
     };
     delete: { 
       profile: (profile: ProfileModel) => Promise<DeletedStatus> 

@@ -3,7 +3,7 @@ import Database from "lib/database";
 import { ProfileModel } from 'model/profile';
 import config from "config";
 import { Options } from "request";
-import { Posts, UpdatePost } from "model/timeline";
+import { Post, UpdatePost } from "model/timeline";
 import err from "err";
 import { Request } from "express";
 import { DeletePost } from '../model/timeline';
@@ -44,15 +44,15 @@ export class Timeline extends Service {
     }
    }
   
-  getPosts = async (profile: ProfileModel): Promise<Posts[]> => 
-    await this.query<Posts[]>(HTTPMethod.GET, `posts/of/${profile.uid}`)
+  getPosts = async (profile: ProfileModel): Promise<Post[]> => 
+    await this.query<Post[]>(HTTPMethod.GET, `posts/of/${profile.uid}`)
   
-  addPost = async (profile: ProfileModel, args: Posts, req: Request): Promise<Posts> => 
-    await this.query<Posts, Posts>(HTTPMethod.POST, `posts`, args, req.header("Authorization"))
+  addPost = async (profile: ProfileModel, args: Post, req: Request): Promise<Post> => 
+    await this.query<Post, Post>(HTTPMethod.POST, `posts`, args, req.header("Authorization"))
   
-  editPost = async (profile: ProfileModel, args: UpdatePost, req: Request): Promise<Posts> => 
-    await this.query<Posts, Posts>(HTTPMethod.PATCH, `posts/${args.id}`, args.post, req.header("Authorization"))
+  editPost = async (profile: ProfileModel, args: UpdatePost, req: Request): Promise<Post> => 
+    await this.query<Post, Post>(HTTPMethod.PATCH, `posts/${args.id}`, args.post, req.header("Authorization"))
 
   deletePost = async (profile: ProfileModel, args: DeletePost, req: Request) => 
-    await this.query<Posts, Posts>(HTTPMethod.DELETE, `posts/${args.id}`, null, req.header("Authorization"))
+    await this.query<Post, Post>(HTTPMethod.DELETE, `posts/${args.id}`, null, req.header("Authorization"))
 }

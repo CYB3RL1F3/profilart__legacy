@@ -1,4 +1,5 @@
-export interface Posts {
+export interface Post {
+    _id: string
     title?: string;
     illustration?: string;
     content?: string;
@@ -6,13 +7,13 @@ export interface Posts {
     createdAt?: Date;
 }
 
-export interface CreatePost extends Posts {
+export interface CreatePost extends Post {
     authorId?: string;
 }
 
 export interface UpdatePost {
     id: string;
-    post: Posts;
+    post: Post;
 }
 
 export interface DeletePost {
