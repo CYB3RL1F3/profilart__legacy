@@ -13,7 +13,7 @@
     "build": "yarn run clean && yarn install && tsc",
     "production": "yarn run build && node ./dist/index.js",
     "postbuild": "yarn run copy-files",
-    "copy-files": "./node_modules/copyfiles/copyfiles -u 1 src/**/*.json dist",
+    "copy-files": "./node_modules/copyfiles/copyfiles -u 1 src/**/*.json dist && ./node_modules/copyfiles/copyfiles -u 1 src/**/*.html dist && ./node_modules/copyfiles/copyfiles -u 1 src/**/*.css dist",
     "clean": "rimraf ./dist"
   },
   "author": "Cyberlife <cyberlife.music@gmail.com>",
