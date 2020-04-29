@@ -111,6 +111,7 @@ export class Router {
     let err;
     try {
       err = JSON.parse(e.message);
+      if (!err.code) err.code = 500;
     } catch(e) {
       err = {
         code: 500,
