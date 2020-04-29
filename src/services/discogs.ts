@@ -53,12 +53,14 @@ export class Discogs extends Service {
 
   getReleases = async (profile: ProfileModel): Promise<Release[]> => {
     try {
+      /*
       const fromCache = this.cache.get<Release[]>(
         profile,
         "discogs",
         "releases"
       );
       if (fromCache) return fromCache;
+      */
       const id = profile && profile.discogs && profile.discogs.artistId;
       const endpoint = `${config.api.discogs.api_url}/artists/${id}/releases`;
       const { releases } = await this.query<RawReleases>(endpoint);
@@ -67,9 +69,19 @@ export class Discogs extends Service {
       if (releases) {
         const partialResults = await Promise.all(
           releases.map(async (release) => {
+            if (!release || !release.resource_url) return null;
             let infos = await this.query<ReleaseInfo>(release.resource_url);
-            if (infos.main_release_url) {
-              infos = await this.query<ReleaseInfo>(infos.main_release_url);
+            if (!infos) {
+              console.log("FAIL FETCHING ", release.resource_url);
+              return null;
+            }
+            const mainReleaseUrl = infos.main_release_url;
+            if (mainReleaseUrl) {
+              infos = await this.query<ReleaseInfo>(mainReleaseUrl);
+            }
+            if (!infos) {
+              console.log('main release url => ', mainReleaseUrl);
+              return null;
             }
             const adaptedRelease = await this.adapter.adaptRelease(
               release,
@@ -79,7 +91,7 @@ export class Discogs extends Service {
           })
         );
         partialResults.forEach((release) => {
-          if (
+          if (release &&
             !results.find((result) => result.cat === release.cat) &&
             !results.find((result) => result.title === release.title)
           ) {
@@ -91,6 +103,7 @@ export class Discogs extends Service {
       }
       return results;
     } catch (e) {
+      console.log(e);
       withScope((scope) => {
         scope.setExtra("getReleases", e);
         captureException(e);
