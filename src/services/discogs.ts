@@ -6,6 +6,7 @@ import { withScope, captureException } from "@sentry/node";
 import Database from "lib/database";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
+import Resolvers from '../lib/resolvers';
 import {
   ReleasesByNameArgs,
   ReleasesByIdArgs,
@@ -16,9 +17,11 @@ import {
 
 export class Discogs extends Service {
   adapter: DiscogsAdapter;
+  resolver: Resolvers;
   constructor(database: Database) {
     super(database);
     this.adapter = new DiscogsAdapter();
+    this.resolver = new Resolvers();
   }
 
   getReleaseByName = async (
@@ -53,14 +56,14 @@ export class Discogs extends Service {
 
   getReleases = async (profile: ProfileModel): Promise<Release[]> => {
     try {
-      
+      /*
       const fromCache = this.cache.get<Release[]>(
         profile,
         "discogs",
         "releases"
       );
       if (fromCache) return fromCache;
-      
+      */
       const id = profile && profile.discogs && profile.discogs.artistId;
       const endpoint = `${config.api.discogs.api_url}/artists/${id}/releases`;
       const { releases } = await this.query<RawReleases>(endpoint);
@@ -132,16 +135,32 @@ export class Discogs extends Service {
   };
 
   query = async <T>(url: string) => {
+    
     try {
+      /*
       return await this.api.requestAndParseJSON<T>({
         url: `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`,
         method: "GET",
         headers: {
-          "User-Agent": config.userAgent,
+          "User-Agent": userAgent,
           "Content-Type": "application/x-www-form-urlencoded"
         }
       });
+      */
+      const apiUrl = `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`;
+      return await this.api.requestAndParseJSON<T>({
+        url: this.resolver.resolveDiscogsProxyUrl(),
+        method: "POST",
+        body: JSON.stringify({
+          url: apiUrl
+        }),
+        headers: {
+          "User-Agent": config.userAgent,
+          "Content-Type": "application/json"
+        }
+      });
     } catch(e) {
+      console.log(e);
       withScope((scope) => {
           scope.setExtra("fail discogs query", url);
           captureException(e);

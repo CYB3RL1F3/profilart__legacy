@@ -4,6 +4,7 @@ const {
   URL,
   DISCOGS_API_KEY,
   DISCOGS_API_SECRET,
+  DISCOGS_PROXY_URL,
   MONGODB_URI,
   MONGODB_BASE,
   MAPBOX_API_KEY,
@@ -29,7 +30,9 @@ export const config = {
     discogs: {
       api_url: "https://api.discogs.com/",
       key: DISCOGS_API_KEY,
-      secret: DISCOGS_API_SECRET
+      secret: DISCOGS_API_SECRET,
+      proxy: DISCOGS_PROXY_URL,
+      nbProxies: 5
     },
     timeline: {
       url: TIMELINE_URL
