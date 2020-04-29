@@ -53,14 +53,14 @@ export class Discogs extends Service {
 
   getReleases = async (profile: ProfileModel): Promise<Release[]> => {
     try {
-      /*
+      
       const fromCache = this.cache.get<Release[]>(
         profile,
         "discogs",
         "releases"
       );
       if (fromCache) return fromCache;
-      */
+      
       const id = profile && profile.discogs && profile.discogs.artistId;
       const endpoint = `${config.api.discogs.api_url}/artists/${id}/releases`;
       const { releases } = await this.query<RawReleases>(endpoint);
@@ -70,9 +70,16 @@ export class Discogs extends Service {
         const partialResults = await Promise.all(
           releases.map(async (release) => {
             if (!release || !release.resource_url) return null;
+            if (
+              (typeof release.role !== "undefined" && release.role.toLocaleLowerCase() === "appearance") || 
+              (typeof release.format !== "undefined" && ( 
+                release.format.toLocaleLowerCase().indexOf("mixed") > -1 ||
+                release.format.toLocaleLowerCase().indexOf("comp") > -1
+              ))
+            ) return null;
             let infos = await this.query<ReleaseInfo>(release.resource_url);
             if (!infos) {
-              console.log("FAIL FETCHING ", release.resource_url);
+              console.log("Impossible to fetch infos for release => ", release.resource_url);
               return null;
             }
             const mainReleaseUrl = infos.main_release_url;
@@ -80,7 +87,7 @@ export class Discogs extends Service {
               infos = await this.query<ReleaseInfo>(mainReleaseUrl);
             }
             if (!infos) {
-              console.log('main release url => ', mainReleaseUrl);
+              console.log('No infos fetched for main release url => ', mainReleaseUrl);
               return null;
             }
             const adaptedRelease = await this.adapter.adaptRelease(

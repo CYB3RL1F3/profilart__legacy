@@ -23,6 +23,7 @@ export interface DiscogsRelease {
   label?: string;
   thumb?: string;
   artist?: string;
+  format?: string;
   role?: string;
   year?: number;
   resource_url?: string;
