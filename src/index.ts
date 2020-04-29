@@ -9,7 +9,7 @@ import Router from "./router";
 import config from "./config";
 import passport from "passport";
 import cors from "cors";
-import { snoose } from "./lib/snoose";
+import { alarmClock } from "./lib/alarm";
 import { init as sentry, Handlers } from "@sentry/node";
 
 const Ddos = require("ddos");
@@ -97,7 +97,7 @@ const listen = () => {
   router.init();
   server.listen(port, () => {
     console.log("Listening on %d", port);
-    snoose();
+    alarmClock();
   });
 };
 

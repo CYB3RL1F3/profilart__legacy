@@ -16,6 +16,7 @@ const {
   MAILGUN_USER,
   MAILGUN_EMAIL,
   MAILGUN_ENDPOINT,
+  DISCOGS_NB_PROXIES,
   SENTRY_DSN,
   TIMELINE_URL
 } = process.env;
@@ -32,7 +33,7 @@ export const config = {
       key: DISCOGS_API_KEY,
       secret: DISCOGS_API_SECRET,
       proxy: DISCOGS_PROXY_URL,
-      nbProxies: 5
+      nbProxies: parseInt(DISCOGS_NB_PROXIES.toString())
     },
     timeline: {
       url: TIMELINE_URL

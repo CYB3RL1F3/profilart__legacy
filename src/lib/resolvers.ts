@@ -47,9 +47,11 @@ class Resolvers {
     return profile;
   };
 
+  getDiscogsProxyUrl = (proxyNumber: number) => config.api.discogs.proxy.replace('#', proxyNumber.toString());
+
   resolveDiscogsProxyUrl = () => {
-    const randomProxy = 1 + Math.round(Math.random() * config.api.discogs.nbProxies -1);
-    return config.api.discogs.proxy.replace('#', randomProxy.toString());
+    const randomProxy = Math.round(Math.random() * config.api.discogs.nbProxies);
+    return this.getDiscogsProxyUrl(randomProxy);
   }
 }
 
