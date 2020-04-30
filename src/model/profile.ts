@@ -51,6 +51,7 @@ export interface ProfileData {
 
 export interface ProfileModel extends ProfileData, SecurityProfileData {
   email: string;
+  newPassword?: string;
   cache?: {
     use: boolean;
     ttl: {

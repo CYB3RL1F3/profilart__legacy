@@ -88,6 +88,17 @@ export class Profiles extends Service {
     }
   };
 
+  emailExists = async (email: string): Promise<boolean> => {
+    try {
+      const existingProfile = await this.database.find<ProfileModel>({
+        'content.email': email
+      }, Models.profiles);
+    return !!existingProfile;
+    } catch(e) {
+      return false;
+    }
+  }
+
   isEmail = (email) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
       email
@@ -97,7 +108,7 @@ export class Profiles extends Service {
     profile &&
     profile.email &&
     this.isEmail(profile.email) &&
-    profile.password &&
+    (!profile.newPassword || (profile.newPassword && profile.password)) &&
     profile.artistName &&
     (!profile.residentAdvisor ||
       (profile.residentAdvisor &&
@@ -117,6 +128,10 @@ export class Profiles extends Service {
   ): Promise<AuthenticatedProfileResponseModel> => {
     profile = sanitize(profile);
     if (this.isValid(profile)) {
+      const existingProfile = await this.emailExists(profile.email);
+      if (existingProfile) {
+        throw err(400, "email already exists in database");
+      }
       profile = await this.resolvers.resolveProfile(profile);
       const uid: string = uuid().substring(0, 8);
       profile.uid = uid;
@@ -147,8 +162,16 @@ export class Profiles extends Service {
     args = sanitize(args);
     if (this.isValid(args)) {
       if (args.uid !== profile.uid) {
-        throw err(400, "illegal operation. Must send corresponding UID.");
-        return;
+        throw err(400, "You can't update an account that is not yours. Must send corresponding UID.");
+      }
+      if (args.email !== profile.email) {
+        throw err(400, "You can't update an account that is not yours. Must send corresponding email.");
+      }
+      if (args.newEmail) {
+        const existingProfile = await this.emailExists(args.newEmail);
+        if (existingProfile) {
+          throw err(400, "Email already exists in database");
+        }
       }
       if (args.newPassword) {
         const isPasswordValid = await this.encrypter.check(
@@ -156,25 +179,24 @@ export class Profiles extends Service {
           profile.password
         );
         if (!isPasswordValid) {
-          throw err(400, "old password required to set a new one");
-          return;
+          throw err(400, "Current password required to confirm setting a new one");
         }
       }
+
       let update: ProfileModel;
       if (args.totalReplace) {
         delete args.totalReplace;
-        const { uid, password, encryption } = profile;
+        const { uid, password, encryption, email } = profile;
         update = Object.assign({}, this.replaceFields(args), {
           uid,
           password,
           encryption,
-          email: profile.email
+          email
         });
       } else {
         update = Object.assign({}, profile, this.replaceFields(args));
       }
       update = await this.resolvers.resolveProfile(update);
-
       const { encryption, hash } = await this.encrypter.encrypt(
         update.password
       );
@@ -186,8 +208,8 @@ export class Profiles extends Service {
         update
       );
       if (data) return this.cleanResults(update);
-      throw err(400, "failed during persisting data");
-    } else throw err(400, "invalid payload for update");
+      else throw err(500, "A fatal error occured while persisting profile on the database");
+    } else throw err(400, "Invalid payload sent for profile update");
   };
 
   cleanResults = (
@@ -210,6 +232,9 @@ export class Profiles extends Service {
         delete profile[newKey];
       }
     });
+    if (!profile.residentAdvisor) profile.residentAdvisor = null;
+    if (!profile.soundcloud) profile.soundcloud = null;
+    if (!profile.mailer) profile.mailer = null;
     return profile;
   };
 
