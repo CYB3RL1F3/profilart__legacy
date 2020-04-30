@@ -57,16 +57,7 @@ let port = process.env.PORT || 3000;
 
 app.set("port", port);
 
-// manage bad queries...
-app.use((req, res, next) => {
-  if (req.headers.host.startsWith('www.')) {
-    const newHost = req.headers.host.slice(4)
-    return res.redirect(
-      301,
-      `https://${newHost}${req.originalUrl}`,
-    );
-  }
-});
+// manage bad queries..
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
