@@ -54,6 +54,16 @@ const ddos = new Ddos({
 });
 
 let port = process.env.PORT || 3000;
+
+// manage www.
+app.get('/*', function(req, res, next) {
+  if (req.headers.host.match(/^www/) !== null ) {
+    res.redirect('http://' + req.headers.host.replace(/^www\./, '') + req.url);
+  } else {
+    next();     
+  }
+})
+
 app.set("port", port);
 
 app.use(bodyParser.urlencoded());

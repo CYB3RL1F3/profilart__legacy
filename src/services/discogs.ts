@@ -60,7 +60,7 @@ export class Discogs extends Service {
       const fromCache = this.cache.get<Release[]>(
         profile,
         "discogs",
-        "releases"
+        Models.releases
       );
       if (fromCache) return fromCache;
       
