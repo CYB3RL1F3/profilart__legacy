@@ -55,16 +55,22 @@ const ddos = new Ddos({
 
 let port = process.env.PORT || 3000;
 
-// manage www.
-app.get('/*', function(req, res, next) {
-  if (req.headers.host.match(/^www/) !== null ) {
-    res.redirect('http://' + req.headers.host.replace(/^www\./, '') + req.url);
-  } else {
-    next();     
-  }
-})
-
 app.set("port", port);
+
+// manage bad queries...
+app.use((req, res, next) => {
+  if (req.headers.host.startsWith('www.')) {
+    const newHost = req.headers.host.slice(4)
+    return res.redirect(
+      301,
+      `https://${newHost}${req.originalUrl}`,
+    );
+  } else if (req.secure) {
+    next();
+  } else {
+    res.redirect('https://' + req.headers.host + req.url);
+  }
+});
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
