@@ -65,10 +65,6 @@ app.use((req, res, next) => {
       301,
       `https://${newHost}${req.originalUrl}`,
     );
-  } else if (req.secure || req.protocol === "https") {
-    return next();
-  } else {
-    return res.redirect(301, 'https://' + req.headers.host + req.url);
   }
 });
 
