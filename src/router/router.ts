@@ -7,6 +7,7 @@ import Soundcloud from "../services/soundcloud";
 import Validator from "../lib/validator";
 import Database from "../lib/database";
 import Profiles from "../services/profiles";
+import Status, { StatusResult } from '../services/status';
 import All from "../services/all";
 import Authenticator from "../authenticator";
 import { err } from "../err";
@@ -26,6 +27,7 @@ export class Router {
   profiles: Profiles;
   redisClient: RedisClient;
   timeline: Timeline;
+  status: Status;
 
   constructor(app: Express, redisClient: RedisClient) {
     this.app = app;
@@ -49,6 +51,7 @@ export class Router {
     this.validator = new Validator();
     this.profiles = new Profiles(database);
     this.authenticator = new Authenticator(this.redisClient);
+    this.status = new Status(database, this.redisClient);
 
     // fill services dictionnary with different ones
     this.services = {
@@ -151,7 +154,6 @@ export class Router {
     });
     this.app.get('/swagger', Swagger.setup(swaggerDocument));
   }
-
   initRoutes() {
     this.initGraphQL();
     this.initSwagger();
@@ -166,7 +168,8 @@ export class Router {
       service !== "login" &&
       service !== "create" &&
       service !== "forbidden" &&
-      service !== "password"
+      service !== "password" &&
+      service !== "status"
     ) {
       try {
         let { uid } = req.params;
@@ -211,7 +214,6 @@ export class Router {
     Object.keys(this.services.public.patch).forEach((service) => {
       console.log(`INIT [PATCH] /${service} `);
       this.app.patch(`/${service}`, async (req, res) => {
-        console.log('PASSSSS ', service);
         try {
           const query = this.services.public.patch[service];
           const result = await this.run(req, query, service, req.body);
@@ -234,6 +236,16 @@ export class Router {
           this.fail(res, e);
         }
       });
+    });
+
+    console.log(`INIT [GET] /status `);
+    this.app.get('/status', async (req, res) => {
+      const result: StatusResult = await this.run(req, this.status.getStatus, "status", {});
+      if (result.active) {
+        res.status(200).send(JSON.stringify(result));
+      } else {
+        res.status(500).send(JSON.stringify(result))
+      }
     });
 
     // GET requests

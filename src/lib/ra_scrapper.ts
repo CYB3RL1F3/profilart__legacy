@@ -2,6 +2,7 @@ import cheerio from "cheerio";
 import { get } from "https";
 import err from "../err";
 import { InfosModel } from "model/infos";
+import { ProfileModel } from 'model/profile';
 
 type Link = {
   website?: string;
@@ -22,10 +23,7 @@ interface Bio {
 }
 
 export class RA_Scrapper {
-  profile;
-  constructor(profile) {
-    this.profile = profile;
-  }
+  constructor(readonly profile: ProfileModel) {}
 
   getUrl = (endpoint = ""): string => {
     const { artistName } = this.profile;
