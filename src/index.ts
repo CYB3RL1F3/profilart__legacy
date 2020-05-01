@@ -55,9 +55,10 @@ const ddos = new Ddos({
 });
 
 let port = process.env.PORT || 3000;
-
 app.set("port", port);
-app.use(sslRedirect());
+if (port !== 3000) {
+  app.use(sslRedirect());
+}
 app.enable("trust proxy");
 
 // manage bad queries...
