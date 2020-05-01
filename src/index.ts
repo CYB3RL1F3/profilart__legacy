@@ -11,6 +11,7 @@ import passport from "passport";
 import cors from "cors";
 import { alarmClock } from "./lib/alarm";
 import { init as sentry, Handlers } from "@sentry/node";
+import sslRedirect from "heroku-ssl-redirect";
 
 const Ddos = require("ddos");
 
@@ -56,8 +57,21 @@ const ddos = new Ddos({
 let port = process.env.PORT || 3000;
 
 app.set("port", port);
+app.use(sslRedirect());
+app.enable("trust proxy");
 
-// manage bad queries..
+// manage bad queries...
+app.use((req, res, next) => {
+  let newHost = req.headers.host;
+  if (req.headers.host.startsWith('www.')) {
+    newHost = req.headers.host.slice(4);
+    return res.redirect(
+      301,
+      `https://${newHost}${req.originalUrl}`,
+    );
+  }
+  next();
+});
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());

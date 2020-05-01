@@ -64,6 +64,7 @@
     "express-session": "^1.17.1",
     "fs": "^0.0.2",
     "graphql": "^15.0.0",
+    "heroku-ssl-redirect": "^0.0.4",
     "html": "^1.0.0",
     "http": "^0.0.0",
     "idx": "^2.5.6",
