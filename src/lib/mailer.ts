@@ -16,6 +16,7 @@ export interface ContactArgs {
   name: string;
   email: string;
   subject: string;
+  dest?: string;
 }
 
 interface EmailResult {
@@ -23,10 +24,7 @@ interface EmailResult {
 }
 
 export class Mailer {
-  profile: ProfileModel;
-  constructor(profile: ProfileModel) {
-    this.profile = profile;
-  }
+  constructor(readonly profile: ProfileModel) {}
 
   getParams = (
     name: string,
@@ -36,7 +34,7 @@ export class Mailer {
   ): EmailParams => ({
     from: `${name}<${config.mailer.mailgun.email}>`, // sender address
     to: email, // list of receivers
-    subject: `${this.profile.mailer ? this.profile.mailer.prefix : ''} ${subject}`, // Subject line
+    subject: `${this.profile && this.profile.mailer ? this.profile.mailer.prefix : ''} ${subject}`, // Subject line
     html // html body
   });
 
@@ -68,7 +66,7 @@ export class Mailer {
       const html = await this.getTemplate(template, args);
       return await this.process(
         args.name,
-        this.profile.email,
+        args.dest || this.profile && this.profile.email,
         args.subject,
         html
       );

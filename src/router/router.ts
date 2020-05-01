@@ -71,7 +71,8 @@ export class Router {
         },
         post: {
           create: this.profiles.create,
-          login: this.authenticate
+          login: this.authenticate,
+          support: this.status.contactSupport
         },
         patch: {
           password: this.profiles.forgottenPassword,
@@ -169,7 +170,8 @@ export class Router {
       service !== "create" &&
       service !== "forbidden" &&
       service !== "password" &&
-      service !== "status"
+      service !== "status" && 
+      service !== "support"
     ) {
       try {
         let { uid } = req.params;

@@ -15,6 +15,7 @@ import { Status, ContactParams } from "services/contact";
 import { TracksArgs } from "model/tracks";
 import { Post, UpdatePost, DeletePost } from "model/timeline";
 import { Request } from 'express';
+import { SupportMessage } from "services/status";
 
 export interface Services {
   public: {
@@ -49,6 +50,7 @@ export interface Services {
         profile: ProfileModel
       ) => Promise<AuthenticatedProfileResponseModel>;
       login: (p, body, req) => any;
+      support: (p: any, body: SupportMessage) => void;
     };
     patch: {
       password: (args, credentials: Credentials) => Promise<Status>;
