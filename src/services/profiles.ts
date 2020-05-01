@@ -60,39 +60,54 @@ export class Profiles extends Service {
     args,
     credentials: Credentials
   ): Promise<Status> => {
-    const data = await this.database.find<ProfileModel>(
-      { "content.email": { $eq: sanitize(credentials.email) } },
-      "profiles"
-    );
-    const profile = data.content;
-    const newPassword: string = uuid().substring(0, 8);
-    const encryption = await this.encrypter.encrypt(newPassword);
-    const security = {
-      password: encryption.hash,
-      encryption: encryption.encryption
-    };
-    const update: ProfileModel = Object.assign(profile, security);
-    await this.persist<ProfileModel>(profile, Models.profiles, update);
     try {
-      const sent = await this.sendPasswordByMail(newPassword, profile);
-      if (!sent.error) {
-        return {
-          statusCode: 200,
-          message: "password successfully sent by mail"
-        };
-      } else {
-        throw new Error();
+      console.log(">>>>> ", credentials);
+      const data = await this.database.find<ProfileModel>(
+      { "content.email": {
+        $eq: sanitize(credentials.email)
+      } },
+        Models.profiles
+      );
+      if (!data.content) throw err(400, "this email doesn't belongs to any profile");
+      const profile = data.content;
+      const newPassword: string = `${uuid().substring(0, 12)}!L`;
+      const encryption = await this.encrypter.encrypt(newPassword);
+      const security = {
+        password: encryption.hash,
+        encryption: encryption.encryption
+      };
+      const update: ProfileModel = Object.assign(profile, security);
+      await this.persist<ProfileModel>(profile, Models.profiles, update);
+      try {
+        const sent = await this.sendPasswordByMail(newPassword, profile);
+        if (!sent.error) {
+          return {
+            statusCode: 200,
+            message: "password successfully sent by mail"
+          };
+        } else {
+          throw err(500, "password couldn't have been sent properly")
+        }
+      } catch (e) {
+        console.log(e);
+        throw err(500, "impossible to send via mail. Configure your mailer...");
       }
-    } catch (e) {
-      throw err(500, "impossible to send via mail. Configure your mailer...");
+    } catch(e) {
+      throw err(400, e || "this email doesn't belongs to any profile");
     }
+    
   };
 
   emailExists = async (email: string): Promise<boolean> => {
     try {
-      const existingProfile = await this.database.find<ProfileModel>({
-        'content.email': email
-      }, Models.profiles);
+      const existingProfile = await this.database.find<ProfileModel>(
+        { "content.email": 
+          { 
+            $eq: sanitize(email) 
+          } 
+        },
+        Models.profiles
+      );
     return !!existingProfile;
     } catch(e) {
       return false;
@@ -252,7 +267,7 @@ export class Profiles extends Service {
   sendPasswordByMail(newPassword: string, profile: ProfileModel) {
     const mailer = new Mailer(profile);
     return mailer.send("password.html", {
-      subject: `forgotten password, ${profile.artistName}`,
+      subject: `Your new password, ${profile.artistName}`,
       name: profile.artistName,
       email: profile.email,
       profile,

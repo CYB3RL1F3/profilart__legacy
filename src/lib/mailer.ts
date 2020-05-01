@@ -36,7 +36,7 @@ export class Mailer {
   ): EmailParams => ({
     from: `${name}<${config.mailer.mailgun.email}>`, // sender address
     to: email, // list of receivers
-    subject: `${this.profile.mailer.prefix} ${subject}`, // Subject line
+    subject: `${this.profile.mailer ? this.profile.mailer.prefix : ''} ${subject}`, // Subject line
     html // html body
   });
 

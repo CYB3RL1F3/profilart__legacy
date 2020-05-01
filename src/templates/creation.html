@@ -2,30 +2,29 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Welcome on Profilart <%= profile.artistName %></title>
+        <title>Welcome on Profilart, <%= profile.artistName %></title>
         <style type="text/css">
         body {margin: 0; padding: 0; min-width: 100%!important;}
         </style>
     </head>
     <body>
         <h3 style='font-size: 14px; color: #DE2412;'>
-            <b>Hello <%= profile.artistName %></u> :
+            <b>Hello <%= profile.artistName %></u> !!
         </h3>
         <p style='color: #121212; font-size: 13px;'>
-            Thanks for creating a profile on the PROFILART service.
+            Thanks for creating a profile on the PROFILART service. Welcome on board!
             Here are your credentials <b>you do not have to lose !!!!</b>.
         </p>
         <p style='background: #efeeef; margin: 10px 0; padding: 15px 10px; color: #121212; font-size: 13px;'>
             UID : <%= profile.uid %><br/>
             EMAIL : <%= profile.email %><br/>
-            PASSWORD : XXXXXXX<br/>
         </p>
         <p style='color: #121212; font-size: 13px;'>
             Use your <b>UID</b> as profile identifier to consume the webservice.
         </p>
         <hr/>
         <p style='color: #121212; font-size: 13px;'>
-            Data provided and configured :
+            Data currently provided and configured :
         </p>
         <p style='margin: 10px; color: #121212; font-size: 13px;'>
             <span style='padding-bottom: 10px; width: 100%;'>
@@ -47,14 +46,41 @@
             </span>
             <br/>
             <span style='padding-bottom: 10px; width: 100%;'>
+                <% if (profile.soundcloud) { %>
+                    <span style='color:#12DE12'>&#10003;</span>
+                <% } else { %>
+                    <span style='color:#DE1212'>&#10008;</span>
+                <% } %>
+                Soundcloud API
+            </span>
+            <br/>
+            <span style='padding-bottom: 10px; width: 100%;'>
                 <%if (profile.mailer) { %>
                     <span style='color:#12DE12'>&#10003;</span>
                 <% } else { %>
                     <span style='color:#DE1212'>&#10008;</span>
                 <% } %>
-                Configuration mail (<%= profile.mailer.use %>)
+                Configuration mail
             </span>
         </p>
+        <% if (profile.cache.use) %>
+            <p style='padding-bottom: 10px; width: 100%;'>You also defined some <b>cache TTL</b> to optimize your API consumption : <br />
+                <span style='padding-bottom: 10px; width: 100%;'>
+                    <span style='color:#12DE12'>&#10003;</span> Resident Advisor: <%= profile.cache.ttl.RA %> seconds.
+                </span>
+                <br />
+                <span style='padding-bottom: 10px; width: 100%;'>
+                    <span style='color:#12DE12'>&#10003;</span> Soundcloud: <%= profile.cache.ttl.soundcloud %> seconds.
+                </span>
+                <br />
+                <span style='padding-bottom: 10px; width: 100%;'>
+                    <span style='color:#12DE12'>&#10003;</span> Discogs: <%= profile.cache.ttl.discogs %> seconds.
+                </span>
+            </p>
+        <% } %>
+        <p>Discover how to use <b>Profilart</b> on your apps, websites, services by connecting to <a href="https://profilart.fr">the dashboard</a></p>
+        <p>Checkout the <a href="https://profilart.fr/swagger">swagger</a> to explore available endpoints.</p>
+        <p>Enjoy your experience with Profilart API!</p>
         <hr />
     </body>
 </html>

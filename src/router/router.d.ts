@@ -50,6 +50,9 @@ export interface Services {
       ) => Promise<AuthenticatedProfileResponseModel>;
       login: (p, body, req) => any;
     };
+    patch: {
+      password: (args, credentials: Credentials) => Promise<Status>;
+    }
     uidPost: {
       contact: (profile: ProfileModel, args: ContactParams) => Promise<Status>;
     };
@@ -66,7 +69,6 @@ export interface Services {
         profile: ProfileModel,
         args: UpdateProfileArgs
       ) => Promise<AuthenticatedProfileResponseModel>;
-      password: (args, credentials: Credentials) => Promise<Status>;
       posts: (profile: ProfileModel, args: UpdatePost, req: Request) => Promise<Post>;
     };
     delete: { 

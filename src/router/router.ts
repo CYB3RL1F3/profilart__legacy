@@ -70,6 +70,9 @@ export class Router {
           create: this.profiles.create,
           login: this.authenticate
         },
+        patch: {
+          password: this.profiles.forgottenPassword,
+        },
         uidPost: { contact: contact.mail }
       },
       auth: {
@@ -79,7 +82,6 @@ export class Router {
         },
         patch: {
           profile: this.profiles.update,
-          password: this.profiles.forgottenPassword,
           posts: timeline.editPost,
         },
         delete: { 
@@ -163,7 +165,8 @@ export class Router {
     if (
       service !== "login" &&
       service !== "create" &&
-      service !== "forbidden"
+      service !== "forbidden" &&
+      service !== "password"
     ) {
       try {
         let { uid } = req.params;
@@ -189,20 +192,6 @@ export class Router {
   }
 
   initPublicRoutes() {
-    // GET requests
-    Object.keys(this.services.public.get).forEach((service) => {
-      const serviceName = service === "all" ? "" : service;
-      console.log(`INIT [GET] /:uid/${serviceName} `);
-      this.app.get(`/:uid/${serviceName}`, async (req, res) => {
-        try {
-          const query = this.services.public.get[service];
-          const result = await this.run(req, query, service, req.query);
-          res.status(200).send(JSON.stringify(result));
-        } catch (e) {
-          this.fail(res, e);
-        }
-      });
-    });
 
     // POST requests
     Object.keys(this.services.public.post).forEach((service) => {
@@ -218,6 +207,21 @@ export class Router {
       });
     });
 
+    // PATCH requests
+    Object.keys(this.services.public.patch).forEach((service) => {
+      console.log(`INIT [PATCH] /${service} `);
+      this.app.patch(`/${service}`, async (req, res) => {
+        console.log('PASSSSS ', service);
+        try {
+          const query = this.services.public.patch[service];
+          const result = await this.run(req, query, service, req.body);
+          res.status(200).send(JSON.stringify(result));
+        } catch (e) {
+          this.fail(res, e);
+        }
+      });
+    });
+
     // UID POST requests
     Object.keys(this.services.public.uidPost).forEach((service) => {
       console.log(`INIT [POST] /:uid/${service} `);
@@ -225,6 +229,21 @@ export class Router {
         try {
           const query = this.services.public.uidPost[service];
           const result = await this.run(req, query, service, req.body);
+          res.status(200).send(JSON.stringify(result));
+        } catch (e) {
+          this.fail(res, e);
+        }
+      });
+    });
+
+    // GET requests
+    Object.keys(this.services.public.get).forEach((service) => {
+      const serviceName = service === "all" ? "" : service;
+      console.log(`INIT [GET] /:uid/${serviceName} `);
+      this.app.get(`/:uid/${serviceName}`, async (req, res) => {
+        try {
+          const query = this.services.public.get[service];
+          const result = await this.run(req, query, service, req.query);
           res.status(200).send(JSON.stringify(result));
         } catch (e) {
           this.fail(res, e);
