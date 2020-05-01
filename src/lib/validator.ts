@@ -25,7 +25,6 @@ export class Validator {
     }
     if (
       query === Services.charts ||
-      query === Services.infos ||
       query === Services.events
     ) {
       if (!profile.residentAdvisor) {

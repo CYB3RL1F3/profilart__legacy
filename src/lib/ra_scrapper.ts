@@ -25,6 +25,7 @@ export class RA_Scrapper {
   profile;
   constructor(profile) {
     this.profile = profile;
+    console.log(this.profile);
   }
 
   getUrl = (endpoint = ""): string => {
@@ -84,6 +85,9 @@ export class RA_Scrapper {
 
   getImage = ($: CheerioStatic) => {
     const style = $("#featureHead").attr("style");
+    console.log(style);
+    if (!style) return;
+    
     const backgroundImage = style.substring(
       style.indexOf("url(") + 4,
       style.indexOf(");")
