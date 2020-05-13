@@ -286,28 +286,28 @@ export class Router {
             this.app.get(
               uri,
               authMiddleware,
-              this.runAuthQuery(services[service], service, true)
+              this.runAuthQuery(services[service], service, "query")
             );
             break;
           case "post":
             this.app.post(
               uri,
               authMiddleware,
-              this.runAuthQuery(services[service], service, false)
+              this.runAuthQuery(services[service], service, "body")
             );
             break;
           case "patch":
             this.app.patch(
               uri,
               authMiddleware,
-              this.runAuthQuery(services[service], service, false)
+              this.runAuthQuery(services[service], service, "body")
             );
             break;
           case "delete":
             this.app.delete(
               uri,
               authMiddleware,
-              this.runAuthQuery(services[service], service, true)
+              this.runAuthQuery(services[service], service, "params")
             );
             break;
         }
@@ -321,13 +321,14 @@ export class Router {
     });
   };
 
-  runAuthQuery = (query, service, isGet) => async (req, res) => {
+  runAuthQuery = (query, service, dataProvider) => async (req, res) => {
     try {
       const result = await this.run(
         req,
         query,
         service,
-        isGet ? req.query : req.body
+        req[dataProvider]
+        // isGet ? req.query : req.body
       );
       res.status(200).send(JSON.stringify(result));
     } catch (e) {

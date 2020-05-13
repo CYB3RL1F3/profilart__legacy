@@ -18,6 +18,7 @@ const {
   MAILGUN_ENDPOINT,
   DISCOGS_NB_PROXIES,
   SENTRY_DSN,
+  SUPPORT_EMAIL,
   TIMELINE_URL
 } = process.env;
 
@@ -60,6 +61,7 @@ export const config = {
     clientSecret: SOUNDCLOUD_API_CLIENT_SECRET
   },
   mailer: {
+    support: SUPPORT_EMAIL,
     mailgun: {
       user: MAILGUN_USER,
       email: MAILGUN_EMAIL,

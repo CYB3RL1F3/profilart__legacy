@@ -5,6 +5,7 @@ import { MongoClient } from "mongodb";
 import Mailer from "lib/mailer";
 import { withScope, captureException } from "@sentry/node";
 import err from "err";
+import config from "config";
 
 export interface StatusResult {
   active: boolean;
@@ -61,21 +62,22 @@ export class Status extends Service {
         subject: 'New support message',
         name: args.name,
         email: args.email,
-        dest: "profilart.service@gmail.com",
+        dest: config.mailer.support,
         ...args
       });
       if (isSent) {
         return {
           sent: true
         }
-      } else throw err(500, "mail can't be sent");
+      } else throw err(500, "mail can't be sent because the service is unavailable.");
       
     } catch(e) {
+      console.log(e);
       withScope((scope) => {
         scope.setExtra("mailer send", e);
         captureException(e);
       });
-      throw err(500, "mail can't be sent");
+      throw err(500, "mail can't be sent because of a fatal exception.");
     }
   }
 }
