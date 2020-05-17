@@ -5,6 +5,7 @@ export interface Post {
     content?: string;
     subtitle?: string;
     createdAt?: Date;
+    published?: boolean;
 }
 
 export interface CreatePost extends Post {

@@ -22,6 +22,7 @@ export class GraphQL {
         tracks(uid: String!): [Track]
         track(uid: String!, id: Int!): Track
         playlist(uid: String!, name: String!): Playlist
+        posts(uid: String!): [Post]
       },
       type Mutation {
         contact(uid: String!, name: String!, email: String!, subject: String!, message: String!): Status
@@ -153,6 +154,17 @@ export class GraphQL {
         artwork: String
         soundcloud: String
         tracks: [Track]
+      },
+      type Post {
+        _id: String
+        title: String
+        subtitle: String
+        content: String
+        illustration: String
+        published: Boolean
+        authorId: String
+        createdAt: String
+        updatedAt: String
       }
     `);
 

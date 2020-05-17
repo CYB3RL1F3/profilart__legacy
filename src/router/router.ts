@@ -1,21 +1,21 @@
 import passport from "passport";
 
-import ResidentAdvisor from "../services/residentadvisor";
-import Discogs from "../services/discogs";
-import Contact from "../services/contact";
-import Soundcloud from "../services/soundcloud";
-import Validator from "../lib/validator";
-import Database from "../lib/database";
-import Profiles from "../services/profiles";
-import Status, { StatusResult } from '../services/status';
-import All from "../services/all";
-import Authenticator from "../authenticator";
-import { err } from "../err";
-import GraphQL from "../gql";
+import ResidentAdvisor from "services/residentadvisor";
+import Discogs from "services/discogs";
+import Contact from "services/contact";
+import Soundcloud from "services/soundcloud";
+import Validator from "lib/validator";
+import Database from "lib/database";
+import Profiles from "services/profiles";
+import Status, { StatusResult } from 'services/status';
+import All from "services/all";
+import Authenticator from "authenticator";
+import { err } from "err";
+import GraphQL from "gql";
 import { Express } from "express";
 import { Services } from "./router.d";
 import { RedisClient } from "redis";
-import { Timeline } from '../services/timeline';
+import { Timeline } from 'services/timeline';
 import Swagger from "swagger-ui-express";
 const swaggerDocument = require('./swagger.json');
 
@@ -66,7 +66,7 @@ export class Router {
           playlist: soundcloud.getPlaylist,
           releases: discogs.getReleases,
           release: discogs.getReleaseById,
-          posts: timeline.getPosts,
+          posts: timeline.getPublishedPosts,
           all: all.get
         },
         post: {
@@ -80,7 +80,10 @@ export class Router {
         uidPost: { contact: contact.mail }
       },
       auth: {
-        get: { profile: this.profiles.read },
+        get: { 
+          profile: this.profiles.read,
+          posts: timeline.getPosts,
+        },
         post: { 
           posts: timeline.addPost
         },
@@ -323,6 +326,10 @@ export class Router {
 
   runAuthQuery = (query, service, dataProvider) => async (req, res) => {
     try {
+      console.log(
+        query,
+        service,
+        req[dataProvider]);
       const result = await this.run(
         req,
         query,
