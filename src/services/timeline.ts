@@ -55,4 +55,9 @@ export class Timeline extends Service {
 
   deletePost = async (profile: ProfileModel, args: DeletePost, req: Request) => 
     await this.query<Post, Post>(HTTPMethod.DELETE, `posts/${args.id}`, null, req.header("Authorization"))
+
+  getPublishedPosts =  async (profile: ProfileModel): Promise<Post[]> => {
+    const posts = await this.getPosts(profile);
+    return posts.filter(p => p.published);
+  }
 }

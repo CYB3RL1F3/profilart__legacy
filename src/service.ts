@@ -9,7 +9,6 @@ import { FindAndModifyWriteOpResultObject } from "mongodb";
 
 export class Service {
   api: Api;
-  database: Database;
   adapter: Adapter;
   cache: Cache;
 
@@ -30,9 +29,8 @@ export class Service {
     return true;
   }
 
-  constructor(database: Database) {
+  constructor(readonly database: Database) {
     this.api = new Api();
-    this.database = database;
     this.cache = new Cache();
   }
 }
