@@ -32,7 +32,11 @@ export interface EventModel {
     event?: string;
     venue?: string;
   };
-  flyer?: string;
+  flyer?: {
+    front?: string;
+    back?: string;
+    list?: string;
+  }
 }
 
 export type Events = Data<EventModel[]>;

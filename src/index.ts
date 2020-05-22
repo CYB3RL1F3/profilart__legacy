@@ -45,6 +45,7 @@ const ddos = new Ddos({
       req.connection.remoteAddress ||
       req.socket.remoteAddress ||
       (req.connection.socket ? req.connection.socket.remoteAddress : null);
+    req.res.setHeader("Content-Type", "application/json");
     req.res.status(429).end(
       JSON.stringify({
         error: 429,

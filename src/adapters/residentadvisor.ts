@@ -87,7 +87,12 @@ export class ResidentAdvisorAdapter extends Adapter {
         event: event.eventlink[0],
         venue: event.venuelink[0]
       },
-      flyer: event.imagelisting[0]
+      flyer: {
+        front: event.imagelisting[0] ? event.imagelisting[0].replace('list', 'front') : null,
+        back: event.imagelisting[0] ? event.imagelisting[0].replace('list', 'back') : null,
+        list: event.imagelisting[0] || null
+      }
+
     };
   };
 
