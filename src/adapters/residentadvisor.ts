@@ -4,13 +4,16 @@ import { ChartsModel, ChartsRaw } from "model/charts";
 import { EventModel, EventRaw } from "model/events";
 import { InfosModel, InfosRaw } from "model/infos";
 import { EventsRaw } from "../model/events";
+import Resolvers from "lib/resolvers";
 
 export class ResidentAdvisorAdapter extends Adapter {
   mapbox: Mapbox;
+  resolver: Resolvers;
 
   constructor() {
     super();
     this.mapbox = new Mapbox();
+    this.resolver = new Resolvers();
   }
 
   extractLineup = (lineup: string): string[] => {
@@ -88,7 +91,7 @@ export class ResidentAdvisorAdapter extends Adapter {
         venue: event.venuelink[0]
       },
       flyer: {
-        front: event.imagelisting[0] ? event.imagelisting[0].replace('list', 'front') : null,
+        front: event.imagelisting[0] ? await this.resolver.resolveFrontFlyerUrl(event.imagelisting[0]) : null,
         back: event.imagelisting[0] ? event.imagelisting[0].replace('list', 'back') : null,
         list: event.imagelisting[0] || null
       }

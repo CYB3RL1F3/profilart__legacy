@@ -2,6 +2,7 @@ import Api from "./api";
 import config from "../config";
 import err from "../err";
 import { ProfileModel } from "model/profile";
+import urlExists from "url-exists";
 
 class Resolvers {
   resolveSoundcloudClientId = async (url: string): Promise<string> => {
@@ -52,6 +53,27 @@ class Resolvers {
   resolveDiscogsProxyUrl = () => {
     const randomProxy = Math.round(Math.random() * config.api.discogs.nbProxies);
     return this.getDiscogsProxyUrl(randomProxy);
+  }
+
+  resolveFrontFlyerUrl = async (flyer: string): Promise<string> => {
+    return await new Promise((resolve) => {
+      let flyerResolve = flyer.replace('list', 'front');
+      urlExists(flyerResolve, (err, response) => {
+        console.log(err, response);
+        if (err || !response) {
+          flyerResolve = flyer.replace('list', '0-front');
+          urlExists(flyerResolve, (err, response2) => {
+            if (err || !response2) {
+              resolve(null);
+            } else {
+              resolve(flyerResolve)
+            }
+          });
+        } else {
+          resolve(flyerResolve);
+        }
+      });
+    });
   }
 }
 
