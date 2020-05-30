@@ -12,6 +12,8 @@ import cors from "cors";
 import { alarmClock } from "./lib/alarm";
 import { init as sentry, Handlers } from "@sentry/node";
 import sslRedirect from "heroku-ssl-redirect";
+import fs from "fs";
+import compression from "compression";
 
 const Ddos = require("ddos");
 
@@ -75,10 +77,31 @@ app.use((req, res, next) => {
   next();
 });
 
+
+const hasGzip = (fileName) => {
+  return fs.existsSync(`../dist${fileName}.gz`);
+};
+
+const gzip = (req, res, next) => {
+  if (hasGzip(req.url)) {
+    req.url = req.url + '.gz';
+    res.set('Content-Encoding', 'gzip');
+    next();
+  } else {
+    next();
+  }
+};
+
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 
 app.use(Handlers.requestHandler());
+
+app.get('*', gzip);
+
+app.use(compression({
+  level: 9
+}));
 
 app.use(cors());
 app.use((req, res, next) => {

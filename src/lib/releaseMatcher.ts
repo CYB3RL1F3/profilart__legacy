@@ -90,12 +90,63 @@ export class ReleaseMatcher {
     return true;
   }
 
+  getStreamByFilteringResults(res, track, artist, label) {
+    let stream = res.find((stream) => stream.title.toLowerCase() === track.title.toLowerCase() && stream.user.username.toLowerCase().indexOf(artist.toLowerCase()) > -1);
+    if (!stream) {
+      // filter patterns (remove dj sets, snippets, etc)
+      const matchingTitles = res.filter((t) =>
+        this.patternMatch(t.title, track.title, artist, label)
+      );
+      // filter titles to keep the ones that name properly the track
+      let streams = matchingTitles.filter(
+        (value) =>
+          value.title.toLowerCase().indexOf(track.title.toLowerCase()) > -1
+      );
+      // filter by artist name and/or label
+      streams = matchingTitles.filter(
+        (value) =>
+          value.user.username.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
+          value.title.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
+          value.user.username.toLowerCase().indexOf(label.toLowerCase()) > -1 ||
+          value.title.toLowerCase().indexOf(label.toLowerCase()) > -1 ||
+          (
+            (
+              value.permalink_url.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
+              value.permalink_url.toLowerCase().indexOf(label.toLowerCase()) > -1
+            ) &&
+            value.permalink_url.toLowerCase().indexOf(track.title.toLowerCase()) > -1
+          ) ||
+          (
+            (
+              value.description.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
+              value.description.toLowerCase().indexOf(label.toLowerCase()) > -1 
+            ) &&
+            value.description.toLowerCase().indexOf(track.title.toLowerCase()) > -1
+          )
+      );
+      // if there's more than one result, get biggest duration (supposed to choose between snippet & track)
+      if (streams.length > 1) {
+        stream = streams.find(
+          (value) =>
+            value.duration ===
+            streams.reduce(
+              (acc, value) => Math.max(acc, value.duration),
+              0
+            )
+        );
+      } else {
+        stream = streams[0];
+      }
+    }
+    return stream;
+  }
+
   getStreaming = (track: ReleaseTrack, label: string) =>
     new Promise<ReleaseTrack>((resolve, reject) => {
       try {
         const artist = (track.artists || [])
           .map((artist) => artist.name.replace(/\([0-9]\)/g, "").trim())
-          .join(" ");
+          .join(" ").trim();
         const query = this.buildStreamQuery(track, artist);
         if (!query) return resolve(null);
         SC.get(
@@ -111,22 +162,8 @@ export class ReleaseMatcher {
               });
               reject(error);
             }
+            const stream = this.getStreamByFilteringResults(res, track, artist, label);
             if (res) {
-              let stream = res.find((stream) => stream.title === track.title);
-              if (!stream) {
-                const matchingTitles = res.filter((t) =>
-                  this.patternMatch(t.title, track.title, artist, label)
-                );
-
-                stream = matchingTitles.find(
-                  (value) =>
-                    value.duration ===
-                    matchingTitles.reduce(
-                      (acc, value) => Math.max(acc, value.duration),
-                      0
-                    )
-                );
-              }
               if (!stream)
                 return resolve({
                   fullTitle: query,

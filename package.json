@@ -52,6 +52,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "body-parser": "^1.19.0",
     "cheerio": "^1.0.0-rc.3",
+    "compression": "^1.7.4",
     "concurrently": "^5.2.0",
     "connect-redis": "^4.0.4",
     "cookieparser": "^0.1.0",
