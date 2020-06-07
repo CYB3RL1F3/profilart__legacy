@@ -69,7 +69,7 @@ export interface EventArgs {
 }
 
 export interface EventByIdArgs {
-  ID?: string;
+  eventId?: string;
   name?: string;
   type: EventTypeArg;
 }

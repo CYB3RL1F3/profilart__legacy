@@ -174,7 +174,7 @@ export class ResidentAdvisor extends Service {
     profile: ProfileModel,
     args: EventByIdArgs
   ): Promise<EventModel> => {
-    if (!(args && args.ID)) {
+    if (!(args && args.eventId)) {
       if (args && args.name) return this.getEventByName(profile, args);
       throw err(400, "an arg ID must be provided.");
     }
@@ -182,7 +182,7 @@ export class ResidentAdvisor extends Service {
       throw err(400, "an arg TYPE must be provided.");
     }
     const events = await this.getEvents(profile, args);
-    const event = events.find((event) => event.id === args.ID);
+    const event = events.find((event) => event.id === args.eventId);
     if (!event) throw err(404, "Event not found");
     return event;
   };
