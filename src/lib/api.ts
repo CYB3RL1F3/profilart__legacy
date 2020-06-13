@@ -15,7 +15,7 @@ export class Api {
 
   request = (options: Options) =>
     new Promise<Response>((resolve, reject) => {
-      console.log('querying URL > ', options);
+      // console.log('querying URL > ', options);
       request(options, (error, response) => {
         if (!error && response.statusCode == 200) {
           resolve(response);

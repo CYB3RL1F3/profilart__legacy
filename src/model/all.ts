@@ -3,6 +3,7 @@ import { ChartsModel } from "./charts";
 import { EventModel } from "./events";
 import { Release } from "./releases";
 import { Track } from "./playlist";
+import { PlaylistModel } from 'model/playlist';
 
 export type AllServices = [
   InfosModel,
@@ -21,6 +22,10 @@ export type AllServicesArray = [
   Promise<Track[]>
 ];
 
+export interface Playlists {
+  [playlist: string]: PlaylistModel;
+}
+
 export interface AllServiceResults {
   infos: InfosModel;
   charts: ChartsModel[];
@@ -30,4 +35,5 @@ export interface AllServiceResults {
   };
   releases: Release[];
   tracks: Track[];
+  playlists?: Playlists;
 }

@@ -17,6 +17,8 @@ import { Services } from "./router.d";
 import { RedisClient } from "redis";
 import { Timeline } from 'services/timeline';
 import Swagger from "swagger-ui-express";
+import { Batch } from 'services/batch';
+import { BatchRunner } from 'services/batchRunner';
 const swaggerDocument = require('./swagger.json');
 
 export class Router {
@@ -28,6 +30,8 @@ export class Router {
   redisClient: RedisClient;
   timeline: Timeline;
   status: Status;
+  batch: Batch;
+  batchRunner: BatchRunner;
 
   constructor(app: Express, redisClient: RedisClient) {
     this.app = app;
@@ -49,9 +53,11 @@ export class Router {
     const all: All = new All(database, residentAdvisor, discogs, soundcloud);
     const timeline = new Timeline(database);
     this.validator = new Validator();
-    this.profiles = new Profiles(database);
     this.authenticator = new Authenticator(this.redisClient);
     this.status = new Status(database, this.redisClient);
+    this.batchRunner = new BatchRunner(database);
+    this.profiles = new Profiles(database, this.batchRunner);
+    this.batch = this.batchRunner.batch;
 
     // fill services dictionnary with different ones
     this.services = {
@@ -83,6 +89,7 @@ export class Router {
         get: { 
           profile: this.profiles.read,
           posts: timeline.getPosts,
+          reset: this.batchRunner.reset
         },
         post: { 
           posts: timeline.addPost
@@ -97,6 +104,7 @@ export class Router {
         }
       }
     };
+    this.batchRunner.start();
   }
 
   initMiddlewares() {

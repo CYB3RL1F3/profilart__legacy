@@ -62,7 +62,8 @@ export interface Services {
   auth: {
     get: {
       profile: (profile: ProfileModel) => AuthenticatedProfileResponseModel;
-      posts: (profile: ProfileModel) => Promise<Post[]>
+      posts: (profile: ProfileModel) => Promise<Post[]>,
+      reset: (profile: ProfileModel) => Promise<AllServiceResults>
     };
     post: {
       posts: (profile: ProfileModel, args: Post, req: Request) => Promise<Post>;

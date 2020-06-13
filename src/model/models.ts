@@ -7,5 +7,6 @@ export enum Models {
   "playlist_dj-sets" = "playlist_dj-sets",
   profiles = "profiles",
   releases = "releases",
-  tracks = "tracks"
+  tracks = "tracks",
+  notifications = "notifications"
 }

@@ -40,6 +40,7 @@ export interface PlaylistModel extends PlaylistInfos {
   artwork: string;
   soundcloud: string;
   tracks: Track[];
+  name: string;
 }
 
 export type Playlist = Data<PlaylistModel>;

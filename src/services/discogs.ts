@@ -1,27 +1,18 @@
-import config from "config";
 import Service from "service";
-import DiscogsAdapter from "adapters/discogs";
 import err from "err";
 import { withScope, captureException } from "@sentry/node";
 import Database from "lib/database";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
-import Resolvers from '../lib/resolvers';
 import {
   ReleasesByNameArgs,
   ReleasesByIdArgs,
   Release,
-  RawReleases,
-  ReleaseInfo
 } from "model/releases";
 
 export class Discogs extends Service {
-  adapter: DiscogsAdapter;
-  resolver: Resolvers;
   constructor(database: Database) {
     super(database);
-    this.adapter = new DiscogsAdapter();
-    this.resolver = new Resolvers();
   }
 
   getReleaseByName = async (
@@ -56,7 +47,6 @@ export class Discogs extends Service {
 
   getReleases = async (profile: ProfileModel): Promise<Release[]> => {
     try {
-      
       const fromCache = this.cache.get<Release[]>(
         profile,
         "discogs",
@@ -64,110 +54,20 @@ export class Discogs extends Service {
       );
       if (fromCache) return fromCache;
       
-      const id = profile && profile.discogs && profile.discogs.artistId;
-      const endpoint = `${config.api.discogs.api_url}/artists/${id}/releases`;
-      const { releases } = await this.query<RawReleases>(endpoint);
-
-      let results: Release[] = [];
-      if (releases) {
-        const partialResults = await Promise.all(
-          releases.map(async (release) => {
-            if (!release || !release.resource_url) return null;
-            if (
-              (typeof release.role !== "undefined" && release.role.toLocaleLowerCase() === "appearance") || 
-              (typeof release.format !== "undefined" && ( 
-                release.format.toLocaleLowerCase().indexOf("mixed") > -1 ||
-                release.format.toLocaleLowerCase().indexOf("comp") > -1
-              ))
-            ) return null;
-            let infos = await this.query<ReleaseInfo>(release.resource_url);
-            if (!infos) {
-              console.log("Impossible to fetch infos for release => ", release.resource_url);
-              return null;
-            }
-            const mainReleaseUrl = infos.main_release_url;
-            if (mainReleaseUrl) {
-              infos = await this.query<ReleaseInfo>(mainReleaseUrl);
-            }
-            if (!infos) {
-              console.log('No infos fetched for main release url => ', mainReleaseUrl);
-              return null;
-            }
-            const adaptedRelease = await this.adapter.adaptRelease(
-              release,
-              infos
-            );
-            return adaptedRelease;
-          })
-        );
-        partialResults.forEach((release) => {
-          if (release &&
-            !results.find((result) => result.cat === release.cat) &&
-            !results.find((result) => result.title === release.title)
-          ) {
-            results.push(release);
-          }
-        });
-        await this.persist<Release[]>(profile, Models.releases, results);
-        this.cache.set<Release[]>(profile, "discogs", Models.releases, results);
-      }
-      return results;
-    } catch (e) {
-      console.log(e);
+      const { content } = await this.fromDb<Release[]>(
+        profile,
+        Models.releases
+      );
+      if (!content) throw err(400, "no releases available");
+      return content;
+    } catch (err) {
       withScope((scope) => {
-        scope.setExtra("getReleases", e);
-        captureException(e);
+        scope.setExtra("getRelease", err);
+        captureException(err);
       });
-      try {
-        const { content } = await this.fromDb<Release[]>(
-          profile,
-          Models.releases
-        );
-        return content;
-      } catch (err) {
-        withScope((scope) => {
-          scope.setExtra("getRelease", err);
-          captureException(err);
-        });
-        throw e;
-      }
+      throw err;
     }
   };
-
-  query = async <T>(url: string) => {
-    
-    try {
-      /*
-      return await this.api.requestAndParseJSON<T>({
-        url: `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`,
-        method: "GET",
-        headers: {
-          "User-Agent": userAgent,
-          "Content-Type": "application/x-www-form-urlencoded"
-        }
-      });
-      */
-      const apiUrl = `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`;
-      return await this.api.requestAndParseJSON<T>({
-        url: this.resolver.resolveDiscogsProxyUrl(),
-        method: "POST",
-        body: JSON.stringify({
-          url: apiUrl
-        }),
-        headers: {
-          "User-Agent": config.userAgent,
-          "Content-Type": "application/json"
-        }
-      });
-    } catch(e) {
-      console.log(e);
-      withScope((scope) => {
-          scope.setExtra("fail discogs query", url);
-          captureException(e);
-        });
-      return null;
-    }
-  }
 }
 
 export default Discogs;

@@ -162,8 +162,8 @@ export class ReleaseMatcher {
               });
               reject(error);
             }
-            const stream = this.getStreamByFilteringResults(res, track, artist, label);
             if (res) {
+              const stream = this.getStreamByFilteringResults(res, track, artist, label);
               if (!stream)
                 return resolve({
                   fullTitle: query,

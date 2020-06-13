@@ -17,6 +17,7 @@ import { Models } from "model/models";
 import { ProfileData } from "../model/profile";
 import Database from "lib/database";
 import { Status } from "./contact";
+import { BatchRunner } from 'services/batchRunner';
 
 export class Profiles extends Service {
   profiles;
@@ -130,7 +131,7 @@ export class Profiles extends Service {
         profile.residentAdvisor.userId &&
         profile.residentAdvisor.accessKey &&
         profile.residentAdvisor.DJID)) &&
-    (!profile.soundcloud || (profile.soundcloud && profile.soundcloud.url)) &&
+    (!profile.soundcloud || (profile.soundcloud && profile.soundcloud.url && (!profile.soundcloud.playlists || profile.soundcloud.playlists.length > 0))) &&
     (!profile.discogs || (profile.discogs && profile.discogs.url)) &&
     (!profile.mailer ||
       (profile.mailer &&
@@ -157,6 +158,11 @@ export class Profiles extends Service {
       profile.encryption = encryption;
       await this.persist<ProfileModel>({ uid }, Models.profiles, profile);
       this.sendConfirmationByMail(profile);
+      try {
+        this.batchRunner.reset(profile);
+      } catch(e) {
+        
+      }
       return this.cleanResults(profile);
     } else {
       throw err(400, "invalid payload for profile creation");
@@ -198,31 +204,38 @@ export class Profiles extends Service {
         }
       }
 
-      let update: ProfileModel;
+      let updatedProfile: ProfileModel;
       if (args.totalReplace) {
         delete args.totalReplace;
         const { uid, password, encryption, email } = profile;
-        update = Object.assign({}, this.replaceFields(args), {
+        updatedProfile = Object.assign({}, this.replaceFields(args), {
           uid,
           password,
           encryption,
           email
         });
       } else {
-        update = Object.assign({}, profile, this.replaceFields(args));
+        updatedProfile = Object.assign({}, profile, this.replaceFields(args));
       }
-      update = await this.resolvers.resolveProfile(update);
+      updatedProfile = await this.resolvers.resolveProfile(updatedProfile);
       const { encryption, hash } = await this.encrypter.encrypt(
-        update.password
+        updatedProfile.password
       );
-      update.password = hash;
-      update.encryption = encryption;
+      updatedProfile.password = hash;
+      updatedProfile.encryption = encryption;
       const data = await this.persist<ProfileModel>(
         profile,
         Models.profiles,
-        update
+        updatedProfile
       );
-      if (data) return this.cleanResults(update);
+      if (data) {
+        try {
+          this.batchRunner.reset(updatedProfile);
+        } catch(e) {
+          console.log(e);
+        }
+        return this.cleanResults(updatedProfile);
+      }
       else throw err(500, "A fatal error occured while persisting profile on the database");
     } else throw err(400, "Invalid payload sent for profile update");
   };
@@ -275,7 +288,7 @@ export class Profiles extends Service {
     });
   }
 
-  constructor(database: Database) {
+  constructor(database: Database, readonly batchRunner: BatchRunner) {
     super(database);
     this.encrypter = new Encrypter();
     this.resolvers = new Resolvers();

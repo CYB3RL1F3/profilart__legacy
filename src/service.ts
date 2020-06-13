@@ -24,8 +24,8 @@ export class Service {
     this.database.select<Coll>(profile.uid, key);
 
   isPersistable<Value>(value: Value | Value[]) {
-    if (value instanceof Array) return value.length > 0;
-    if (value instanceof Object) return Object.keys(value).length > 0;
+    // if (value instanceof Array) return value.length > 0;
+    // if (value instanceof Object) return Object.keys(value).length > 0;
     return true;
   }
 

@@ -55,6 +55,7 @@ export class Database {
                 if (updated) {
                   resolve(updated);
                 } else {
+                  console.log(err);
                   reject(err);
                 }
               }
@@ -114,6 +115,27 @@ export class Database {
               }
             }
           );
+        });
+      } catch (e) {
+        withScope((scope) => {
+          scope.setExtra("find database", e);
+          captureException(e);
+        });
+        reject(e);
+      }
+    });
+  
+  findAll = <Coll>(selector: FilterQuery<Data<Coll>>, coll: string) =>
+    new Promise<Data<Coll>[]>(async (resolve, reject) => {
+      try {
+        const client = await this.connect();
+        const db = client.db(config.db.base);
+        db.collection<Data<Coll>>(coll, (err, collection) => {
+          if (!collection && err) return reject(err);
+          const content = collection.find<Data<Coll>>(
+            selector
+          ).toArray();
+          resolve(content);
         });
       } catch (e) {
         withScope((scope) => {
