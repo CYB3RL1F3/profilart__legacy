@@ -19,6 +19,7 @@ import { Timeline } from 'services/timeline';
 import Swagger from "swagger-ui-express";
 import { Batch } from 'services/batch';
 import { BatchRunner } from 'services/batchRunner';
+import { Notifications } from '../services/notifications';
 const swaggerDocument = require('./swagger.json');
 
 export class Router {
@@ -51,6 +52,7 @@ export class Router {
     const soundcloud = new Soundcloud(database);
     const contact = new Contact();
     const all: All = new All(database, residentAdvisor, discogs, soundcloud);
+    const notificationService: Notifications = new Notifications(database);
     const timeline = new Timeline(database);
     this.validator = new Validator();
     this.authenticator = new Authenticator(this.redisClient);
@@ -83,24 +85,32 @@ export class Router {
         patch: {
           password: this.profiles.forgottenPassword,
         },
-        uidPost: { contact: contact.mail }
+        uidPost: { 
+          contact: contact.mail,
+          subscribe: notificationService.subscribe  
+        }
       },
       auth: {
         get: { 
           profile: this.profiles.read,
           posts: timeline.getPosts,
+          notificationCenters: notificationService.getNotificationCenters,
           reset: this.batchRunner.reset
         },
         post: { 
-          posts: timeline.addPost
+          posts: timeline.addPost,
+          notificationCenter: notificationService.addNotificationCenter,
+          notify: notificationService.pushNotificationToCenter
         },
         patch: {
           profile: this.profiles.update,
           posts: timeline.editPost,
+          notificationCenter: notificationService.updateNotificationCenter
         },
         delete: { 
           profile: this.profiles.remove,
-          "posts/:id": timeline.deletePost
+          "posts/:id": timeline.deletePost,
+          "notificationCenters/:id": notificationService.deleteNotificationCenter
         }
       }
     };
