@@ -1,5 +1,7 @@
 export interface Notification {
   message: string;
+  title: string;
+  action: string;
   date: string;
   sent: boolean;
 }
@@ -43,5 +45,7 @@ export interface SubscriptionConfirmed {
 
 export interface NotificationArgs {
   content: string;
+  title: string;
+  action: string;
   id: string;
 }

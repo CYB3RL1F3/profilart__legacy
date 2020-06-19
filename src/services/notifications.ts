@@ -159,7 +159,11 @@ export class Notifications extends Service {
       const subscriptions = await Promise.all(notificationCenter.subscriptions.map(async (subscription, j) =>
         {
           try {
-            const res = await webpush.sendNotification(subscription, args.content);
+            const res = await webpush.sendNotification(subscription, JSON.stringify({
+              content: args.content,
+              title: args.title,
+              action: args.action
+            }));
             return res;
           } catch(e) {
             if (e.statusCode.toString() === "410") {
@@ -174,6 +178,8 @@ export class Notifications extends Service {
       const date = now.toUTCString();
       notificationCenter.notifications.push({
         message: args.content,
+        title: args.title,
+        action: args.action,
         date,
         sent
       });
