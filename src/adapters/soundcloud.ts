@@ -128,7 +128,7 @@ export class SoundcloudAdapter {
     }, []);
   };
 
-  adaptPlaylist = async (playlist: RawPlaylist): Promise<PlaylistModel> => {
+  adaptPlaylist = async (playlist: RawPlaylist, name: string): Promise<PlaylistModel> => {
     const tracks = await Promise.all<Track>(
       playlist.tracks.map(async (track) => await this.adaptTrack(track))
     );
@@ -139,6 +139,7 @@ export class SoundcloudAdapter {
       taglist: this.extractTagList(playlist.tag_list),
       artwork: playlist.artwork_url,
       soundcloud: playlist.permalink_url,
+      name,
       tracks
     };
   };

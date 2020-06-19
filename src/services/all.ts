@@ -27,6 +27,10 @@ export class All extends Service {
   }
 
   get = async (profile: ProfileModel): Promise<AllServiceResults> => {
+    const playlists = profile.soundcloud && profile.soundcloud.playlists || [];
+    const soundcloudPlaylists = await Promise.all(playlists.map(async name => await this.soundcloud.getPlaylist(profile, {
+      name
+    })));
     const services: AllServicesArray = [
       this.residentAdvisor.getInfos(profile),
       this.residentAdvisor.getCharts(profile),
@@ -43,7 +47,15 @@ export class All extends Service {
       AllServices[4],
       AllServices[5]
     >(services);
-    return this.adapter.adapt(results);
+    const res = this.adapter.adapt(results);
+    res.playlists = soundcloudPlaylists.reduce((acc, v, i) => {
+      if (v) return {
+        ...acc,
+        [`${v.name}`]: v
+      }
+      return acc;
+    }, {});
+    return res;
   };
 }
 

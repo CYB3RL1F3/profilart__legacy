@@ -1,82 +1,64 @@
-import { ChartsQueryArgs, ChartsModel } from "model/charts";
-import {
-  ProfileModel,
-  AuthenticatedProfileResponseModel,
-  UpdateProfileArgs,
-  Credentials,
-  DeletedStatus
-} from "model/profile";
-import { EventArgs, EventModel, EventByIdArgs } from "model/events";
-import { InfosModel } from "model/infos";
-import { Track, PlaylistArgs, PlaylistModel } from "model/playlist";
-import { Release, ReleasesByIdArgs } from "model/releases";
-import { AllServiceResults } from "model/all";
-import { Status, ContactParams } from "services/contact";
-import { TracksArgs } from "model/tracks";
-import { Post, UpdatePost, DeletePost } from "model/timeline";
-import { Request } from 'express';
-import { SupportMessage } from "services/status";
+import Contact from "services/contact";
+import { Notifications } from 'services/notifications';
+import ResidentAdvisor from "services/residentadvisor";
+import Soundcloud from 'services/soundcloud';
+import Discogs from 'services/discogs';
+import { Timeline } from 'services/timeline';
+import All from 'services/all';
+import Profiles from 'services/profiles';
+import Status from 'services/status';
+import { BatchRunner } from 'services/batchRunner';
+import { Credentials } from '../model/profile';
 
 export interface Services {
   public: {
     get: {
-      charts: (
-        profile: ProfileModel,
-        args?: ChartsQueryArgs
-      ) => Promise<ChartsModel[]>;
-      events: (profile: ProfileModel, args: EventArgs) => Promise<EventModel[]>;
-      event: (
-        profile: ProfileModel,
-        args: EventByIdArgs
-      ) => Promise<EventModel>;
-      infos: (profile: ProfileModel) => Promise<InfosModel>;
-      tracks: (profile: ProfileModel) => Promise<Track[]>;
-      track: (profile: ProfileModel, args: TracksArgs) => Promise<Track>;
-      playlist: (
-        profile: ProfileModel,
-        args: PlaylistArgs
-      ) => Promise<PlaylistModel>;
-      releases: (profile: ProfileModel) => Promise<Release[]>;
-      release: (
-        profile: ProfileModel,
-        args: ReleasesByIdArgs
-      ) => Promise<Release>;
-      posts: (profile: ProfileModel) => Promise<Post[]>;
-      all: (profile: ProfileModel) => Promise<AllServiceResults>;
+      charts: ResidentAdvisor["getCharts"];
+      events: ResidentAdvisor["getEvents"];
+      event: ResidentAdvisor["getEventById"];
+      infos: ResidentAdvisor["getInfos"];
+      tracks: Soundcloud["getTracks"];
+      track: Soundcloud["getTrack"];
+      playlist: Soundcloud["getPlaylist"];
+      releases: Discogs["getReleases"];
+      release: Discogs["getReleaseById"];
+      posts: Timeline["getPublishedPosts"];
+      all: All["get"];
     };
     post: {
-      create: (
-        args: any,
-        profile: ProfileModel
-      ) => Promise<AuthenticatedProfileResponseModel>;
-      login: (p, body, req) => any;
-      support: (p: any, body: SupportMessage) => void;
+      create: Profiles["create"];
+      login: (p, body: Credentials, req: Express.Request) => Promise<any>;
+      support: Status["contactSupport"];
     };
     patch: {
-      password: (args, credentials: Credentials) => Promise<Status>;
+      password: Profiles["forgottenPassword"];
     }
     uidPost: {
-      contact: (profile: ProfileModel, args: ContactParams) => Promise<Status>;
+      contact: Contact["mail"];
+      subscribe: Notifications["subscribe"];
     };
   };
   auth: {
     get: {
-      profile: (profile: ProfileModel) => AuthenticatedProfileResponseModel;
-      posts: (profile: ProfileModel) => Promise<Post[]>
+      profile: Profiles["read"];
+      posts: Timeline["getPosts"];
+      reset: BatchRunner["reset"];
+      notificationCenters: Notifications["getNotificationCenters"]
     };
     post: {
-      posts: (profile: ProfileModel, args: Post, req: Request) => Promise<Post>;
+      posts: Timeline["addPost"];
+      notificationCenter: Notifications["addNotificationCenter"];
+      notify: Notifications["pushNotificationToCenter"];
     };
     patch: {
-      profile: (
-        profile: ProfileModel,
-        args: UpdateProfileArgs
-      ) => Promise<AuthenticatedProfileResponseModel>;
-      posts: (profile: ProfileModel, args: UpdatePost, req: Request) => Promise<Post>;
+      profile: Profiles["update"];
+      posts: Timeline["editPost"];
+      notificationCenter: Notifications["updateNotificationCenter"];
     };
     delete: { 
-      profile: (profile: ProfileModel) => Promise<DeletedStatus> 
-      "posts/:id": (profile: ProfileModel, args: DeletePost, req: Request) => Promise<any>
+      profile: Profiles["remove"];
+      "posts/:id": Timeline["deletePost"];
+      "notificationCenters/:id": Notifications["deleteNotificationCenter"];
     };
   };
 }

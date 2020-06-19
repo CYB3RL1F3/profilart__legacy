@@ -17,6 +17,7 @@ export interface SoundcloudProfile {
   url: string;
   clientId: string;
   clientSecret: string;
+  playlists?: string[];
 }
 
 export interface DiscogsProfile {
