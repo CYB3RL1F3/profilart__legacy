@@ -82,9 +82,6 @@ export class Batch extends Service {
 
   run = async () => {
     console.log('start batch');
-    await this.webhook.send({
-      text: `Start batch...`,
-    });
     try {
       const profiles = await this.getAllProfiles();
       let success = true;
@@ -102,9 +99,9 @@ export class Batch extends Service {
           }
       }));
       if (success) {
-        console.log('Batch completed with success!');
+        console.log('Batch run with success!');
         await this.webhook.send({
-          text: `Batch completed with success!`,
+          text: `Batch run with success!`,
         });
       }
     } catch(e) {
