@@ -1,4 +1,4 @@
-import graphql from "express-graphql";
+import { graphqlHTTP } from "express-graphql";
 import { buildSchema } from "graphql";
 import { withScope, captureException } from "@sentry/node";
 import err from "err";
@@ -233,7 +233,7 @@ export class GraphQL {
   };
 
   getMiddleware = () =>
-    graphql({
+    graphqlHTTP({
       schema: this.getSchema(),
       rootValue: this.getResolver(),
       graphiql: true

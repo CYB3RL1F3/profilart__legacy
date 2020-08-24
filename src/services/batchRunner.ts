@@ -7,6 +7,7 @@ import { ProfileModel } from 'model/profile';
 import { AllServiceResults } from "model/all";
 import err from "err";
 import scheduler from "node-schedule";
+import config from "config";
 
 export class BatchRunner {
   batch: Batch;
@@ -18,8 +19,9 @@ export class BatchRunner {
   }
 
   start = () => {
+    if (!config.batches.enabled) return;
     this.run();
-    scheduler.scheduleJob('*/30 * * * *', () => {
+    scheduler.scheduleJob('0 0 */2 ? * *', () => {
       this.run();
     });
   }

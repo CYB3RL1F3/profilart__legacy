@@ -19,7 +19,8 @@ const {
   DISCOGS_NB_PROXIES,
   SENTRY_DSN,
   SUPPORT_EMAIL,
-  TIMELINE_URL
+  TIMELINE_URL,
+  BATCH_ENABLED
 } = process.env;
 
 export const config = {
@@ -71,7 +72,10 @@ export const config = {
   sentry: {
     dsn: SENTRY_DSN
   },
-  userAgent: "Profilart/1.0 +https://profilart.com"
+  userAgent: "Profilart/1.0 +https://profilart.com",
+  batches: {
+    enabled: parseInt(BATCH_ENABLED.toString(), 10) === 1
+  }
 };
 
 export default config;
