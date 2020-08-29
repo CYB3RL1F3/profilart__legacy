@@ -25,7 +25,7 @@ export class SoundcloudAdapter {
       title: track.title,
       date: track.created_at,
       genre: track.genre,
-      artwork: track.artwork_url,
+      artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
       description: track.description,
       download: track.download_url,
       downloadable: track.downloadable,
