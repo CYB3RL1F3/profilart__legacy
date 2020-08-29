@@ -72,7 +72,7 @@ export class SoundcloudAdapter {
       id: track.id,
       title: track.title,
       date: track.display_date,
-      artwork: track.artwork_url,
+      artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
       description: track.description,
       download: track.download_url,
       downloadable: track.downloadable,
@@ -137,7 +137,7 @@ export class SoundcloudAdapter {
       description: playlist.description,
       genre: playlist.genre,
       taglist: this.extractTagList(playlist.tag_list),
-      artwork: playlist.artwork_url,
+      artwork: playlist.artwork_url && playlist.artwork_url.replace('large', 't500x500'),
       soundcloud: playlist.permalink_url,
       name,
       tracks
