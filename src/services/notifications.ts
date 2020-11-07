@@ -5,7 +5,7 @@ import { ProfileModel } from "model/profile";
 import { NotificationCenter, NotificationCenterArgs, SubscriptionArgs, SubscriptionConfirmed, NotificationArgs, Params } from "model/notification";
 import { Models } from "model/models";
 import webpush from "web-push";
-import uuid from "uuid/v4";
+import { v4 as uuid} from "uuid";
 import { withScope, captureException } from "@sentry/node";
 
 export class Notifications extends Service {

@@ -32,7 +32,7 @@ export class RA_Scrapper {
   };
 
   getDataFromPage = (endpoint = "") =>
-    new Promise<CheerioStatic>(async (resolve, reject) => {
+    new Promise<cheerio.Root>(async (resolve, reject) => {
       const data = await new Promise<string>((resolve) => {
         get(this.getUrl(endpoint), (response) => {
           let body = "";
@@ -80,7 +80,7 @@ export class RA_Scrapper {
     };
   };
 
-  getImage = ($: CheerioStatic) => {
+  getImage = ($: cheerio.Root) => {
     const style = $("#featureHead").attr("style");
     if (!style) return null;
     
@@ -91,12 +91,12 @@ export class RA_Scrapper {
     return `https://www.residentadvisor.net${backgroundImage}`;
   };
 
-  getArtistName = ($: CheerioStatic) => $("#featureHead > div > h1").text();
+  getArtistName = ($: cheerio.Root) => $("#featureHead > div > h1").text();
 
-  hasRealName = (node: Cheerio) =>
+  hasRealName = (node: cheerio.Cheerio) =>
     node.find("div").text().indexOf("Real name") > -1;
 
-  getArtistInformations = ($: CheerioStatic): ArtistInfo => {
+  getArtistInformations = ($: cheerio.Root): ArtistInfo => {
     const baseNode = "#detail > ul > ";
     const node = $(`${baseNode} li:nth-child(1)`);
     if (this.hasRealName(node)) {
@@ -132,7 +132,7 @@ export class RA_Scrapper {
     return links;
   };
 
-  getBio = ($: CheerioStatic): Bio => ({
+  getBio = ($: cheerio.Root): Bio => ({
     intro: $(
       "#Form1 > main > ul > li > section > div > div:nth-child(1) > article > div > div > div.f24"
     ).text(),
