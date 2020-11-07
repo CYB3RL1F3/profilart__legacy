@@ -62,7 +62,6 @@ export class Profiles extends Service {
     credentials: Credentials
   ): Promise<Status> => {
     try {
-      console.log(">>>>> ", credentials);
       const data = await this.database.find<ProfileModel>(
       { "content.email": {
         $eq: sanitize(credentials.email)
