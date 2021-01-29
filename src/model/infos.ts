@@ -11,6 +11,7 @@ export interface InfosModel {
   twitter?: string;
   discogs?: string;
   soundcloud?: string;
+  followers?: string;
   picture?: string;
   bio?: {
     intro?: string;

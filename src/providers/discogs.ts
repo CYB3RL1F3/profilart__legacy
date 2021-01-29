@@ -130,16 +130,16 @@ export class DiscogsProvider extends Service {
   query = async <T>(url: string) => {
     
     try {
-      /*
+      
       return await this.api.requestAndParseJSON<T>({
         url: `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`,
         method: "GET",
         headers: {
-          "User-Agent": userAgent,
+          "User-Agent": "XOXXOO",
           "Content-Type": "application/x-www-form-urlencoded"
         }
       });
-      */
+      /*
       const apiUrl = `${url}?key=${config.api.discogs.key}&secret=${config.api.discogs.secret}`;
       return await this.api.requestAndParseJSON<T>({
         url: this.resolver.resolveDiscogsProxyUrl(),
@@ -152,6 +152,7 @@ export class DiscogsProvider extends Service {
           "Content-Type": "application/json"
         }
       });
+      */
     } catch(e) {
       console.log(e);
       withScope((scope) => {

@@ -144,9 +144,9 @@ export class ResidentAdvisorProvider extends Service {
           year: args.year || ""
         }
       );
-      console.log('RESP ==> ', response);
+      console.log('RESP ==> ', JSON.stringify(response));
       const events = await this.adapter.adaptEvents(response);
-      console.log('EVTT ==> ', events);
+      console.log('EVTT ==> ', JSON.stringify(events));
       await this.persist(profile, persistKey, events);
       this.cache.set(profile, "RA", persistKey, events);
       return events;
@@ -230,12 +230,12 @@ export class ResidentAdvisorProvider extends Service {
       */
       const scrapper = new RA_Scrapper(profile);
       const infos = await scrapper.getScrappedData();
-
       if (!infos) throw this.getError(["no infos"]);
       await this.persist<InfosModel>(profile, Models.infos, infos);
       this.cache.set<InfosModel>(profile, "RA", Models.infos, infos);
       return infos;
     } catch (e) {
+      console.log(e);
       withScope((scope) => {
         scope.setExtra("loading", e);
         captureException(e);
