@@ -114,18 +114,21 @@ export class SoundcloudAdapter {
 
   extractTagList = (tagList: string): string[] => {
     let bypass = false;
-    return tagList.split(" ").reduce<string[]>((acc, content) => {
-      const data = content.replace('"', "");
-      if (bypass) {
-        acc[acc.length - 1] += ` ${data}`;
-        bypass = content.indexOf('"') === -1;
-      } else {
-        acc.push(data);
-        bypass = content.indexOf('"') > -1;
-      }
+    return tagList
+      .split(" ")
+      .reduce<string[]>((acc, content) => {
+        const data = content.replace('"', "");
+        if (bypass) {
+          acc[acc.length - 1] += ` ${data}`;
+          bypass = content.indexOf('"') === -1;
+        } else {
+          acc.push(data);
+          bypass = content.indexOf('"') > -1;
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, [])
+      .filter((t) => t);
   };
 
   adaptPlaylist = async (playlist: RawPlaylist, name: string): Promise<PlaylistModel> => {

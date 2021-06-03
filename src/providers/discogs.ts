@@ -57,7 +57,7 @@ export class DiscogsProvider extends Service {
   getReleases = async (profile: ProfileModel): Promise<Release[]> => {
     try {
  
-      const id = profile && profile.discogs && profile.discogs.artistId;
+      const id = profile?.discogs?.artistId;
       const endpoint = `${config.api.discogs.api_url}/artists/${id}/releases`;
       const { releases } = await this.query<RawReleases>(endpoint);
 
