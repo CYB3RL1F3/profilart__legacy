@@ -91,9 +91,9 @@ export class SoundcloudProvider extends Service {
   getTracks = (profile: ProfileModel) =>
     new Promise<Track[]>((resolve, reject) => {
 
-      SC.get(`/users/${profile.soundcloud.id}/tracks`, (error, res) => {
+      SC.get(`/users/${profile.soundcloud.id}/tracks`, async (error, res) => {
         if (res && res.length && !error) {
-          let tracks = this.adapter.adapt(res);
+          let tracks = await this.adapter.adapt(res);
           this.persist<Track[]>(profile, Models.tracks, tracks).then(() => {
             this.cache.set<Track[]>(
               profile,
@@ -138,7 +138,7 @@ export class SoundcloudProvider extends Service {
     }
     if (res && !error) {
       try {
-        const playlist = await this.adapter.adaptPlaylist(res, name);
+        const playlist = await this.adapter.adaptPlaylist(res, profile.artistName, args.tracklist);
 
         await this.persist<PlaylistModel>(profile, playlistKey, playlist);
           this.cache.set<PlaylistModel>(

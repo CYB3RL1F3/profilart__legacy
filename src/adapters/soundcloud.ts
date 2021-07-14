@@ -8,30 +8,38 @@ import {
   TrackInfoRaw,
   AudioRaw
 } from "model/playlist";
+
 import { InfosModel, SoundcloudInfosRaw } from "model/infos";
+import { MixesDB } from "lib/mixesdb";
 export class SoundcloudAdapter {
   clientQS = `?client_id=${config.soundcloud.clientId}`;
 
   resolveStream = (track: Track) =>
     `https://api.soundcloud.com/tracks/${track.id}/stream${this.clientQS}`;
 
-  adaptTrack = (track: RawTrack): Track => {
+  adaptTrack = async (track: RawTrack, askTracklist: boolean = false, artistName: string = ''): Promise<Track> => {
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach((key) => {
       track[key] = track[key] ? `${track[key]}${this.clientQS}` : null;
     });
+    let tracklist: Array<string> | null = undefined
+    if (askTracklist) {
+      tracklist = await this.getTracklist(artistName, track.permalink_url);
+    }
     return {
       id: track.id,
       title: track.title,
       date: track.created_at,
       genre: track.genre,
-      artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
+      artwork:
+        track.artwork_url && track.artwork_url.replace("large", "t500x500"),
       description: track.description,
       download: track.download_url,
       downloadable: track.downloadable,
       soundcloud: track.permalink_url,
       duration: track.duration,
       waveform: track.waveform_url,
+      tracklist,
       taglist: this.extractTagList(track.tag_list),
       uri: track.uri,
       url: track.stream_url,
@@ -72,7 +80,8 @@ export class SoundcloudAdapter {
       id: track.id,
       title: track.title,
       date: track.display_date,
-      artwork: track.artwork_url && track.artwork_url.replace('large', 't500x500'),
+      artwork:
+        track.artwork_url && track.artwork_url.replace("large", "t500x500"),
       description: track.description,
       download: track.download_url,
       downloadable: track.downloadable,
@@ -131,24 +140,36 @@ export class SoundcloudAdapter {
       .filter((t) => t);
   };
 
-  adaptPlaylist = async (playlist: RawPlaylist, name: string): Promise<PlaylistModel> => {
+  adaptPlaylist = async (
+    playlist: RawPlaylist,
+    name: string,
+    askTracklist: boolean = false
+  ): Promise<PlaylistModel> => {
     const tracks = await Promise.all<Track>(
-      playlist.tracks.map(async (track) => await this.adaptTrack(track))
+      playlist.tracks.map(
+        async (track) => await this.adaptTrack(track, askTracklist, name)
+      )
     );
     return {
       title: playlist.title,
       description: playlist.description,
       genre: playlist.genre,
       taglist: this.extractTagList(playlist.tag_list),
-      artwork: playlist.artwork_url && playlist.artwork_url.replace('large', 't500x500'),
+      artwork:
+        playlist.artwork_url &&
+        playlist.artwork_url.replace("large", "t500x500"),
       soundcloud: playlist.permalink_url,
       name,
       tracks
     };
   };
 
-  adapt = (data: RawTrack[]): Track[] =>
-    data.map((track) => this.adaptTrack(track));
+  adapt = async (data: RawTrack[]): Promise<Track[]> => await Promise.all(data.map(async (track) => await this.adaptTrack(track)));
+
+  getTracklist = async (artistName: string, soundcloudUrl: string) => {
+    const mixesDb = new MixesDB()
+    return await mixesDb.getTracklist(artistName, soundcloudUrl)
+  };
 }
 
 export default SoundcloudAdapter;

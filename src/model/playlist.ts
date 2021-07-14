@@ -27,6 +27,7 @@ export interface Track extends TrackInfo {
   fullTitle?: string;
   taglist?: string[];
   waveform?: string;
+  tracklist?: string[];
 }
 
 export interface PlaylistInfos {
@@ -47,6 +48,7 @@ export type Playlist = Data<PlaylistModel>;
 
 export interface PlaylistArgs {
   name: string;
+  tracklist?: boolean;
 }
 
 export interface RawTrack extends TrackInfo {

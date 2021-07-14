@@ -37,6 +37,9 @@ export const config = {
       proxy: DISCOGS_PROXY_URL,
       nbProxies: parseInt(DISCOGS_NB_PROXIES.toString())
     },
+    mixesdb: {
+      api_url: "https://www.mixesdb.com/db/api.php"
+    },
     timeline: {
       url: TIMELINE_URL
     }

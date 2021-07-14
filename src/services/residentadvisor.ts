@@ -78,7 +78,6 @@ export class ResidentAdvisor extends Service {
       if (fromCache) return fromCache;
 
       const events = await this.fromDb<EventModel[]>(profile, persistKey);
-      console.log('EVT :> ', events);
       if (!events) throw err(400, "no events available");
       if (!events.content || !events.content.length) return [];
       return events.content;
