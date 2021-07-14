@@ -154,7 +154,7 @@ export class ReleaseMatcher {
           {
             q: query
           },
-          (error, res) => {
+          async (error, res) => {
             if (error) {
               withScope((scope) => {
                 scope.setExtra("releaseMatcher", error);
@@ -171,7 +171,7 @@ export class ReleaseMatcher {
                 });
               return resolve({
                 fullTitle: query,
-                stream: this.soundcloudAdapter.adaptTrack(stream)
+                stream: await this.soundcloudAdapter.adaptTrack(stream)
               });
             } else
               return resolve({

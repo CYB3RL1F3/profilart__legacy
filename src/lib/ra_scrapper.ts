@@ -90,11 +90,15 @@ export class RA_Scrapper {
     if (!$ || !$2)
       throw err(500, "impossible to parse RA profile. Seems not to exist.");
     const infos = this.getArtistInformations($);
+    const picture = this.getImage($);
+    const bio = this.getBio($2);
+    if (!Object.keys(infos.links).length || !bio.content || !picture)
+      throw new Error("inconsistancy");
     const { links } = infos;
     return {
       name: this.getArtistName($),
       realname: infos.realname || null,
-      country: infos.country || null,
+      country: infos.country || null,
       followers: infos.followers || null,
       labels: this.getLabels($),
       website: links.website || null,
@@ -103,8 +107,8 @@ export class RA_Scrapper {
       twitter: links.twitter || null,
       discogs: links.discogs || null,
       soundcloud: links.soundcloud || null,
-      picture: this.getImage($),
-      bio: this.getBio($2)
+      picture,
+      bio
     };
   };
 

@@ -144,9 +144,7 @@ export class ResidentAdvisorProvider extends Service {
           year: args.year || ""
         }
       );
-      console.log('RESP ==> ', JSON.stringify(response));
       const events = await this.adapter.adaptEvents(response);
-      console.log('EVTT ==> ', JSON.stringify(events));
       await this.persist(profile, persistKey, events);
       this.cache.set(profile, "RA", persistKey, events);
       return events;
@@ -240,7 +238,9 @@ export class ResidentAdvisorProvider extends Service {
         scope.setExtra("loading", e);
         captureException(e);
       });
-      return null;
+      const infos = await this.fromDb<InfosModel>(profile, Models.infos);
+      if (!infos) throw this.getError(["no infos"]);
+      return infos.content;
     }
   };
 }
