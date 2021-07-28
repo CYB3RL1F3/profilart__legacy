@@ -103,7 +103,6 @@ export class MixesDB {
       const item = element.children[0].data.trim();
       items.push(item);
     });
-    console.log(items);
     return items;
   };
 }

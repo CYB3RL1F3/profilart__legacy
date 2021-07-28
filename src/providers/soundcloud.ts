@@ -207,19 +207,11 @@ export class SoundcloudProvider extends Service {
           ...res,
           tracks: await Promise.all(
             res.tracks.map(async (track: RawTrack) => {
-              console.log(
-                "\n\n** GO TRACK ID ==> ",
-                track.id,
-                " is ",
-                track.title,
-                "\n\n"
-              );
               const [tracklist, comments, likes] = await Promise.all([
                 this.getTracklist(profile.artistName, track.permalink_url),
                 this.getComments(track.id),
                 this.getLikes(track.id)
               ]);
-              console.log("\n///////////////////////////", "\n\n");
               return {
                 ...track,
                 tracklist,
