@@ -45,10 +45,13 @@ export class Batch extends Service {
   canRunResidentAdvisor = (profile: ProfileModel) =>
     !!profile.residentAdvisor &&
     !!profile.residentAdvisor.DJID &&
-    !!profile.residentAdvisor.userId &&
     !!profile.residentAdvisor.userId;
+
   canRunDiscogs = (profile: ProfileModel) =>
-    !!profile.discogs && !!profile.discogs.artistId;
+    !!profile.discogs &&
+    !!profile.discogs.artistId &&
+    new Date().getDate() < 25;
+
   canRunSoundcloud = (profile: ProfileModel) =>
     !!profile.soundcloud && !!profile.soundcloud.id;
 
@@ -70,8 +73,10 @@ export class Batch extends Service {
         )
     );
 
+    const isAllowingBatch = parseInt(process.env.ALLOW_RA_INFOS_BATCH) === 1;
+
     const services: AllServicesArray = [
-      this.canRunResidentAdvisor(profile)
+      this.canRunResidentAdvisor(profile) && isAllowingBatch
         ? this.residentAdvisor.getInfos(profile)
         : Promise.resolve(null),
       this.canRunResidentAdvisor(profile)
@@ -90,6 +95,7 @@ export class Batch extends Service {
         ? this.soundcloud.getTracks(profile)
         : Promise.resolve(null)
     ];
+
     const results: AllServices = await Promise.all<
       AllServices[0],
       AllServices[1],

@@ -7,7 +7,9 @@ import { ProfileModel } from 'model/profile';
 import { AllServiceResults } from "model/all";
 import err from "err";
 import scheduler from "node-schedule";
+import https from "https";
 import config from "config";
+import Resolvers from "lib/resolvers";
 
 export class BatchRunner {
   batch: Batch;
@@ -28,8 +30,14 @@ export class BatchRunner {
 
   start = () => {
     if (!config.batches.enabled) return;
-    this.run();
-    scheduler.scheduleJob("0 0 */2 ? * *", () => {
+    scheduler.scheduleJob("0 0 */6 ? * *", async () => {
+      const resolver = new Resolvers();
+      await Promise.all(
+        new Array(config.api.discogs.nbProxies).fill("*").map(async (e, i) => {
+          return await https.get(resolver.getDiscogsProxyUrl(i));
+        })
+      );
+
       this.run();
     });
   };

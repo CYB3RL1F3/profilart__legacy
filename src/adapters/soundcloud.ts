@@ -6,26 +6,71 @@ import {
   RawTrack,
   RawPlaylist,
   TrackInfoRaw,
-  AudioRaw
+  AudioRaw,
+  Comment,
+  Like,
+  RawComments,
+  RawLikes
 } from "model/playlist";
 
 import { InfosModel, SoundcloudInfosRaw } from "model/infos";
-import { MixesDB } from "lib/mixesdb";
 export class SoundcloudAdapter {
   clientQS = `?client_id=${config.soundcloud.clientId}`;
 
-  resolveStream = (track: Track) =>
+  resolveStream = (track: RawTrack) =>
     `https://api.soundcloud.com/tracks/${track.id}/stream${this.clientQS}`;
 
-  adaptTrack = async (track: RawTrack, askTracklist: boolean = false, artistName: string = ''): Promise<Track> => {
+  adaptComments = (res: RawComments): Comment[] =>
+    res.collection.map((comment) => ({
+      id: comment.id,
+      body: comment.body,
+      createdAt: comment.created_at,
+      timestamp: comment.timestamp,
+      user: comment.user && {
+        id: comment.user.id,
+        avatar:
+          comment.user.avatar_url &&
+          comment.user.avatar_url.replace("large", "t500x500"),
+        firstName: comment.user.first_name,
+        lastName: comment.user.last_name,
+        fullName: comment.user.full_name,
+        followers: comment.user.followers_count,
+        soundcloud: comment.user.permalink_url,
+        uri: comment.user.uri,
+        urn: comment.user.urn,
+        username: comment.user.username,
+        verified: comment.user.verified,
+        city: comment.user.city,
+        country: comment.user.country_code
+      }
+    }));
+
+  adaptLikes = (res: RawLikes): Like[] =>
+    res.collection.map((like) => ({
+      createdAt: like.created_at,
+      id: like.id,
+      avatar: like.avatar_url && like.avatar_url.replace("large", "t500x500"),
+      firstName: like.first_name,
+      lastName: like.last_name,
+      fullName: like.full_name,
+      followers: like.followers_count,
+      soundcloud: like.permalink_url,
+      uri: like.uri,
+      urn: like.urn,
+      username: like.username,
+      verified: like.verified,
+      city: like.city,
+      country: like.country_code
+    }));
+
+  adaptTrack = (track: RawTrack): Track => {
     const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
     keys.forEach((key) => {
       track[key] = track[key] ? `${track[key]}${this.clientQS}` : null;
     });
-    let tracklist: Array<string> | null = undefined
-    if (askTracklist) {
-      tracklist = await this.getTracklist(artistName, track.permalink_url);
-    }
+    let comments: Comment[] = this.adaptComments(track.comments);
+    let likes: Like[] = this.adaptLikes(track.likes);
+
     return {
       id: track.id,
       title: track.title,
@@ -39,7 +84,7 @@ export class SoundcloudAdapter {
       soundcloud: track.permalink_url,
       duration: track.duration,
       waveform: track.waveform_url,
-      tracklist,
+      tracklist: track.tracklist,
       taglist: this.extractTagList(track.tag_list),
       uri: track.uri,
       url: track.stream_url,
@@ -48,7 +93,9 @@ export class SoundcloudAdapter {
         count: track.playback_count,
         downloads: track.download_count,
         favorites: track.favoritings_count
-      }
+      },
+      comments,
+      likes
     };
   };
 
@@ -140,16 +187,8 @@ export class SoundcloudAdapter {
       .filter((t) => t);
   };
 
-  adaptPlaylist = async (
-    playlist: RawPlaylist,
-    name: string,
-    askTracklist: boolean = false
-  ): Promise<PlaylistModel> => {
-    const tracks = await Promise.all<Track>(
-      playlist.tracks.map(
-        async (track) => await this.adaptTrack(track, askTracklist, name)
-      )
-    );
+  adaptPlaylist = (playlist: RawPlaylist, name: string): PlaylistModel => {
+    const tracks = playlist.tracks.map((track) => this.adaptTrack(track));
     return {
       title: playlist.title,
       description: playlist.description,
@@ -164,12 +203,8 @@ export class SoundcloudAdapter {
     };
   };
 
-  adapt = async (data: RawTrack[]): Promise<Track[]> => await Promise.all(data.map(async (track) => await this.adaptTrack(track)));
-
-  getTracklist = async (artistName: string, soundcloudUrl: string) => {
-    const mixesDb = new MixesDB()
-    return await mixesDb.getTracklist(artistName, soundcloudUrl)
-  };
+  adapt = (data: RawTrack[]): Track[] =>
+    data.map((track) => this.adaptTrack(track));
 }
 
 export default SoundcloudAdapter;

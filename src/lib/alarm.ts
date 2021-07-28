@@ -9,16 +9,11 @@ export const bip = (resolver: Resolvers) => {
     https.get(config.url);
     setTimeout(() => {
       try {
-        https.get(config.api.timeline.url)
-      } catch(e) {
+        https.get(config.api.timeline.url);
+      } catch (e) {
         console.log(e);
       }
-    }, 10 * 60 * 1000)
-    for (let i = 0; i < config.api.discogs.nbProxies; i++) {
-      setTimeout(() => {
-        https.get(resolver.getDiscogsProxyUrl(i))
-      }, (i + 1) * 60 * 1000);
-    }
+    }, 10 * 60 * 1000);
   } catch (e) {
     console.log(e);
     withScope((scope) => {
