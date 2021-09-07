@@ -7,13 +7,18 @@ import {
   RawTracklist,
   ReleaseTrack
 } from "model/releases";
+import Database from "lib/database/database";
 
 export class DiscogsAdapter extends Adapter {
+  constructor(readonly database: Database) {
+    super();
+  }
+
   async adaptTracklist(
     tracklist: RawTracklist[],
     release: Release
   ): Promise<ReleaseTrack[]> {
-    const releaseMatcher = new ReleaseMatcher();
+    const releaseMatcher = new ReleaseMatcher(this.database);
     const tracks = await Promise.all<ReleaseTrack>(
       tracklist.map(async (track) => {
         let streamResult = null;
@@ -22,10 +27,10 @@ export class DiscogsAdapter extends Adapter {
             track,
             release.label
           );
-        } catch(e) {
+        } catch (e) {
           console.log(e);
         }
-        
+
         return {
           title: track.title,
           duration: track.duration,
@@ -45,7 +50,9 @@ export class DiscogsAdapter extends Adapter {
     };
     release.label = release.label || (infos.labels[0] && infos.labels[0].name);
     release.releaseDate = infos.released;
-    release.cat = infos.labels ? infos.labels[0].cat || infos.labels[0].catno : null;
+    release.cat = infos.labels
+      ? infos.labels[0].cat || infos.labels[0].catno
+      : null;
     release.artist = release.artist.replace(/\([0-9]\)/g, "").trim();
     release.tracklist = await this.adaptTracklist(infos.tracklist, release);
     release.notes = infos.notes;

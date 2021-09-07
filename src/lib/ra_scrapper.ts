@@ -2,8 +2,30 @@ import cheerio from "cheerio";
 import err from "../err";
 import { InfosModel } from "model/infos";
 import { ProfileModel } from 'model/profile';
-import CloudflareBypasser from 'cloudflare-bypasser';
-import { toJSON } from 'cssjson';
+import { toJSON } from "cssjson";
+
+import { jar } from "cloudflare-scraper";
+const scrapper = require("cloudscraper").defaults({
+  agentOptions: {
+    ciphers: "ECDHE-RSA-AES256-SHA"
+  },
+  jar: jar(),
+  headers: {
+    // User agent, Cache Control and Accept headers are required
+    // User agent is populated by a random UA.
+    "User-Agent":
+      "Ubuntu Chromium/34.0.1847.116 Chrome/34.0.1847.116 Safari/537.36",
+    "Cache-Control": "private",
+    Accept:
+      "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,image/png,*/*;q=0.5"
+  },
+  cloudflareTimeout: 5000,
+  cloudflareMaxTimeout: 30000,
+  followAllRedirects: true,
+  challengesToSolve: 3,
+  decodeEmails: false,
+  gzip: true
+});
 type Link = {
   website?: string;
   facebook?: string;
@@ -26,10 +48,7 @@ interface Bio {
 }
 
 export class RA_Scrapper {
-  cf: CloudflareBypasser;
-  constructor(readonly profile: ProfileModel) {
-    this.cf = new CloudflareBypasser();
-  }
+  constructor(readonly profile: ProfileModel) {}
 
   getUrl = (endpoint = ""): string => {
     const { artistName } = this.profile;
@@ -39,20 +58,22 @@ export class RA_Scrapper {
 
   getDataFromPage = (endpoint = "") =>
     new Promise<cheerio.Root>(async (resolve, reject) => {
-      this.cf.request(this.getUrl(endpoint))
-        .then(({ body }) => {
-          resolve(
-            cheerio.load(body, {
-              normalizeWhitespace: true,
-              xmlMode: true,
-              decodeEntities: true
-            })
-          );
-        }
-      ).catch(e => {
-        console.log('SCRAP ERROR ===> ')
-        console.log(e);
-      });
+      try {
+        const { body } = await scrapper({
+          uri: this.getUrl(endpoint)
+        });
+        resolve(
+          cheerio.load(body, {
+            normalizeWhitespace: true,
+            xmlMode: true,
+            decodeEntities: true
+          })
+        );
+      } catch (e) {
+        // console.log("SCRAP ERROR ===> ");
+        // console.log(e);
+        // console.log("\n\n\nIT FAILLLLLLEDDDDDD !!!!");
+      }
     });
 
   getArtistInformations = ($: cheerio.Root) => {
@@ -61,7 +82,7 @@ export class RA_Scrapper {
     nodes.each((index, node) => {
       const title = $("div > div:nth-child(1)", node).text();
       let content = $("div > div:nth-child(2)", node);
-      switch(title) {
+      switch (title) {
         case "Real name":
           informations.realname = content.text();
           break;
@@ -80,7 +101,7 @@ export class RA_Scrapper {
       }
     });
     return informations;
-  }
+  };
 
   getScrappedData = async (): Promise<InfosModel> => {
     const [$, $2] = await Promise.all([
@@ -113,24 +134,32 @@ export class RA_Scrapper {
   };
 
   getCSSObject = (css) => {
-    return Object.keys(css.children).reduce((acc, index) => ({
+    return Object.keys(css.children).reduce(
+      (acc, index) => ({
         ...acc,
-        ...(css.children[index].children ? this.getCSSObject(css.children[index]) : {}),
-        [index.replace('.', '')]: css.children[index].attributes
-      }), {});
-  }
+        ...(css.children[index].children
+          ? this.getCSSObject(css.children[index])
+          : {}),
+        [index.replace(".", "")]: css.children[index].attributes
+      }),
+      {}
+    );
+  };
 
   getImage = ($: cheerio.Root) => {
     const header = $("#__next > header");
     const css = this.getCSSObject(toJSON($("head style").html()));
-    const classNames = header.attr('class')?.split(' ');
-    
-    const url = css[classNames[1]]['background-image'];
-    if (!url) return '';
+    const classNames = header.attr("class")?.split(" ");
+
+    const url = css[classNames[1]]["background-image"];
+    if (!url) return "";
     return url.substring("url(".length, url.indexOf("?"));
   };
 
-  getArtistName = ($: cheerio.Root) => $("#__next > header > div > div > div > div:nth-child(1) > div > div > h1").text();
+  getArtistName = ($: cheerio.Root) =>
+    $(
+      "#__next > header > div > div > div > div:nth-child(1) > div > div > h1"
+    ).text();
 
   hasRealName = (node: cheerio.Cheerio) =>
     node.find("div").text().indexOf("Real name") > -1;
@@ -140,7 +169,9 @@ export class RA_Scrapper {
 
   getLabels = ($: cheerio.Root) => {
     const labels = [];
-    const sections = $("#__next > div:nth-child(5) > div.Box-omzyfs-0.jyLLA > div:nth-child(3) > div > section");
+    const sections = $(
+      "#__next > div:nth-child(5) > div.Box-omzyfs-0.jyLLA > div:nth-child(3) > div > section"
+    );
     sections.each((index, section) => {
       const h3 = $("h3", section);
       if (h3.text().toLocaleLowerCase() === "labels") {
@@ -148,14 +179,14 @@ export class RA_Scrapper {
         links.each((i, link) => {
           const labelName = $(link).text();
           labelName && labels.push(labelName);
-        })
+        });
       }
     });
     return labels;
   };
 
   getLinks = ($: cheerio.Root, content) => {
-    const linkHandlers = $('a', content);
+    const linkHandlers = $("a", content);
     const links: Link = {};
     linkHandlers.each((index, elt) => {
       const link = $(elt);

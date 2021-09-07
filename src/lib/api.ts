@@ -19,6 +19,7 @@ export class Api {
         if (!error && response.statusCode == 200) {
           resolve(response);
         } else {
+          console.log("OPTIONS >> ", options);
           console.log("ERROR:: ", error || response.body);
           reject(error);
         }
