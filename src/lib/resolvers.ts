@@ -6,11 +6,10 @@ import fetch from "node-fetch";
 
 class Resolvers {
   resolveSoundcloudClientId = async (url: string): Promise<string> => {
-    const { clientId, clientSecret } = config.soundcloud;
     const resolvedUrl = `${url.replace(
       "soundcloud.com",
       "api.soundcloud.com/users"
-    )}?client_id=${clientId}&client_secret=${clientSecret}`;
+    )}`;
 
     const api = new Api();
     const profile = await api.requestAndParseJSON<{ id: string }>({
@@ -28,8 +27,7 @@ class Resolvers {
   resolvePlaylistUrl = (profile: ProfileModel, endpoint: string) => {
     const baseUrl = profile.soundcloud.url;
     const url = `${baseUrl}/sets/${endpoint}`;
-    const { clientId, clientSecret } = config.soundcloud;
-    return `https://api.soundcloud.com/resolve?url=${url}&client_id=${clientId}&client_secret=${clientSecret}`;
+    return `resolve?url=${url}`;
   };
 
   urlExists = async (url: string): Promise<boolean> => {

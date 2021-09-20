@@ -61,59 +61,67 @@ export class Batch extends Service {
   ): Promise<AllServiceResults> => {
     const playlists =
       (profile.soundcloud && profile.soundcloud.playlists) || [];
-    const soundcloudPlaylists = await Promise.all(
-      playlists
-        .filter((n) => !!n)
-        .map(
-          async (name) =>
-            await this.soundcloud.getPlaylist(profile, {
-              name,
-              ...args
-            })
-        )
-    );
+      const isAllowingSoundcloudBatch =
+        parseInt(process.env.ALLOW_SOUNDCLOUD_BATCH) === 1;
 
-    const isAllowingBatch = parseInt(process.env.ALLOW_RA_INFOS_BATCH) === 1;
+      const soundcloudPlaylists = isAllowingSoundcloudBatch
+        ? await Promise.all(
+            playlists
+              .filter((n) => !!n)
+              .map(
+                async (name) =>
+                  await this.soundcloud.getPlaylist(profile, {
+                    name,
+                    ...args
+                  })
+              )
+          )
+        : null;
 
-    const services: AllServicesArray = [
-      this.canRunResidentAdvisor(profile) && isAllowingBatch
-        ? this.residentAdvisor.getInfos(profile)
-        : Promise.resolve(null),
-      this.canRunResidentAdvisor(profile)
-        ? this.residentAdvisor.getCharts(profile)
-        : Promise.resolve(null),
-      this.canRunResidentAdvisor(profile)
-        ? this.residentAdvisor.getEvents(profile, { type: 1 })
-        : Promise.resolve(null),
-      this.canRunResidentAdvisor(profile)
-        ? this.residentAdvisor.getEvents(profile, { type: 2 })
-        : Promise.resolve(null),
-      this.canRunDiscogs(profile)
-        ? this.discogs.getReleases(profile)
-        : Promise.resolve(null),
-      this.canRunSoundcloud(profile)
-        ? this.soundcloud.getTracks(profile)
-        : Promise.resolve(null)
-    ];
+      const isAllowingRaBatch =
+        parseInt(process.env.ALLOW_RA_INFOS_BATCH) === 1;
 
-    const results: AllServices = await Promise.all<
-      AllServices[0],
-      AllServices[1],
-      AllServices[2],
-      AllServices[3],
-      AllServices[4],
-      AllServices[5]
-    >(services);
+      const services: AllServicesArray = [
+        this.canRunResidentAdvisor(profile) && isAllowingRaBatch
+          ? this.residentAdvisor.getInfos(profile)
+          : Promise.resolve(null),
+        this.canRunResidentAdvisor(profile)
+          ? this.residentAdvisor.getCharts(profile)
+          : Promise.resolve(null),
+        this.canRunResidentAdvisor(profile)
+          ? this.residentAdvisor.getEvents(profile, { type: 1 })
+          : Promise.resolve(null),
+        this.canRunResidentAdvisor(profile)
+          ? this.residentAdvisor.getEvents(profile, { type: 2 })
+          : Promise.resolve(null),
+        this.canRunDiscogs(profile) && isAllowingSoundcloudBatch
+          ? this.discogs.getReleases(profile)
+          : Promise.resolve(null),
+        this.canRunSoundcloud(profile) && isAllowingSoundcloudBatch
+          ? this.soundcloud.getTracks(profile)
+          : Promise.resolve(null)
+      ];
 
-    const res = this.adapter.adapt(results);
-    res.playlists = soundcloudPlaylists.reduce((acc, v, i) => {
-      if (v)
-        return {
-          ...acc,
-          [`${v.name}`]: v
-        };
-      return acc;
-    }, {});
+      const results: AllServices = await Promise.all<
+        AllServices[0],
+        AllServices[1],
+        AllServices[2],
+        AllServices[3],
+        AllServices[4],
+        AllServices[5]
+      >(services);
+
+      const res = this.adapter.adapt(results);
+      if (isAllowingSoundcloudBatch && soundcloudPlaylists) {
+        res.playlists = soundcloudPlaylists.reduce((acc, v, i) => {
+          if (v)
+            return {
+              ...acc,
+              [`${v.name}`]: v
+            };
+          return acc;
+        }, {});
+      }
     return res;
   };
 

@@ -20,6 +20,9 @@ import {
   RawTrack
 } from "model/playlist";
 
+let currentToken: string = undefined;
+let refreshToken: string = undefined;
+
 interface OAuth2 {
   access_token: string;
   expires_in: number;
@@ -37,8 +40,6 @@ export const toQuery = (params?: Object) =>
 
 export class SoundcloudProvider extends Service {
   adapter: SoundcloudAdapter;
-  token: string = null;
-  refreshToken: string = null;
   api: Api = null;
 
   constructor(database) {
@@ -48,7 +49,6 @@ export class SoundcloudProvider extends Service {
   }
 
   getToken = async () => {
-    // https://api.soundcloud.com/oauth2/token
     const { clientId, clientSecret } = config.soundcloud;
     try {
       const oauth2 = await this.api.requestAndParseJSON<OAuth2>({
@@ -65,10 +65,14 @@ export class SoundcloudProvider extends Service {
           grant_type: "client_credentials"
         }
       });
-      this.token = oauth2.access_token;
-      this.refreshToken = oauth2.refresh_token;
-
-      return this.token;
+      currentToken = oauth2.access_token;
+      refreshToken = oauth2.refresh_token;
+      setTimeout(() => {
+        currentToken = undefined;
+        refreshToken = undefined;
+      }, 21600000);
+      console.log(refreshToken);
+      return currentToken;
     } catch (e) {
       console.log("ERRR ===> ", e);
     }
@@ -76,12 +80,11 @@ export class SoundcloudProvider extends Service {
 
   getHeaders = async () => {
     const token = await new Promise(async (resolve, reject) => {
-      let t = this.token;
-      if (t) resolve(t);
+      if (currentToken) resolve(currentToken);
       else {
-        t = await this.getToken();
-        if (t) resolve(t);
-        else reject("NO TOKEEENNN");
+        currentToken = await this.getToken();
+        if (currentToken) resolve(currentToken);
+        else reject("No token");
       }
     });
     return {
@@ -91,11 +94,6 @@ export class SoundcloudProvider extends Service {
     };
   };
 
-  getCredentials = () => {
-    const { clientId, clientSecret } = config.soundcloud;
-    return `client_id=${clientId}&client_secret=${clientSecret}`;
-  };
-
   runQuery = async <T>(
     endpoint: string,
     method: string = "GET",
@@ -103,8 +101,7 @@ export class SoundcloudProvider extends Service {
   ) => {
     let headers;
     headers = await this.getHeaders();
-    const separator = endpoint.indexOf("?") > -1 ? "&" : "?";
-    const finalEndpoint = `${endpoint}${separator}${this.getCredentials()}`;
+    const finalEndpoint = `${endpoint}`;
     const url = `https://api.soundcloud.com/${finalEndpoint}`;
     const res = await this.api.requestAndParseJSON<T>({
       url,

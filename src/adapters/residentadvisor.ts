@@ -114,7 +114,11 @@ export class ResidentAdvisorAdapter extends Adapter {
       name: data.artistname[0],
       realname: data.realname[0],
       country: data.countryname[0],
-      labels: data.labels[0].split(", "),
+      labels: data.labels[0].split(", ").map((label) => ({
+        name: label,
+        image: "",
+        RA: ""
+      })),
       website: data.website[0],
       RA: data.raprofile[0],
       facebook: `https://facebook.com/${data.facebook}`,

@@ -152,7 +152,7 @@ export class ReleaseMatcher {
         const query = this.buildStreamQuery(track, artist);
         if (!query) return resolve(null);
         const provider = new SoundcloudProvider(null);
-        const endpoint = `tracks?q=${query}`;
+        const endpoint = `tracks?q=${encodeURIComponent(query)}`;
         try {
           const res = await provider.runQuery<RawTrack[]>(endpoint);
           if (res) {
