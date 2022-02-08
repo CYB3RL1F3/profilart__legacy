@@ -143,7 +143,7 @@ export class Router {
     } catch (e) {
       err = {
         code: 500,
-        message: "Uncaught fatal exception"
+        message: "Uncaught fatal exception : " + e
       };
     }
     console.log(err);
