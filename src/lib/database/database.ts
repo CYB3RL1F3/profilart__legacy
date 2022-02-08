@@ -103,7 +103,7 @@ export class Database {
         const db = client.db(config.db.base);
         db.collection<Data<Coll>>(coll, (err, collection) => {
           if (!collection && err) return reject(err);
-          collection.findOne<Data<Coll>>(
+          collection.findOne(
             selector,
             { limit: 1 },
             (err, data) => {
@@ -132,9 +132,7 @@ export class Database {
         const db = client.db(config.db.base);
         db.collection<Data<Coll>>(coll, (err, collection) => {
           if (!collection && err) return reject(err);
-          const content = collection.find<Data<Coll>>(
-            selector
-          ).toArray();
+          const content = collection.find(selector).toArray();
           resolve(content);
         });
       } catch (e) {
