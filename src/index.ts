@@ -117,11 +117,7 @@ app.use((req, res, next) => {
     res.setHeader("Content-Type", "image/x-icon");
     return next();
   }
-  if (req.path === "/") {
-    res.setHeader("Content-Type", "text/html");
-    return next();
-  }
-  if (req.path === "/swagger") {
+  if (req.path === "/" || req.path === "/swagger") {
     res.setHeader("Content-Type", "text/html");
     return next();
   }

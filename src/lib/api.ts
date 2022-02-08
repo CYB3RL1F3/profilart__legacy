@@ -13,12 +13,19 @@ export class Api {
     return data;
   };
 
-  request = (options: Options) =>
+  request = (options: Options, expectsRedirection = false) =>
     new Promise<Response>((resolve, reject) => {
       request(options, (error, response) => {
-        if (!error && response.statusCode == 200) {
+        if (
+          !error &&
+          (response.statusCode == 200 ||
+            response.statusCode === 201 ||
+            ((response.statusCode === 302 || response.statusCode === 301) &&
+              expectsRedirection))
+        ) {
           resolve(response);
         } else {
+          console.log("OPTIONS >> ", options);
           console.log("ERROR:: ", error || response.body);
           reject(error);
         }

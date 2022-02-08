@@ -99,7 +99,6 @@ export class Notifications extends Service {
       let notifications = await this.getNotificationCenters(profile);
       notifications = notifications.filter((n) => n.id !== args.id);
       await this.persist(profile, Models.notifications, notifications);
-      console.log(notifications);
       return notifications;
     } catch (e) {
       console.log(e);

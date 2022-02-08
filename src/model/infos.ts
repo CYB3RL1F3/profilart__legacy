@@ -1,22 +1,32 @@
 import { Data } from "lib/database/database.d";
 
+export interface Label {
+  name: string;
+  image: string;
+  RA: string;
+}
+
+export interface Bio {
+  intro: string;
+  content: string;
+}
+
 export interface InfosModel {
   name?: string;
   realname?: string;
   country?: string;
-  labels?: string[];
+  labels?: Label[];
   website?: string;
   RA?: string;
   facebook?: string;
   twitter?: string;
   discogs?: string;
   soundcloud?: string;
-  followers?: string;
+  followers?: number;
+  aliases?: string;
+  bookingDetails?: string;
   picture?: string;
-  bio?: {
-    intro?: string;
-    content?: string;
-  };
+  bio?: Bio;
 }
 
 export type Infos = Data<InfosModel>;

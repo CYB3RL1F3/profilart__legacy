@@ -1,18 +1,14 @@
 import { SoundcloudAdapter } from "adapters/soundcloud";
-import SC from "node-soundcloud";
-import config from "config";
-import { withScope, captureException } from "@sentry/node";
 import { ReleaseTrack } from "model/releases";
 import { regexIndexOf } from "./string";
+import { SoundcloudProvider } from "../providers/soundcloud";
+import { RawTrack } from "model/playlist";
+import Database from "lib/database";
 
 export class ReleaseMatcher {
   soundcloudAdapter: SoundcloudAdapter;
-  constructor() {
+  constructor(readonly database: Database) {
     this.soundcloudAdapter = new SoundcloudAdapter();
-    SC.init({
-      id: config.soundcloud.clientId,
-      secret: config.soundcloud.clientSecret
-    });
   }
 
   buildStreamQuery = (track: ReleaseTrack, artist: string) => {
@@ -45,7 +41,6 @@ export class ReleaseMatcher {
         query = `${query} (${remixer.name} ${remixer.role})`;
       }
     }
-
     return query.replace(/\[/gi, "(").replace(/\]/gi, ")");
   };
 
@@ -84,14 +79,23 @@ export class ReleaseMatcher {
         cleanTitle.indexOf("["),
         cleanTitle.indexOf("]") + 1
       );
-      if (cleanSearch.indexOf(brackets) > -1) return true;
+      if (!brackets || cleanSearch.indexOf(brackets) > -1) return true;
       return false;
     }
     return true;
   }
 
-  getStreamByFilteringResults(res, track, artist, label) {
-    let stream = res.find((stream) => stream.title.toLowerCase() === track.title.toLowerCase() && stream.user.username.toLowerCase().indexOf(artist.toLowerCase()) > -1);
+  getStreamByFilteringResults(
+    res: RawTrack[],
+    track: ReleaseTrack,
+    artist: string,
+    label: string
+  ): RawTrack {
+    let stream = res.find(
+      (stream) =>
+        stream.title.toLowerCase() === track.title.toLowerCase() &&
+        stream.user.username.toLowerCase().indexOf(artist.toLowerCase()) > -1
+    );
     if (!stream) {
       // filter patterns (remove dj sets, snippets, etc)
       const matchingTitles = res.filter((t) =>
@@ -103,36 +107,33 @@ export class ReleaseMatcher {
           value.title.toLowerCase().indexOf(track.title.toLowerCase()) > -1
       );
       // filter by artist name and/or label
-      streams = matchingTitles.filter(
+      streams = streams.filter(
         (value) =>
-          value.user.username.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
+          value.user.username.toLowerCase().indexOf(artist.toLowerCase()) >
+            -1 ||
           value.title.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
           value.user.username.toLowerCase().indexOf(label.toLowerCase()) > -1 ||
           value.title.toLowerCase().indexOf(label.toLowerCase()) > -1 ||
-          (
-            (
-              value.permalink_url.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
-              value.permalink_url.toLowerCase().indexOf(label.toLowerCase()) > -1
-            ) &&
-            value.permalink_url.toLowerCase().indexOf(track.title.toLowerCase()) > -1
-          ) ||
-          (
-            (
-              value.description.toLowerCase().indexOf(artist.toLowerCase()) > -1 ||
-              value.description.toLowerCase().indexOf(label.toLowerCase()) > -1 
-            ) &&
-            value.description.toLowerCase().indexOf(track.title.toLowerCase()) > -1
-          )
+          ((value.permalink_url.toLowerCase().indexOf(artist.toLowerCase()) >
+            -1 ||
+            value.permalink_url.toLowerCase().indexOf(label.toLowerCase()) >
+              -1) &&
+            value.permalink_url
+              .toLowerCase()
+              .indexOf(track.title.toLowerCase()) > -1) ||
+          ((value.description.toLowerCase().indexOf(artist.toLowerCase()) >
+            -1 ||
+            value.description.toLowerCase().indexOf(label.toLowerCase()) >
+              -1) &&
+            value.description.toLowerCase().indexOf(track.title.toLowerCase()) >
+              -1)
       );
       // if there's more than one result, get biggest duration (supposed to choose between snippet & track)
       if (streams.length > 1) {
         stream = streams.find(
           (value) =>
             value.duration ===
-            streams.reduce(
-              (acc, value) => Math.max(acc, value.duration),
-              0
-            )
+            streams.reduce((acc, value) => Math.max(acc, value.duration), 0)
         );
       } else {
         stream = streams[0];
@@ -142,44 +143,46 @@ export class ReleaseMatcher {
   }
 
   getStreaming = (track: ReleaseTrack, label: string) =>
-    new Promise<ReleaseTrack>((resolve, reject) => {
+    new Promise<ReleaseTrack>(async (resolve, reject) => {
       try {
         const artist = (track.artists || [])
           .map((artist) => artist.name.replace(/\([0-9]\)/g, "").trim())
-          .join(" ").trim();
+          .join(" ")
+          .trim();
         const query = this.buildStreamQuery(track, artist);
         if (!query) return resolve(null);
-        SC.get(
-          "/tracks",
-          {
-            q: query
-          },
-          async (error, res) => {
-            if (error) {
-              withScope((scope) => {
-                scope.setExtra("releaseMatcher", error);
-                captureException(error);
-              });
-              reject(error);
-            }
-            if (res) {
-              const stream = this.getStreamByFilteringResults(res, track, artist, label);
-              if (!stream)
-                return resolve({
-                  fullTitle: query,
-                  stream: null
-                });
-              return resolve({
-                fullTitle: query,
-                stream: await this.soundcloudAdapter.adaptTrack(stream)
-              });
-            } else
+        const provider = new SoundcloudProvider(null);
+        const endpoint = `tracks?q=${encodeURIComponent(query)}`;
+        try {
+          const res = await provider.runQuery<RawTrack[]>(endpoint);
+          if (res) {
+            const stream = this.getStreamByFilteringResults(
+              res,
+              track,
+              artist,
+              label
+            );
+            if (!stream)
               return resolve({
                 fullTitle: query,
                 stream: null
               });
-          }
-        );
+
+            stream.comments = await provider.getComments(stream.id);
+            stream.likes = await provider.getLikes(stream.id);
+            return resolve({
+              fullTitle: query,
+              stream: this.soundcloudAdapter.adaptTrack(stream)
+            });
+          } else
+            return resolve({
+              fullTitle: query,
+              stream: null
+            });
+        } catch (e) {
+          console.log(e);
+          return resolve(null);
+        }
       } catch (e) {
         console.log(e);
         return resolve(null);

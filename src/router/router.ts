@@ -15,12 +15,12 @@ import GraphQL from "gql";
 import { Express } from "express";
 import { Services } from "./router.d";
 import { RedisClient } from "redis";
-import { Timeline } from 'services/timeline';
+import { Timeline } from "services/timeline";
 import Swagger from "swagger-ui-express";
-import { Batch } from 'services/batch';
-import { BatchRunner } from 'services/batchRunner';
-import { Notifications } from '../services/notifications';
-const swaggerDocument = require('./swagger.json');
+import { Batch } from "services/batch";
+import { BatchRunner } from "services/batchRunner";
+import { Notifications } from "../services/notifications";
+const swaggerDocument = require("./swagger.json");
 
 export class Router {
   services: Services;
@@ -83,21 +83,21 @@ export class Router {
           support: this.status.contactSupport
         },
         patch: {
-          password: this.profiles.forgottenPassword,
+          password: this.profiles.forgottenPassword
         },
-        uidPost: { 
+        uidPost: {
           contact: contact.mail,
-          subscribe: notificationService.subscribe  
+          subscribe: notificationService.subscribe
         }
       },
       auth: {
-        get: { 
+        get: {
           profile: this.profiles.read,
           posts: timeline.getPosts,
           notificationCenters: notificationService.getNotificationCenters,
           reset: this.batchRunner.reset
         },
-        post: { 
+        post: {
           posts: timeline.addPost,
           notificationCenter: notificationService.addNotificationCenter,
           notify: notificationService.pushNotificationToCenter
@@ -107,10 +107,11 @@ export class Router {
           posts: timeline.editPost,
           notificationCenter: notificationService.updateNotificationCenter
         },
-        delete: { 
+        delete: {
           profile: this.profiles.remove,
           "posts/:id": timeline.deletePost,
-          "notificationCenters/:id": notificationService.deleteNotificationCenter
+          "notificationCenters/:id":
+            notificationService.deleteNotificationCenter
         }
       }
     };
@@ -139,11 +140,11 @@ export class Router {
     try {
       err = JSON.parse(e.message);
       if (!err.code) err.code = 500;
-    } catch(e) {
+    } catch (e) {
       err = {
         code: 500,
         message: "Uncaught fatal exception"
-      }
+      };
     }
     console.log(err);
     res.status(err.code).send(
@@ -166,15 +167,15 @@ export class Router {
   };
 
   initSwagger() {
-    this.app.use('/swagger', Swagger.serve);
-    
-    this.app.use('/swagger', (req, res, next) => {
+    this.app.use("/swagger", Swagger.serve);
+
+    this.app.use("/swagger", (req, res, next) => {
       try {
         res.setHeader("Content-Type", "text/html");
-      } catch(e) {}
+      } catch (e) {}
       return next();
     });
-    this.app.get('/swagger', Swagger.setup(swaggerDocument));
+    this.app.get("/swagger", Swagger.setup(swaggerDocument));
   }
   initRoutes() {
     this.initGraphQL();
@@ -191,7 +192,7 @@ export class Router {
       service !== "create" &&
       service !== "forbidden" &&
       service !== "password" &&
-      service !== "status" && 
+      service !== "status" &&
       service !== "support"
     ) {
       try {
@@ -218,7 +219,6 @@ export class Router {
   }
 
   initPublicRoutes() {
-
     // POST requests
     Object.keys(this.services.public.post).forEach((service) => {
       console.log(`INIT [POST] /${service} `);
@@ -262,12 +262,17 @@ export class Router {
     });
 
     console.log(`INIT [GET] /status `);
-    this.app.get('/status', async (req, res) => {
-      const result: StatusResult = await this.run(req, this.status.getStatus, "status", {});
+    this.app.get("/status", async (req, res) => {
+      const result: StatusResult = await this.run(
+        req,
+        this.status.getStatus,
+        "status",
+        {}
+      );
       if (result.active) {
         res.status(200).send(JSON.stringify(result));
       } else {
-        res.status(500).send(JSON.stringify(result))
+        res.status(500).send(JSON.stringify(result));
       }
     });
 
@@ -286,9 +291,9 @@ export class Router {
       });
     });
   }
-  
+
   getAuthMiddleware = () =>
-    passport.authenticate('jwt', {
+    passport.authenticate("jwt", {
       session: false,
       failureRedirect: "/forbidden"
     });
@@ -296,12 +301,12 @@ export class Router {
   initAuthRoutes() {
     const authMiddleware = this.getAuthMiddleware();
     this.app.get("/forbidden", this.forbidden);
-    
+
     Object.keys(this.services.auth).forEach((method) => {
       const services = this.services.auth[method];
       Object.keys(services).forEach((service) => {
         let uri = `/${service}`;
-        console.log(`INIT [${method.toUpperCase()}] ${uri}`)
+        console.log(`INIT [${method.toUpperCase()}] ${uri}`);
         switch (method) {
           case "get":
             this.app.get(
@@ -344,10 +349,7 @@ export class Router {
 
   runAuthQuery = (query, service, dataProvider) => async (req, res) => {
     try {
-      console.log(
-        query,
-        service,
-        req[dataProvider]);
+      console.log(query, service, req[dataProvider]);
       const result = await this.run(
         req,
         query,

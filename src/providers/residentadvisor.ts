@@ -2,7 +2,7 @@ import config from "../config";
 import ResidentAdvisorAdapter from "../adapters/residentadvisor";
 import Service from "../service";
 import err from "../err";
-import { RA_Scrapper } from "../lib/ra_scrapper";
+import { RA_Parser } from "../lib/ra_parser";
 import { withScope, captureException } from "@sentry/node";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
@@ -53,11 +53,13 @@ export class ResidentAdvisorProvider extends Service {
       form
     };
     try {
-      const { RA } = await this.api.requestAndParseXML<RAResp<Response>>(options);
-      if (!RA) throw new Error(`failing request: ${options.url}`)
+      const { RA } = await this.api.requestAndParseXML<RAResp<Response>>(
+        options
+      );
+      if (!RA) throw new Error(`failing request: ${options.url}`);
       return RA;
-    } catch(e) {
-      const err = new Error(`failing request: ${options.url}`)
+    } catch (e) {
+      const err = new Error(`failing request: ${options.url}`);
       withScope((scope) => {
         scope.setExtra(`call ${endpoint}`, options);
         captureException(e);
@@ -226,7 +228,7 @@ export class ResidentAdvisorProvider extends Service {
       }
       const infos = this.adapter.adapt(response, "infos");
       */
-      const scrapper = new RA_Scrapper(profile);
+      const scrapper = new RA_Parser(profile);
       const infos = await scrapper.getScrappedData();
       if (!infos) throw this.getError(["no infos"]);
       await this.persist<InfosModel>(profile, Models.infos, infos);

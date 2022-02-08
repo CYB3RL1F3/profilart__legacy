@@ -20,7 +20,8 @@ const {
   SENTRY_DSN,
   SUPPORT_EMAIL,
   TIMELINE_URL,
-  BATCH_ENABLED
+  BATCH_ENABLED,
+  SCRAPPER_API_KEY
 } = process.env;
 
 export const config = {
@@ -78,6 +79,9 @@ export const config = {
   userAgent: "Profilart/1.0 +https://profilart.com",
   batches: {
     enabled: parseInt(BATCH_ENABLED.toString(), 10) === 1
+  },
+  scrapper: {
+    apiKey: SCRAPPER_API_KEY
   }
 };
 

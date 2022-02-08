@@ -25,7 +25,7 @@ export class Encrypter {
 
   check = (str: string, hash: string): Promise<boolean> =>
     new Promise<boolean>((resolve, reject) => {
-      const kdf = new Buffer(hash, "hex");
+      const kdf = Buffer.from(hash, "hex");
       scrypt.verifyKdf(kdf, str).then(
         (result) => {
           if (!result) {

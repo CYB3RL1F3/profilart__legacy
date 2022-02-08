@@ -20,7 +20,7 @@ export class DiscogsProvider extends Service {
   resolver: Resolvers;
   constructor(database: Database) {
     super(database);
-    this.adapter = new DiscogsAdapter();
+    this.adapter = new DiscogsAdapter(database);
     this.resolver = new Resolvers();
   }
 

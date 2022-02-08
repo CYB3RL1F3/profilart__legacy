@@ -32,7 +32,7 @@ export interface Services {
     };
     patch: {
       password: Profiles["forgottenPassword"];
-    }
+    };
     uidPost: {
       contact: Contact["mail"];
       subscribe: Notifications["subscribe"];
@@ -43,7 +43,7 @@ export interface Services {
       profile: Profiles["read"];
       posts: Timeline["getPosts"];
       reset: BatchRunner["reset"];
-      notificationCenters: Notifications["getNotificationCenters"]
+      notificationCenters: Notifications["getNotificationCenters"];
     };
     post: {
       posts: Timeline["addPost"];
@@ -55,7 +55,7 @@ export interface Services {
       posts: Timeline["editPost"];
       notificationCenter: Notifications["updateNotificationCenter"];
     };
-    delete: { 
+    delete: {
       profile: Profiles["remove"];
       "posts/:id": Timeline["deletePost"];
       "notificationCenters/:id": Notifications["deleteNotificationCenter"];

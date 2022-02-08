@@ -1,4 +1,3 @@
-import SC from "node-soundcloud";
 import config from "../config";
 import SoundcloudAdapter from "../adapters/soundcloud";
 import Service from "../service";
@@ -10,7 +9,7 @@ import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
 import { TracksArgs } from "model/tracks";
 import { MixesDB } from "lib/mixesdb";
-
+import { InfosModel, SoundcloudInfosRaw } from "model/infos";
 import {
   Track,
   PlaylistArgs,
@@ -20,34 +19,114 @@ import {
   RawLikes,
   RawTrack
 } from "model/playlist";
-import { InfosModel, SoundcloudInfosRaw } from "model/infos";
+import Database from "lib/database";
+
+let currentToken: string = undefined;
+let refreshToken: string = undefined;
+
+interface OAuth2 {
+  access_token: string;
+  expires_in: number;
+  refresh_token: string;
+  scope: "";
+  token_type: "bearer";
+}
+
+interface Stream {
+  http_mp3_128_url: string;
+}
+
+export const toQuery = (params?: Object) =>
+  params
+    ? `?${Object.keys(params)
+        .map((key) => `${key}=${params[key]}`)
+        .join("&")}`
+    : "";
 
 export class SoundcloudProvider extends Service {
   adapter: SoundcloudAdapter;
-  constructor(database) {
+  api: Api = null;
+
+  constructor(database?: Database) {
     super(database);
     this.adapter = new SoundcloudAdapter();
-    SC.init({
-      id: config.soundcloud.clientId,
-      secret: config.soundcloud.clientSecret
-    });
+    this.api = new Api();
   }
 
-  getComments = async (trackId: number): Promise<RawComments> => {
-    const url = `https://api.soundcloud.com/tracks/${trackId}/comments?limit=200&linked_partitioning=true&client_id=${config.soundcloud.clientId}`;
-    const api = new Api();
+  getToken = async () => {
+    const { clientId, clientSecret } = config.soundcloud;
     try {
-      const res = await api.requestAndParseJSON<RawComments>({
-        url,
-        method: "GET",
+      const oauth2 = await this.api.requestAndParseJSON<OAuth2>({
+        url: "https://api.soundcloud.com/oauth2/token",
+        method: "POST",
         headers: {
           "User-Agent": config.userAgent,
-          "Content-Type": "application/json"
+          accept: "application/json; charset=utf-8",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        form: {
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: "client_credentials"
         }
       });
-      return res;
+      currentToken = oauth2.access_token;
+      refreshToken = oauth2.refresh_token;
+      setTimeout(() => {
+        currentToken = undefined;
+        refreshToken = undefined;
+      }, oauth2.expires_in * 1000);
+      console.log(refreshToken);
+      return currentToken;
     } catch (e) {
-      console.log("COMMENTS URL ===> ", url);
+      console.log("ERRR ===> ", e);
+    }
+  };
+
+  getHeaders = async () => {
+    const token = await new Promise(async (resolve, reject) => {
+      if (currentToken) resolve(currentToken);
+      else {
+        currentToken = await this.getToken();
+        if (currentToken) resolve(currentToken);
+        else reject("No token");
+      }
+    });
+    return {
+      "User-Agent": config.userAgent,
+      "Content-Type": "application/json",
+      Authorization: `OAuth ${token}`
+    };
+  };
+
+  runQuery = async <T>(
+    endpoint: string,
+    method: string = "GET",
+    options = {}
+  ) => {
+    const headers = await this.getHeaders();
+    const url = `https://api.soundcloud.com/${endpoint}`;
+    const res = await this.api.requestAndParseJSON<T>({
+      url,
+      method,
+      headers,
+      ...options
+    });
+    return res;
+  };
+
+  getStream = async (trackId: number): Promise<string> => {
+    const endpoint = `tracks/${trackId}/streams`;
+    const res = await this.runQuery<Stream>(endpoint);
+    return res.http_mp3_128_url;
+  };
+
+  getComments = async (trackId: number): Promise<RawComments> => {
+    const endpoint = `tracks/${trackId}/comments?limit=200&linked_partitioning=true`;
+    try {
+      return await this.runQuery<RawComments>(endpoint);
+    } catch (e) {
+      console.log("COMMENTS URL ===> ", endpoint);
       console.log("COMMENTS ERROR ==> ", e);
       return {
         collection: []
@@ -56,20 +135,12 @@ export class SoundcloudProvider extends Service {
   };
 
   getLikes = async (trackId: number): Promise<RawLikes> => {
-    const url = `https://api.soundcloud.com/tracks/${trackId}/favoriters?limit=200&linked_partitioning=true&client_id=${config.soundcloud.clientId}&limit=200`;
-    const api = new Api();
+    const endpoint = `tracks/${trackId}/favoriters?limit=200&linked_partitioning=true`;
+
     try {
-      const res = await api.requestAndParseJSON<RawLikes>({
-        url,
-        method: "GET",
-        headers: {
-          "User-Agent": config.userAgent,
-          "Content-Type": "application/json"
-        }
-      });
-      return res;
+      return await this.runQuery<RawLikes>(endpoint);
     } catch (e) {
-      console.log("LIKERS URL ==> ", url);
+      console.log("LIKERS URL ==> ", endpoint);
       console.log("LIKES ERROR ==> ", e);
       return {
         collection: []
@@ -78,57 +149,47 @@ export class SoundcloudProvider extends Service {
   };
 
   getTrack = (profile: ProfileModel, args: TracksArgs): Promise<Track> =>
-    new Promise<Track>((resolve, reject) => {
+    new Promise<Track>(async (resolve, reject) => {
       const { id } = args;
       if (!id) throw err(400, "id required");
-      SC.get(`/tracks/${id}`, async (error, res) => {
-        if (res && !error) {
-          try {
-            res.comments = await this.getComments(res.id);
-            res.likes = await this.getLikes(res.id);
-            const track = this.adapter.adaptTrack(res);
-            resolve(track);
-          } catch (e) {
-            reject(
-              this.error(
-                err(500, e.message || "error during payload construction")
-              )
-            );
-          }
-        } else {
-          reject(err(400, "track not found"));
-        }
-      });
+      try {
+        const endpoint = `tracks/${id}`;
+        const res = await this.runQuery<RawTrack>(endpoint);
+        res.comments = await this.getComments(res.id);
+        res.likes = await this.getLikes(res.id);
+        const track = this.adapter.adaptTrack(res);
+        resolve(track);
+      } catch (e) {
+        reject(err(500, e.message || "error during payload construction"));
+      }
     });
 
   getInfos = (profile: ProfileModel) =>
-    new Promise<InfosModel>((resolve, reject) => {
-      SC.get(
-        `/users/${profile.soundcloud.id}`,
-        (error, res: SoundcloudInfosRaw) => {
-          if (res) {
-            let infos = this.adapter.adaptInfos(res);
-            this.persist<InfosModel>(profile, Models.infos, infos).then(() => {
-              resolve(infos);
+    new Promise<InfosModel>(async (resolve, reject) => {
+      try {
+        const endpoint = `/users/${profile.soundcloud.id}`;
+        const res = await this.runQuery<SoundcloudInfosRaw>(endpoint);
+        if (res) {
+          let infos = this.adapter.adaptInfos(res);
+          this.persist<InfosModel>(profile, Models.infos, infos).then(() => {
+            resolve(infos);
+          });
+        } else {
+          this.fromDb<InfosModel>(profile, Models.infos)
+            .then((data) => {
+              resolve(data.content);
+            })
+            .catch((e) => {
+              if (e) reject(this.error(err(500, e.message || e)));
+              else
+                reject(
+                  this.error(err(400, "request to soundcloud not completed..."))
+                );
             });
-          } else {
-            this.fromDb<InfosModel>(profile, Models.infos)
-              .then((data) => {
-                resolve(data.content);
-              })
-              .catch((e) => {
-                if (error) reject(this.error(err(400, error)));
-                else if (e) reject(this.error(err(500, e.message || e)));
-                else
-                  reject(
-                    this.error(
-                      err(400, "request to soundcloud not completed...")
-                    )
-                  );
-              });
-          }
         }
-      );
+      } catch (e) {
+        reject(e);
+      }
     });
 
   error = (err, extra = null) => {
@@ -140,9 +201,11 @@ export class SoundcloudProvider extends Service {
   };
 
   getTracks = (profile: ProfileModel) =>
-    new Promise<Track[]>((resolve, reject) => {
-      SC.get(`/users/${profile.soundcloud.id}/tracks`, async (error, res) => {
-        if (res && res.length && !error) {
+    new Promise<Track[]>(async (resolve, reject) => {
+      try {
+        const endpoint = `users/${profile.soundcloud.id}/tracks`;
+        const res = await this.runQuery<RawTrack[]>(endpoint);
+        if (res && res.length) {
           const updatedTracks = await Promise.all<RawTrack>(
             res.map(async (track: RawTrack) => ({
               ...track,
@@ -161,14 +224,19 @@ export class SoundcloudProvider extends Service {
             resolve(tracks);
           });
         } else {
-          if (error) reject(this.error(err(400, error)));
-          else if (res && res.length === 0) resolve([]);
+          if (res && res.length === 0) resolve([]);
           else
             reject(
               this.error(err(500, "request to soundcloud not completed..."))
             );
         }
-      });
+      } catch (e) {
+        reject(
+          this.error(
+            err(500, e.message || e || "request to soundcloud not completed...")
+          )
+        );
+      }
     });
 
   getTracklist = async (artistName: string, soundcloudUrl: string) => {
@@ -184,19 +252,11 @@ export class SoundcloudProvider extends Service {
     if (!name) throw err(400, "missing playlist url fragment in query");
     const playlistKey = Models[`playlist_${name}`];
     const resolver = new Resolvers();
-    const api = new Api();
     const resolvedUrl = resolver.resolvePlaylistUrl(profile, name);
     let res: RawPlaylist;
     let error = null;
     try {
-      res = await api.requestAndParseJSON<RawPlaylist>({
-        url: resolvedUrl,
-        method: "GET",
-        headers: {
-          "User-Agent": config.userAgent,
-          "Content-Type": "application/json"
-        }
-      });
+      res = await this.runQuery<RawPlaylist>(resolvedUrl);
     } catch (e) {
       console.log(e);
       error = e;

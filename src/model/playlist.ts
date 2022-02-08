@@ -74,6 +74,7 @@ export interface RawTrack extends TrackInfo {
   comments?: RawComments;
   likes?: RawLikes;
   tracklist?: any;
+  user?: SoundcloudUserRaw;
 }
 
 export interface AudioRaw {
