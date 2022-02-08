@@ -19,6 +19,7 @@ import {
   RawLikes,
   RawTrack
 } from "model/playlist";
+import Database from "lib/database";
 
 let currentToken: string = undefined;
 let refreshToken: string = undefined;
@@ -29,6 +30,10 @@ interface OAuth2 {
   refresh_token: string;
   scope: "";
   token_type: "bearer";
+}
+
+interface Stream {
+  http_mp3_128_url: string;
 }
 
 export const toQuery = (params?: Object) =>
@@ -42,7 +47,7 @@ export class SoundcloudProvider extends Service {
   adapter: SoundcloudAdapter;
   api: Api = null;
 
-  constructor(database) {
+  constructor(database?: Database) {
     super(database);
     this.adapter = new SoundcloudAdapter();
     this.api = new Api();
@@ -70,7 +75,7 @@ export class SoundcloudProvider extends Service {
       setTimeout(() => {
         currentToken = undefined;
         refreshToken = undefined;
-      }, 21600000);
+      }, oauth2.expires_in * 1000);
       console.log(refreshToken);
       return currentToken;
     } catch (e) {
@@ -99,10 +104,8 @@ export class SoundcloudProvider extends Service {
     method: string = "GET",
     options = {}
   ) => {
-    let headers;
-    headers = await this.getHeaders();
-    const finalEndpoint = `${endpoint}`;
-    const url = `https://api.soundcloud.com/${finalEndpoint}`;
+    const headers = await this.getHeaders();
+    const url = `https://api.soundcloud.com/${endpoint}`;
     const res = await this.api.requestAndParseJSON<T>({
       url,
       method,
@@ -110,6 +113,12 @@ export class SoundcloudProvider extends Service {
       ...options
     });
     return res;
+  };
+
+  getStream = async (trackId: number): Promise<string> => {
+    const endpoint = `tracks/${trackId}/streams`;
+    const res = await this.runQuery<Stream>(endpoint);
+    return res.http_mp3_128_url;
   };
 
   getComments = async (trackId: number): Promise<RawComments> => {

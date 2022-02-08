@@ -84,15 +84,10 @@ export class RA_Parser {
       throw err(500, "impossible to parse RA profile. Seems not to exist.");
     }
     const root = data.props.apolloState;
-    console.log("DATA ==> ", root["ROOT_QUERY"]);
     const { artistName } = this.profile;
     const id = `artist({"slug":"${artistName.toLocaleLowerCase().trim()}"})`;
     const core = root["ROOT_QUERY"][id];
-    console.log("CORE ==> ", core, id);
-    const idInfos = core.id;
-    console.log("ID INFOS ==> ", idInfos);
     const infos: ApolloState = root[core.id];
-    console.log("INFOS ==> ", infos);
     const bio = this.getBio(root, infos);
     if (
       !infos.facebook ||
@@ -101,7 +96,7 @@ export class RA_Parser {
       !bio.content ||
       !infos.image
     ) {
-      console.log("inconsistancy");
+      console.log("INCONSISTANCY ==> \n\n", root);
       throw new Error("inconsistancy");
     }
 

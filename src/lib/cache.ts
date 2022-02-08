@@ -26,7 +26,7 @@ export class Cache {
       this.isSettable<T>(value)
     ) {
       const key = this.getKey(profile, entry);
-      return this.nodeCache.set<T>(key, value, cache.ttl[entry]);
+      return this.nodeCache.set<T>(key, value, cache.ttl[service]);
     }
     return false;
   }

@@ -102,14 +102,7 @@ export class Batch extends Service {
           : Promise.resolve(null)
       ];
 
-      const results: AllServices = await Promise.all<
-        AllServices[0],
-        AllServices[1],
-        AllServices[2],
-        AllServices[3],
-        AllServices[4],
-        AllServices[5]
-      >(services);
+      const results: AllServices = await Promise.all(services);
 
       const res = this.adapter.adapt(results);
       if (isAllowingSoundcloudBatch && soundcloudPlaylists) {

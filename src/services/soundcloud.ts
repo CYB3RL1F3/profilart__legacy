@@ -5,16 +5,15 @@ import { withScope, captureException } from "@sentry/node";
 import { ProfileModel } from "model/profile";
 import { Models } from "model/models";
 import { TracksArgs } from "model/tracks";
-import {
-  Track,
-  PlaylistArgs,
-  PlaylistModel
-} from "model/playlist";
+import { Track, PlaylistArgs, PlaylistModel } from "model/playlist";
 import { InfosModel } from "model/infos";
+import SoundcloudProvider from "providers/soundcloud";
 
 export class Soundcloud extends Service {
+  service: SoundcloudProvider;
   constructor(database) {
     super(database);
+    this.service = new SoundcloudProvider(database);
   }
 
   getTrack = (profile: ProfileModel, args: TracksArgs): Promise<Track> =>
@@ -45,9 +44,7 @@ export class Soundcloud extends Service {
           if (e) reject(this.error(err(500, e.message || e)));
           else
             reject(
-              this.error(
-                err(400, "request to soundcloud not completed...")
-              )
+              this.error(err(400, "request to soundcloud not completed..."))
             );
         });
     });
@@ -60,23 +57,39 @@ export class Soundcloud extends Service {
     return err;
   };
 
+  resolveTrackWithUris = async (track: Track): Promise<Track> => ({
+    ...track,
+    url: await this.service.getStream(track.id)
+  });
+
+  resolveTracksWithUris = async (tracks: Track[]): Promise<Track[]> =>
+    await Promise.all(
+      tracks.map(async (track) => await this.resolveTrackWithUris(track))
+    );
+
   getTracks = (profile: ProfileModel) =>
     new Promise<Track[]>((resolve, reject) => {
       try {
-        const fromCache = this.cache.get<Track[]>(profile, "soundcloud", "tracks");
+        const fromCache = this.cache.get<Track[]>(
+          profile,
+          "soundcloud",
+          "tracks"
+        );
         if (fromCache) return resolve(fromCache);
-      } catch(e) {
-        
-      }
+      } catch (e) {}
 
       this.fromDb<Track[]>(profile, Models.tracks)
-        .then((data) => {
-          resolve(data.content);
+        .then(async (data) => {
+          const tracks = await this.resolveTracksWithUris(data.content);
+          resolve(tracks);
         })
         .catch((e) => {
           console.log(e);
           if (e) reject(this.error(err(500, e.message || e)));
-          else reject(this.error(err(500, "request to soundcloud not completed...")));
+          else
+            reject(
+              this.error(err(500, "request to soundcloud not completed..."))
+            );
         });
     });
 
@@ -94,8 +107,20 @@ export class Soundcloud extends Service {
     );
     if (fromCache) return fromCache;
     const data = await this.fromDb<PlaylistModel>(profile, playlistKey);
-    if (data) return data.content;
-    else throw this.error(err(400, "No data available..."));
+    if (data) {
+      const tracks = await this.resolveTracksWithUris(data.content.tracks);
+      const playlist = {
+        ...data.content,
+        tracks
+      };
+      this.cache.set<PlaylistModel>(
+        profile,
+        "soundcloud",
+        playlistKey,
+        playlist
+      );
+      return playlist;
+    } else throw this.error(err(400, "No data available..."));
   };
 }
 

@@ -14,11 +14,12 @@ import {
 } from "model/playlist";
 
 import { InfosModel, SoundcloudInfosRaw } from "model/infos";
+
 export class SoundcloudAdapter {
   clientQS = `?client_id=${config.soundcloud.clientId}`;
 
   resolveStream = (track: RawTrack) =>
-    `https://api.soundcloud.com/tracks/${track.id}/stream${this.clientQS}`;
+    `https://api.soundcloud.com/tracks/${track.id}/stream`;
 
   adaptComments = (res: RawComments): Comment[] =>
     res.collection.map((comment) => ({
@@ -64,10 +65,6 @@ export class SoundcloudAdapter {
     }));
 
   adaptTrack = (track: RawTrack): Track => {
-    const keys = ["uri", "stream_url", "download_url", "attachments_uri"];
-    keys.forEach((key) => {
-      track[key] = track[key] ? `${track[key]}${this.clientQS}` : null;
-    });
     let comments: Comment[] = this.adaptComments(track.comments);
     let likes: Like[] = this.adaptLikes(track.likes);
 

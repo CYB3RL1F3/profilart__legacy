@@ -39,14 +39,7 @@ export class All extends Service {
       this.discogs.getReleases(profile),
       this.soundcloud.getTracks(profile)
     ];
-    const results: AllServices = await Promise.all<
-      AllServices[0],
-      AllServices[1],
-      AllServices[2],
-      AllServices[3],
-      AllServices[4],
-      AllServices[5]
-    >(services);
+    const results: AllServices = await Promise.all(services);
     const res = this.adapter.adapt(results);
     res.playlists = soundcloudPlaylists.reduce((acc, v, i) => {
       if (v) return {

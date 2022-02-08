@@ -65,3 +65,7 @@ export type Tracks = Data<Track[]>;
 export interface TracksArgs {
   id: number;
 }
+
+export interface StreamArgs extends TracksArgs {
+  isDownload: boolean;
+}
