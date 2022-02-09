@@ -9,11 +9,13 @@ import { Track, PlaylistArgs, PlaylistModel } from "model/playlist";
 import { InfosModel } from "model/infos";
 import SoundcloudProvider from "providers/soundcloud";
 
+const scp = new SoundcloudProvider();
+
 export class Soundcloud extends Service {
   service: SoundcloudProvider;
   constructor(database) {
     super(database);
-    this.service = new SoundcloudProvider(database);
+    this.service = scp;
   }
 
   getTrack = (profile: ProfileModel, args: TracksArgs): Promise<Track> =>
